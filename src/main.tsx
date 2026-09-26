@@ -1,4 +1,5 @@
 import { render } from 'preact';
+import { trackHistory } from './lib/nav';
 import { App } from './app';
 import { startPreviewQueue } from './lib/previews';
 import { startPwa } from './lib/pwa';
@@ -20,6 +21,8 @@ import '@fontsource-variable/jetbrains-mono/wght.css';
 import '@fontsource/instrument-serif/latin-400-italic.css';
 import './styles.css';
 
+// Before the router's first history entry, so every entry is numbered.
+trackHistory();
 render(<App />, document.getElementById('app')!);
 startPwa();
 startPreviewQueue();

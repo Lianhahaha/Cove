@@ -17,7 +17,6 @@ import {
   Star,
   SquareCheck,
   Trash,
-  X,
 } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
@@ -160,7 +159,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
       }}
     >
       <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-1 px-2 h-12 md:h-14 border-b border-border">
-        <button class="icon-btn md:hidden" aria-label="Back" onClick={onClose}><ArrowLeft size={20} /></button>
+        <button class="icon-btn" aria-label="Back" title="Back" onClick={onClose}><ArrowLeft size={20} /></button>
         <div class="flex-1" />
         <AiMenu item={item} />
         <FocusStarter itemId={item.id} />
@@ -176,7 +175,6 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
           void trashWithUndo([item.id]);
           onClose();
         })}
-        <button class="icon-btn hidden md:inline-flex" aria-label="Close" onClick={onClose}><X size={20} /></button>
       </div>
 
       <div class="p-4 md:p-6 space-y-5 flex-1">

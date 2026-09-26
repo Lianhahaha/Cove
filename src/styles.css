@@ -242,6 +242,11 @@
     transition: transform 150ms cubic-bezier(0.2, 0, 0, 1);
   }
   .quick-link:active .quick-link-icon { transform: scale(0.94); }
+  /* A real logo sits on a plain tile, like an app icon, instead of the accent tint. */
+  .quick-link-logo {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+  }
   .quick-link-add {
     background: transparent;
     border: 1.5px dashed var(--c-border2);

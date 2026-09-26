@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { setSetting } from './repo';
-import { addQuickLink, isClassroom, loadQuickLinks, quickLinks, removeQuickLink, toWebUrl } from './links';
+import { addQuickLink, isClassroom, loadQuickLinks, logoFor, quickLinks, removeQuickLink, toWebUrl } from './links';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -45,5 +45,17 @@ describe('quick links', () => {
     await setSetting('quickLinks', [{ id: 'a', name: 'Ok', url: 'https://ok.example' }, { id: 'b', name: 'Bad', url: 'javascript:x' }, 'junk']);
     await loadQuickLinks();
     expect(quickLinks.value).toEqual([{ id: 'a', name: 'Ok', url: 'https://ok.example/' }]);
+  });
+
+  it('uses bundled logos for Google apps and a safe saved icon for other sites', async () => {
+    expect(logoFor({ url: 'https://classroom.google.com/' })).toBe('/brand/classroom.png');
+    expect(logoFor({ url: 'https://mail.google.com/mail/u/0/' })).toBe('/brand/gmail.png');
+    expect(logoFor({ url: 'https://portal.example.edu/' })).toBeUndefined();
+    await setSetting('quickLinks', [
+      { id: 'a', name: 'Portal', url: 'https://portal.example.edu', icon: 'https://portal.example.edu/favicon.ico' },
+      { id: 'b', name: 'Sneaky', url: 'https://x.example', icon: 'javascript:alert(1)' },
+    ]);
+    await loadQuickLinks();
+    expect(quickLinks.value.map((l) => l.icon)).toEqual(['https://portal.example.edu/favicon.ico', undefined]);
   });
 });

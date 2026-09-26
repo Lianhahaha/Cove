@@ -7,7 +7,20 @@ export interface QuickLink {
   id: string;
   name: string;
   url: string;
+  /** The site's own icon, fetched once when the link is added. Well-known apps use bundled logos instead. */
+  icon?: string;
 }
+
+/** Official logos shipped with the app, so these tiles look right offline and never wait on a fetch. */
+export const BRAND_LOGOS: Record<string, string> = {
+  'classroom.google.com': '/brand/classroom.png',
+  'mail.google.com': '/brand/gmail.png',
+  'drive.google.com': '/brand/drive.png',
+  'meet.google.com': '/brand/meet.png',
+  'docs.google.com': '/brand/docs.png',
+};
+
+export const logoFor = (link: Pick<QuickLink, 'url' | 'icon'>): string | undefined => BRAND_LOGOS[hostOf(link.url)] ?? link.icon;
 
 export const QUICK_LINK_LIMITS = { count: 12, nameChars: 40 } as const;
 
@@ -49,13 +62,35 @@ function sanitize(v: unknown): QuickLink[] {
   if (!Array.isArray(v)) return DEFAULT_LINKS;
   return v
     .filter((l): l is QuickLink => !!l && typeof l.id === 'string' && typeof l.name === 'string' && typeof l.url === 'string')
-    .map((l) => ({ id: l.id, name: l.name.slice(0, QUICK_LINK_LIMITS.nameChars), url: toWebUrl(l.url) ?? '' }))
+    .map((l) => ({
+      id: l.id,
+      name: l.name.slice(0, QUICK_LINK_LIMITS.nameChars),
+      url: toWebUrl(l.url) ?? '',
+      icon: typeof l.icon === 'string' ? (toWebUrl(l.icon) ?? undefined) : undefined,
+    }))
     .filter((l) => l.url)
     .slice(0, QUICK_LINK_LIMITS.count);
 }
 
 export async function loadQuickLinks() {
   quickLinks.value = sanitize(await getSetting<unknown>('quickLinks', DEFAULT_LINKS));
+  // Links added offline get their icon the next time the app starts online.
+  for (const l of quickLinks.value) if (!logoFor(l)) void fetchIcon(l.id, l.url);
+}
+
+/** Asks the preview service for the site's icon and saves it on the link. */
+async function fetchIcon(id: string, url: string) {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+  try {
+    const res = await fetch(`/api/preview?url=${encodeURIComponent(url)}`);
+    if (!res.ok) return;
+    const icon = toWebUrl(String(((await res.json()) as { favicon?: unknown }).favicon ?? ''));
+    if (!icon) return;
+    const list = quickLinks.value.map((l) => (l.id === id ? { ...l, icon } : l));
+    if (list.some((l) => l.id === id)) await save(list);
+  } catch {
+    /* offline or blocked: the tile keeps its globe */
+  }
 }
 
 async function save(list: QuickLink[]) {
@@ -70,7 +105,9 @@ export async function addQuickLink(name: string, rawUrl: string): Promise<string
   if (quickLinks.value.length >= QUICK_LINK_LIMITS.count) return `You can keep up to ${QUICK_LINK_LIMITS.count} quick links.`;
   if (quickLinks.value.some((l) => l.url === url)) return 'That link is already here.';
   const clean = name.trim().slice(0, QUICK_LINK_LIMITS.nameChars) || hostOf(url);
-  await save([...quickLinks.value, { id: uid(), name: clean, url }]);
+  const id = uid();
+  await save([...quickLinks.value, { id, name: clean, url }]);
+  if (!BRAND_LOGOS[hostOf(url)]) void fetchIcon(id, url);
   return null;
 }
 

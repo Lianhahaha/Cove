@@ -1,21 +1,35 @@
 import { useState } from 'preact/hooks';
-import { FileText, Globe, GraduationCap, HardDrive, Mail, Plus, Video, X } from 'lucide-preact';
-import { addQuickLink, LINK_PRESETS, QUICK_LINK_LIMITS, quickLinks, removeQuickLink } from '../lib/links';
+import { Globe, Plus, X } from 'lucide-preact';
+import { addQuickLink, LINK_PRESETS, logoFor, QUICK_LINK_LIMITS, quickLinks, removeQuickLink } from '../lib/links';
 import { hostOf } from '../lib/queries';
 import { Modal } from './Modal';
 
-const GLYPHS: Record<string, typeof Globe> = {
-  'classroom.google.com': GraduationCap,
-  'drive.google.com': HardDrive,
-  'mail.google.com': Mail,
-  'meet.google.com': Video,
-  'docs.google.com': FileText,
-};
+/** Icons that failed to load this session, so tiles fall back to the globe without retrying. */
+const broken = new Set<string>();
 
-/** A drawn icon for well-known school sites, a globe for the rest. Works offline, unlike favicons. */
-export function LinkGlyph({ url, size = 20 }: { url: string; size?: number }) {
-  const Icon = GLYPHS[hostOf(url)] ?? Globe;
-  return <Icon size={size} />;
+/**
+ * The site's real logo: bundled for Google apps, the saved favicon for other sites,
+ * and a globe when there's neither or it fails to load.
+ */
+export function LinkLogo({ url, icon, size = 20 }: { url: string; icon?: string; size?: number }) {
+  const [, rerender] = useState(0);
+  const src = logoFor({ url, icon });
+  if (!src || broken.has(src)) return <Globe size={size} />;
+  return (
+    <img
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      loading="lazy"
+      referrerpolicy="no-referrer"
+      class="object-contain"
+      onError={() => {
+        broken.add(src);
+        rerender((n) => n + 1);
+      }}
+    />
+  );
 }
 
 /** One-tap tiles on Home for the sites a student opens every day, starting with Google Classroom. */
@@ -39,8 +53,8 @@ export function QuickLinks() {
         {links.map((l) => (
           <li key={l.id} class="relative shrink-0">
             <a class="quick-link" href={l.url} target="_blank" rel="noopener noreferrer" title={`Open ${hostOf(l.url)}`}>
-              <span class="quick-link-icon">
-                <LinkGlyph url={l.url} />
+              <span class={`quick-link-icon ${logoFor(l) ? 'quick-link-logo' : ''}`}>
+                <LinkLogo url={l.url} icon={l.icon} size={logoFor(l) ? 28 : 20} />
               </span>
               <span class="quick-link-name">{l.name}</span>
             </a>
@@ -88,7 +102,7 @@ function AddLinkDialog({ onClose }: { onClose: () => void }) {
             <div class="flex flex-wrap gap-1.5">
               {presets.map((p) => (
                 <button key={p.url} type="button" class="chip hover:border-accent py-1 px-2.5 text-sm" onClick={() => void add(p.name, p.url)}>
-                  <LinkGlyph url={p.url} size={14} />
+                  <LinkLogo url={p.url} size={16} />
                   {p.full}
                 </button>
               ))}

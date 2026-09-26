@@ -4,7 +4,7 @@ import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { hostOf, isActive } from '../lib/queries';
 import { isClassroom } from '../lib/links';
-import { LinkGlyph } from '../components/QuickLinks';
+import { LinkLogo } from '../components/QuickLinks';
 import { ItemsView } from '../components/ItemsView';
 import { EmptyState } from '../components/EmptyState';
 import { SpaceSettings } from '../components/SpaceSettings';
@@ -46,7 +46,7 @@ export function SpacePage({ id }: { id: string }) {
             )}
             {space.link ? (
               <a class="btn btn-soft" href={space.link} target="_blank" rel="noopener noreferrer">
-                <LinkGlyph url={space.link} size={16} />
+                <LinkLogo url={space.link} size={16} />
                 {isClassroom(space.link) ? 'Open in Google Classroom' : `Open ${hostOf(space.link)}`}
                 <ExternalLink size={14} class="opacity-70" />
               </a>

@@ -35,6 +35,23 @@ describe('backup round trip', () => {
     expect((await db.items.get(item.id))?.title).toBe('newer title');
   });
 
+  it('never lets a far-future timestamp overwrite local edits', async () => {
+    const item = await addItem({ title: 'mine' });
+    const hostile = JSON.stringify({ format: 'cove-backup', version: 1, items: [{ ...item, title: 'theirs', updatedAt: 8e15 }], spaces: [], files: [] });
+    const result = await importBackup(new Blob([hostile]));
+    expect(result.items).toBe(0);
+    expect((await db.items.get(item.id))?.title).toBe('mine');
+  });
+
+  it('ignores file paths that name Object.prototype keys', async () => {
+    const { zipSync, strToU8 } = await import('fflate');
+    const item = await addItem();
+    const json = { format: 'cove-backup', version: 1, items: [], spaces: [], files: [{ id: 'f1', itemId: item.id, name: 'x', type: 'text/plain', path: 'constructor' }] };
+    const zip = zipSync({ 'cove-backup.json': strToU8(JSON.stringify(json)) });
+    const result = await importBackup(new Blob([zip as BlobPart]));
+    expect(result.files).toBe(0);
+  });
+
   it('rejects files that are not Cove backups', async () => {
     await expect(importBackup(new Blob(['{"hello":1}']))).rejects.toThrow(/isn’t a Cove backup/);
     await expect(importBackup(new Blob(['{"format":"cove-backup","version":99}']))).rejects.toThrow(/newer version/);
@@ -62,6 +79,14 @@ describe('toItem', () => {
     expect(item.tags).toEqual(['ok', 'b']);
     expect(item.preview?.image).toBeUndefined();
     expect(item.recurrence).toBeNull();
+  });
+
+  it('rejects impossible dates and timestamps from the future', () => {
+    const item = toItem({ id: 'd', due: 1e300, remindAt: -5, updatedAt: 8e15, createdAt: 8e15, completedAt: Number.MAX_VALUE })!;
+    expect(item.due).toBeNull();
+    expect(item.remindAt).toBeNull();
+    expect(item.completedAt).toBeNull();
+    expect(item.updatedAt).toBe(0);
   });
 
   it('drops records without a usable id', () => {

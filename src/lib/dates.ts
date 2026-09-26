@@ -39,6 +39,8 @@ const fullFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numer
 
 export function formatDue(due: number, hasTime: boolean, now = new Date()): string {
   const d = new Date(due);
+  // Intl throws on invalid dates; never let one bad record break a whole list.
+  if (Number.isNaN(d.getTime())) return '';
   const today = startOfDay(now).getTime();
   const dayDiff = Math.round((startOfDay(d).getTime() - today) / DAY);
   let label: string;

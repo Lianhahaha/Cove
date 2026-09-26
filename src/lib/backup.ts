@@ -51,6 +51,21 @@ export async function exportBackup(): Promise<Blob> {
 
 const str = (v: unknown, max: number, fallback = '') => (typeof v === 'string' ? v.slice(0, max) : fallback);
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+/** A date the app can display: 1970 to 2200. Anything else (like 1e300) would crash date formatting. */
+const MAX_DATE = Date.UTC(2200, 0, 1);
+const date = (v: unknown): number | null => {
+  const n = num(v);
+  return n !== null && n >= 0 && n <= MAX_DATE ? n : null;
+};
+/**
+ * A record timestamp. One more than a day in the future (allowing for clock
+ * skew) is treated as missing: an updatedAt far ahead would otherwise win
+ * every merge and could never be overwritten again.
+ */
+const stamp = (v: unknown, now = Date.now()): number | null => {
+  const n = date(v);
+  return n === null || n > now + 86_400_000 ? null : n;
+};
 const bool = (v: unknown) => v === true;
 const isId = (v: unknown): v is string => typeof v === 'string' && /^[\w-]{1,64}$/.test(v);
 const httpUrl = (v: unknown) => (typeof v === 'string' && /^https?:\/\//i.test(v) && v.length <= 2048 ? v : null);
@@ -107,20 +122,21 @@ export function toItem(v: unknown): Item | null {
     archived: bool(r.archived),
     private: bool(r.private),
     status,
-    due: num(r.due),
+    due: date(r.due),
     dueHasTime: bool(r.dueHasTime),
     priority,
     checklist: toChecklist(r.checklist),
     recurrence: toRecurrence(r.recurrence),
-    remindAt: num(r.remindAt),
-    estimateMins: num(r.estimateMins),
-    completedAt: num(r.completedAt),
-    focusMins: Math.max(0, Math.round(num(r.focusMins) ?? 0)),
+    remindAt: date(r.remindAt),
+    estimateMins: (() => { const m = num(r.estimateMins); return m !== null && m >= 0 && m <= 100_000 ? Math.round(m) : null; })(),
+    completedAt: stamp(r.completedAt),
+    focusMins: Math.min(1_000_000, Math.max(0, Math.round(num(r.focusMins) ?? 0))),
     nextId: isId(r.nextId) ? r.nextId : null,
     order: num(r.order) ?? now,
-    createdAt: num(r.createdAt) ?? now,
-    updatedAt: num(r.updatedAt) ?? now,
-    deletedAt: num(r.deletedAt),
+    createdAt: stamp(r.createdAt) ?? now,
+    // Without a trustworthy edit time, a record loses to any local copy.
+    updatedAt: stamp(r.updatedAt) ?? 0,
+    deletedAt: stamp(r.deletedAt),
   });
 }
 
@@ -137,9 +153,9 @@ export function toSpace(v: unknown): Space | null {
     order: num(r.order) ?? 0,
     archived: bool(r.archived),
     aiExcluded: bool(r.aiExcluded),
-    createdAt: num(r.createdAt) ?? now,
-    updatedAt: num(r.updatedAt) ?? now,
-    deletedAt: num(r.deletedAt),
+    createdAt: stamp(r.createdAt) ?? now,
+    updatedAt: stamp(r.updatedAt) ?? 0,
+    deletedAt: stamp(r.deletedAt),
   };
 }
 
@@ -195,7 +211,8 @@ export async function importBackup(file: Blob): Promise<ImportResult> {
     const knownItems = new Set([...localItems.keys(), ...items.map((i) => i.id)]);
     for (const m of Array.isArray(b.files) ? b.files.slice(0, MAX_RECORDS) : []) {
       if (!m || !isId(m.id) || !isId(m.itemId) || !knownItems.has(m.itemId) || typeof m.path !== 'string') continue;
-      const data = archive[m.path];
+      // Own keys only: a path like "constructor" must not reach Object.prototype.
+      const data = Object.hasOwn(archive, m.path) ? archive[m.path] : undefined;
       if (!data || data.length > LIMITS.fileBytes || (await db.files.get(m.id))) continue;
       const type = str(m.type, 100, 'application/octet-stream');
       const rec: StoredFile = {
@@ -205,7 +222,7 @@ export async function importBackup(file: Blob): Promise<ImportResult> {
         type,
         size: data.length,
         blob: new Blob([data as BlobPart], { type }),
-        createdAt: num(m.createdAt) ?? Date.now(),
+        createdAt: stamp(m.createdAt) ?? Date.now(),
       };
       await db.files.add(rec);
       result.files++;

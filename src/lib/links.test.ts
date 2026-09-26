@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { setSetting } from './repo';
-import { addQuickLink, isClassroom, loadQuickLinks, logoFor, quickLinks, removeQuickLink, toWebUrl } from './links';
+import { addQuickLink, friendlyName, isClassroom, loadQuickLinks, logoFor, quickLinks, removeQuickLink, toWebUrl } from './links';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -21,6 +21,15 @@ describe('toWebUrl', () => {
     expect(toWebUrl('data:text/html,hi')).toBeNull();
     expect(toWebUrl('hello')).toBeNull();
     expect(toWebUrl('')).toBeNull();
+  });
+});
+
+describe('friendlyName', () => {
+  it('names a tile from its address', () => {
+    expect(friendlyName('https://www.wikipedia.org/')).toBe('Wikipedia');
+    expect(friendlyName('https://portal.myschool.edu/')).toBe('Myschool');
+    expect(friendlyName('https://dlsu.edu.ph/')).toBe('DLSU');
+    expect(friendlyName('https://canvas.instructure.com/')).toBe('Instructure');
   });
 });
 

@@ -9,6 +9,8 @@ export interface QuickLink {
   url: string;
   /** The site's own icon, fetched once when the link is added. Well-known apps use bundled logos instead. */
   icon?: string;
+  /** The name came from the address, not the user, so the site's own name may replace it. */
+  autoName?: boolean;
 }
 
 /** Official logos shipped with the app, so these tiles look right offline and never wait on a fetch. */
@@ -67,6 +69,7 @@ function sanitize(v: unknown): QuickLink[] {
       name: l.name.slice(0, QUICK_LINK_LIMITS.nameChars),
       url: toWebUrl(l.url) ?? '',
       icon: typeof l.icon === 'string' ? (toWebUrl(l.icon) ?? undefined) : undefined,
+      autoName: l.autoName === true || undefined,
     }))
     .filter((l) => l.url)
     .slice(0, QUICK_LINK_LIMITS.count);
@@ -74,22 +77,40 @@ function sanitize(v: unknown): QuickLink[] {
 
 export async function loadQuickLinks() {
   quickLinks.value = sanitize(await getSetting<unknown>('quickLinks', DEFAULT_LINKS));
-  // Links added offline get their icon the next time the app starts online.
-  for (const l of quickLinks.value) if (!logoFor(l)) void fetchIcon(l.id, l.url);
+  // Links added offline get their icon and name the next time the app starts online.
+  for (const l of quickLinks.value) if (!logoFor(l) || l.autoName) void fetchSiteInfo(l.id, l.url);
 }
 
-/** Asks the preview service for the site's icon and saves it on the link. */
-async function fetchIcon(id: string, url: string) {
+/**
+ * A tile label from the address when the user gives none: "wikipedia.org" becomes
+ * "Wikipedia", and short school codes like "dlsu.edu.ph" become "DLSU".
+ */
+export function friendlyName(url: string): string {
+  const labels = hostOf(url).split('.');
+  if (labels.length < 2) return labels[0];
+  const tld = labels[labels.length - 1];
+  const second = labels[labels.length - 2];
+  const countrySecondLevel = labels.length >= 3 && tld.length === 2 && ['com', 'edu', 'gov', 'org', 'net', 'co', 'ac'].includes(second);
+  const word = countrySecondLevel ? labels[labels.length - 3] : second;
+  return word.length <= 4 ? word.toUpperCase() : word[0].toUpperCase() + word.slice(1);
+}
+
+/** Asks the preview service for the site's icon, and its name when the user gave none, and saves them. */
+async function fetchSiteInfo(id: string, url: string) {
   if (typeof navigator !== 'undefined' && !navigator.onLine) return;
   try {
     const res = await fetch(`/api/preview?url=${encodeURIComponent(url)}`);
     if (!res.ok) return;
-    const icon = toWebUrl(String(((await res.json()) as { favicon?: unknown }).favicon ?? ''));
-    if (!icon) return;
-    const list = quickLinks.value.map((l) => (l.id === id ? { ...l, icon } : l));
+    const data = (await res.json()) as { favicon?: unknown; siteName?: unknown; title?: unknown };
+    const icon = toWebUrl(String(data.favicon ?? '')) ?? undefined;
+    // Only a short site name fits a tile; a long page title keeps the name from the address.
+    const siteName = [data.siteName, data.title].find((v): v is string => typeof v === 'string' && v.trim().length > 0 && v.trim().length <= 24)?.trim();
+    const list = quickLinks.value.map((l) =>
+      l.id !== id ? l : { ...l, icon: icon ?? l.icon, ...(l.autoName && siteName ? { name: siteName, autoName: undefined } : {}) },
+    );
     if (list.some((l) => l.id === id)) await save(list);
   } catch {
-    /* offline or blocked: the tile keeps its globe */
+    /* offline or blocked: the tile keeps its globe and name */
   }
 }
 
@@ -104,10 +125,10 @@ export async function addQuickLink(name: string, rawUrl: string): Promise<string
   if (!url) return 'That doesn’t look like a web address.';
   if (quickLinks.value.length >= QUICK_LINK_LIMITS.count) return `You can keep up to ${QUICK_LINK_LIMITS.count} quick links.`;
   if (quickLinks.value.some((l) => l.url === url)) return 'That link is already here.';
-  const clean = name.trim().slice(0, QUICK_LINK_LIMITS.nameChars) || hostOf(url);
+  const typed = name.trim().slice(0, QUICK_LINK_LIMITS.nameChars);
   const id = uid();
-  await save([...quickLinks.value, { id, name: clean, url }]);
-  if (!BRAND_LOGOS[hostOf(url)]) void fetchIcon(id, url);
+  await save([...quickLinks.value, { id, name: typed || friendlyName(url), url, autoName: !typed || undefined }]);
+  if (!BRAND_LOGOS[hostOf(url)]) void fetchSiteInfo(id, url);
   return null;
 }
 

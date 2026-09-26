@@ -43,6 +43,43 @@ function decompress(res: http.IncomingMessage): Readable {
   return res;
 }
 
+/**
+ * Reads a stream up to `max` bytes, then destroys it. The decompressor is
+ * destroyed too, not just the socket: it may already hold a few KB of input
+ * that would inflate to gigabytes (a compression bomb).
+ */
+export function readCapped(body: Readable, max: number, onCap: () => void = () => {}): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve(Buffer.concat(chunks, Math.min(size, max)));
+    };
+    body.on('data', (c: Buffer) => {
+      if (done) return;
+      const room = max - size;
+      chunks.push(c.length > room ? c.subarray(0, room) : c);
+      size += Math.min(c.length, room);
+      if (size >= max) {
+        finish();
+        body.destroy();
+        onCap();
+      }
+    });
+    body.on('end', finish);
+    body.on('error', (e) => {
+      if (size > 0) finish();
+      else if (!done) {
+        done = true;
+        reject(e);
+      }
+    });
+  });
+}
+
 function requestOnce(url: URL, signal: AbortSignal): Promise<{ redirect?: URL; page?: FetchedPage }> {
   return new Promise((resolve, reject) => {
     const mod = url.protocol === 'https:' ? https : http;
@@ -82,28 +119,12 @@ function requestOnce(url: URL, signal: AbortSignal): Promise<{ redirect?: URL; p
           resolve({ page: { url, contentType } });
           return;
         }
-        const chunks: Buffer[] = [];
-        let size = 0;
-        const body = decompress(res);
-        let done = false;
-        const finish = () => {
-          if (done) return;
-          done = true;
-          const buf = Buffer.concat(chunks).subarray(0, FETCH_LIMITS.maxBytes);
-          const html = new TextDecoder(charsetOf(contentType, buf.subarray(0, 2048))).decode(buf);
-          resolve({ page: { url, contentType, html } });
-        };
-        body.on('data', (c: Buffer) => {
-          chunks.push(c);
-          size += c.length;
-          // Stop reading once there's enough; also defuses compression bombs.
-          if (size >= FETCH_LIMITS.maxBytes) {
-            res.destroy();
-            finish();
-          }
-        });
-        body.on('end', finish);
-        body.on('error', (e) => (size > 0 ? finish() : reject(e)));
+        readCapped(decompress(res), FETCH_LIMITS.maxBytes, () => res.destroy())
+          .then((buf) => {
+            const html = new TextDecoder(charsetOf(contentType, buf.subarray(0, 2048))).decode(buf);
+            resolve({ page: { url, contentType, html } });
+          })
+          .catch(reject);
       },
     );
     req.on('error', (e) => reject(e));

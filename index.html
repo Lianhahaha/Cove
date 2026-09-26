@@ -13,13 +13,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Cove" />
     <title>Cove</title>
-    <script>
-      // Apply the saved theme before first paint so there's no flash.
-      try {
-        var t = localStorage.getItem('cove-theme');
-        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-      } catch (e) {}
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="app"></div>

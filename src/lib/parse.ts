@@ -176,8 +176,15 @@ function parseTime(text: string): { h: number; min: number; span: Match } | null
   return null;
 }
 
+/**
+ * A bare address like "donghuafun.com" or "portal.myschool.edu.ph/login". Only common
+ * web endings count, so file names (notes.md, main.py), emails and "Ch.4" stay text.
+ */
+const BARE_DOMAIN =
+  /(?<![@\w./-])(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:com|org|net|edu|gov|io|co|dev|app|ph|me|info|ai|tv|us|uk|ca|au|sg|site|online|tech|page|gg|xyz)(?![\w-])(?::\d{2,5})?(?:[/?#][^\s<>"']*)?/i;
+
 function extractUrl(text: string): { url: string; rest: string } | null {
-  const m = /(?:https?:\/\/|www\.)[^\s<>"']+/i.exec(text);
+  const m = /(?:https?:\/\/|www\.)[^\s<>"']+/i.exec(text) ?? BARE_DOMAIN.exec(text);
   if (!m) return null;
   let url = m[0];
   // Drop punctuation that ends a sentence rather than the URL, keeping balanced parens.

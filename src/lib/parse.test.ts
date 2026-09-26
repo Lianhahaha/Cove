@@ -23,6 +23,20 @@ describe('links', () => {
     expect(r.tags).toEqual(['cpe']);
   });
 
+  it('treats a bare address as a link', () => {
+    expect(p('donghuafun.com')).toMatchObject({ kind: 'link', url: 'https://donghuafun.com', title: '' });
+    const r = p('check portal.myschool.edu.ph/login tmr');
+    expect(r).toMatchObject({ url: 'https://portal.myschool.edu.ph/login', title: 'check', due: day(2026, 9, 24) });
+    expect(p('see example.com.').url).toBe('https://example.com');
+  });
+
+  it('leaves emails, file names and abbreviations as text', () => {
+    expect(p('email me at ana@school.edu').url).toBeNull();
+    expect(p('update notes.md and main.py').url).toBeNull();
+    expect(p('Lecture on Ch.4 e.g. vectors').url).toBeNull();
+    expect(p('the example.company site').url).toBeNull();
+  });
+
   it('adds https to www links and trims sentence punctuation', () => {
     expect(p('see www.example.com.').url).toBe('https://www.example.com');
     expect(p('(https://en.wikipedia.org/wiki/Ohm_(unit))').url).toBe('https://en.wikipedia.org/wiki/Ohm_(unit)');

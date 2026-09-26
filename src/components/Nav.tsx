@@ -1,4 +1,4 @@
-import { useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
 import type { ComponentChildren } from 'preact';
 import {
@@ -68,6 +68,11 @@ export function Nav() {
   }, []);
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt && !s.archived).toArray(), []);
   const [adding, setAdding] = useState(false);
+  // autoFocus is ignored after the page has loaded, so focus the new-space box by hand.
+  const addInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (adding) addInput.current?.focus();
+  }, [adding]);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
 
   /** Dropping a space reorders the list; dropping an item moves it into the space. */
@@ -175,7 +180,7 @@ export function Nav() {
           <form onSubmit={createSpace} class="px-1 py-1">
             <input
               class="input h-9 min-h-9 text-sm"
-              autoFocus
+              ref={addInput}
               placeholder="Subject or project name"
               maxLength={60}
               value={name}

@@ -4,6 +4,8 @@ Cove is a place for students to keep everything a class throws at them: links, n
 
 This document is the plan: what gets built, with which tools, in what order, and the rules the code follows.
 
+**Status (September 2026):** milestones 1–20 are built, along with these extras: auto-tagging links by site, smart views, a focus timer, the new-semester reset, search inside PDFs, and on-demand loading that keeps the first download near 75 KB gzipped. Still open: sync and shared spaces (21), which need a Firebase project, and the desktop bookmarklet.
+
 ## Goals
 
 1. **Fast capture.** Saving a link from a phone takes one share-sheet tap or one paste.

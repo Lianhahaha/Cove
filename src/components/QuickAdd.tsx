@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { CalendarDays, Flag, Folder, Hash, Link as LinkIcon, X } from 'lucide-preact';
 import type { ComponentChildren } from 'preact';
 import { db } from '../lib/db';
@@ -52,16 +52,27 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
   const spaceName = parsed?.spaceId ? spaces.find((s) => s.id === parsed.spaceId)?.name : null;
 
   const skip = (part: ParsePart) => setIgnore(new Set([...ignore, part]));
+  // Text that is only a date or tags would make an untitled item, so it can't be saved yet.
+  const hasContent = (p: Parsed | null) => !!p && (p.title !== '' || p.url !== null);
+  const canSave = hasContent(parsed) && !saving;
+
+  // The autofocus attribute is ignored after page load, so focus by hand and put the caret after any prefilled text.
+  useEffect(() => {
+    const el = ref.current;
+    if (!autoFocus || !el) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, []);
 
   function withDefaults(p: Parsed): Parsed {
     return { ...p, spaceId: p.spaceId ?? defaultSpaceId };
   }
 
   async function save(split: boolean) {
-    if (!parsed || saving) return;
+    if (!canSave) return;
     setSaving(true);
     try {
-      const sources = split ? lines.map((l) => parseQuickAdd(l, { spaces, ignore })) : [parsed];
+      const sources = split ? lines.map((l) => parseQuickAdd(l, { spaces, ignore })).filter(hasContent) : [parsed!];
       const created: Item[] = [];
       for (const p of sources) {
         // A time or a priority on the Tasks page already implies a task; extra.status covers the rest.
@@ -124,11 +135,11 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
           {footer}
           <div class="flex-1" />
           {lines.length > 1 && (
-            <button type="button" class="btn" disabled={saving} onClick={() => save(true)}>
+            <button type="button" class="btn" disabled={!canSave} onClick={() => save(true)}>
               Split into {lines.length}
             </button>
           )}
-          <button type="button" class="btn btn-primary" disabled={!parsed || saving} onClick={() => save(false)}>
+          <button type="button" class="btn btn-primary" disabled={!canSave} onClick={() => save(false)}>
             Save
           </button>
         </div>

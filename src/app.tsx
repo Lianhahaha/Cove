@@ -2,6 +2,10 @@ import { LocationProvider, Router, Route } from 'preact-iso';
 import { Shell } from './components/Shell';
 import { Placeholder } from './pages/Placeholder';
 import { NotFound } from './pages/NotFound';
+import { Home } from './pages/Home';
+import { AllItems, ArchivePage, Favorites, Inbox, TagPage } from './pages/Lists';
+import { Tags } from './pages/Tags';
+import { SpacePage } from './pages/SpacePage';
 
 const page = (title: string) => () => <Placeholder title={title} />;
 
@@ -10,16 +14,16 @@ export function App() {
     <LocationProvider>
       <Shell>
         <Router>
-          <Route path="/" component={page('Home')} />
-          <Route path="/inbox" component={page('Inbox')} />
-          <Route path="/all" component={page('All items')} />
+          <Route path="/" component={Home} />
+          <Route path="/inbox" component={Inbox} />
+          <Route path="/all" component={AllItems} />
           <Route path="/tasks" component={page('Tasks')} />
-          <Route path="/favorites" component={page('Favorites')} />
-          <Route path="/tags" component={page('Tags')} />
-          <Route path="/tags/:tag" component={page('Tag')} />
-          <Route path="/s/:id" component={page('Space')} />
+          <Route path="/favorites" component={Favorites} />
+          <Route path="/tags" component={Tags} />
+          <Route path="/tags/:tag" component={TagPage} />
+          <Route path="/s/:id" component={SpacePage} />
           <Route path="/search" component={page('Search')} />
-          <Route path="/archive" component={page('Archive')} />
+          <Route path="/archive" component={ArchivePage} />
           <Route path="/trash" component={page('Trash')} />
           <Route path="/stats" component={page('Stats')} />
           <Route path="/settings" component={page('Settings')} />

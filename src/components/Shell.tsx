@@ -4,6 +4,8 @@ import { useLocation } from 'preact-iso';
 import { House, Plus, Search, SquareCheck, Menu } from 'lucide-preact';
 import { Nav } from './Nav';
 import { Toasts } from './Toasts';
+import { CaptureSheet } from './CaptureSheet';
+import { ItemDetail } from './ItemDetail';
 import { menuOpen, openCapture } from '../state';
 
 function BottomNav() {
@@ -77,6 +79,8 @@ export function Shell({ children }: { children: ComponentChildren }) {
       </div>
       <BottomNav />
       <MobileMenu />
+      <ItemDetail />
+      <CaptureSheet />
       <Toasts />
     </div>
   );

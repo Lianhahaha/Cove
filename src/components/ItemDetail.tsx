@@ -11,6 +11,7 @@ import {
   LockOpen,
   Pin,
   PinOff,
+  RefreshCw,
   Star,
   SquareCheck,
   Trash,
@@ -27,6 +28,7 @@ import { toast } from '../lib/toast';
 import type { Item, Priority, Recurrence, TaskStatus } from '../lib/types';
 import { ChecklistEditor, MarkdownField, TagEditor, useDebouncedSave } from './fields';
 import { Attachments } from './Attachments';
+import { refreshPreview } from '../lib/previews';
 import { addFiles, filesFromClipboard } from '../lib/files';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
@@ -188,7 +190,8 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
                     <ExternalLink size={16} />
                     <span class="hidden sm:inline">Open</span>
                   </a>
-                  <button class="btn shrink-0" onClick={copyLink} aria-label="Copy link"><Copy size={16} /></button>
+                  <button class="btn shrink-0" onClick={copyLink} aria-label="Copy link" title="Copy link"><Copy size={16} /></button>
+                  <button class="btn shrink-0" onClick={() => refreshPreview(item.id)} aria-label="Refresh preview" title="Refresh preview"><RefreshCw size={16} /></button>
                 </>
               )}
             </div>
@@ -196,6 +199,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
               <p class="text-sm text-muted mt-2 line-clamp-3">{item.preview.description}</p>
             )}
             {item.preview?.status === 'pending' && <p class="text-xs text-subtle mt-1.5">Preview will load when you’re online.</p>}
+            {item.preview?.status === 'error' && <p class="text-xs text-subtle mt-1.5">No preview: {item.preview.error ?? 'the site couldn’t be read'}.</p>}
           </div>
         )}
 

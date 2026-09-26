@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Download, File as FileIcon, FileText, Image as ImageIcon, Paperclip, Trash } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
@@ -19,12 +19,27 @@ function useObjectUrl(blob: Blob | null): string | null {
   return url;
 }
 
+/**
+ * Types that are safe to open in a tab. A blob URL runs with Cove's origin,
+ * so anything that can carry script (HTML, SVG, XML) must never open as a page.
+ */
+export function isViewable(type: string): boolean {
+  const t = type.toLowerCase().split(';')[0].trim();
+  return (
+    /^image\/(png|jpe?g|gif|webp|avif|bmp)$/.test(t) ||
+    t === 'application/pdf' ||
+    t === 'text/plain' ||
+    /^(audio|video)\//.test(t)
+  );
+}
+
 function FileRow({ file }: { file: StoredFile }) {
+  const viewable = isViewable(file.type);
   const isImage = file.type.startsWith('image/');
-  const url = useObjectUrl(file.blob);
+  // Everything that isn't known-safe is handed over as an opaque download.
+  const blob = useMemo(() => (viewable ? file.blob : new Blob([file.blob], { type: 'application/octet-stream' })), [file.blob, viewable]);
+  const url = useObjectUrl(blob);
   const Icon = isImage ? ImageIcon : file.type === 'application/pdf' || file.type.startsWith('text/') ? FileText : FileIcon;
-  // PDFs, images and text open in a tab; anything else downloads, since the browser can't show it.
-  const viewable = isImage || file.type === 'application/pdf' || file.type.startsWith('text/') || file.type.startsWith('video/') || file.type.startsWith('audio/');
 
   async function remove() {
     await deleteFile(file.id);
@@ -33,7 +48,7 @@ function FileRow({ file }: { file: StoredFile }) {
 
   return (
     <div class="card overflow-hidden">
-      {isImage && url && (
+      {isImage && viewable && url && (
         <a href={url} target="_blank" rel="noopener" class="block bg-surface2">
           <img src={url} alt={file.name} class="w-full max-h-72 object-contain" />
         </a>

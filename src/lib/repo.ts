@@ -223,3 +223,28 @@ export async function getSetting<T>(key: string, fallback: T): Promise<T> {
 export async function setSetting(key: string, value: unknown): Promise<void> {
   await db.settings.put({ key, value });
 }
+
+// ─── Semesters ──────────────────────────────────────────────────────────
+
+/**
+ * Archives every active space and the items in it, so a new term starts
+ * clean. Returns what changed so the caller can undo it.
+ */
+export async function archiveSemester(): Promise<{ spaceIds: string[]; itemIds: string[] }> {
+  const now = Date.now();
+  return db.transaction('rw', db.spaces, db.items, async () => {
+    const spaceIds = (await db.spaces.filter((s) => !s.deletedAt && !s.archived).primaryKeys()) as string[];
+    const itemIds = (await db.items.filter((i) => !i.deletedAt && !i.archived && i.spaceId !== null && spaceIds.includes(i.spaceId)).primaryKeys()) as string[];
+    await db.spaces.where('id').anyOf(spaceIds).modify({ archived: true, updatedAt: now });
+    await db.items.where('id').anyOf(itemIds).modify({ archived: true, updatedAt: now });
+    return { spaceIds, itemIds };
+  });
+}
+
+export async function unarchiveSemester(changed: { spaceIds: string[]; itemIds: string[] }): Promise<void> {
+  const now = Date.now();
+  await db.transaction('rw', db.spaces, db.items, async () => {
+    await db.spaces.where('id').anyOf(changed.spaceIds).modify({ archived: false, updatedAt: now });
+    await db.items.where('id').anyOf(changed.itemIds).modify({ archived: false, updatedAt: now });
+  });
+}

@@ -5,7 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { themePref, type ThemePref } from '../lib/theme';
 import { installPrompt, isIOS, isStandalone, promptInstall } from '../lib/pwa';
 import { previewsEnabled } from '../lib/previews';
-import { setSetting } from '../lib/repo';
+import { archiveSemester, setSetting, unarchiveSemester } from '../lib/repo';
 import { formatBytes, requestPersistence } from '../lib/files';
 import { exportBackup, exportMarkdown, importBackup, importBookmarks } from '../lib/backup';
 import { toast, toastError } from '../lib/toast';
@@ -264,6 +264,8 @@ export function Settings() {
           />
         </Section>
 
+        <NewSemester />
+
         <Section title="Keyboard">
           <button class="btn" onClick={() => (shortcutsOpen.value = true)}>
             <Keyboard size={16} /> Show keyboard shortcuts
@@ -328,6 +330,34 @@ function AiSettings() {
             </div>
           </div>
         </Modal>
+      )}
+    </Section>
+  );
+}
+
+function NewSemester() {
+  const [confirming, setConfirming] = useState(false);
+  return (
+    <Section title="New semester" description="Archives every space and everything in it, so you start the term with a clean sidebar. Nothing is deleted: it all stays searchable under Archive.">
+      {confirming ? (
+        <div class="flex flex-wrap gap-2">
+          <button
+            class="btn btn-primary"
+            onClick={async () => {
+              const changed = await archiveSemester();
+              setConfirming(false);
+              toast(`Archived ${changed.spaceIds.length} spaces and ${changed.itemIds.length} items`, {
+                action: { label: 'Undo', run: () => void unarchiveSemester(changed) },
+                ms: 10_000,
+              });
+            }}
+          >
+            Archive all spaces
+          </button>
+          <button class="btn btn-ghost" onClick={() => setConfirming(false)}>Cancel</button>
+        </div>
+      ) : (
+        <button class="btn" onClick={() => setConfirming(true)}>Start a new semester</button>
       )}
     </Section>
   );

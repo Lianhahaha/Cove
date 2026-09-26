@@ -5,6 +5,8 @@ import {
   addFile,
   addItem,
   addSpace,
+  archiveSemester,
+  unarchiveSemester,
   emptyTrash,
   FileTooLargeError,
   LIMITS,
@@ -113,5 +115,20 @@ describe('files', () => {
     const item = await addItem();
     const big = { size: LIMITS.fileBytes + 1, type: 'application/pdf', name: 'big.pdf' } as File;
     await expect(addFile(item.id, big)).rejects.toBeInstanceOf(FileTooLargeError);
+  });
+});
+
+describe('archiveSemester', () => {
+  it('archives spaces with their items and can be undone', async () => {
+    const a = await addSpace({ name: 'Physics' });
+    const inA = await addItem({ spaceId: a.id });
+    const inbox = await addItem({ spaceId: null });
+    const changed = await archiveSemester();
+    expect(changed).toEqual({ spaceIds: [a.id], itemIds: [inA.id] });
+    expect((await db.spaces.get(a.id))?.archived).toBe(true);
+    expect((await db.items.get(inA.id))?.archived).toBe(true);
+    expect((await db.items.get(inbox.id))?.archived).toBe(false);
+    await unarchiveSemester(changed);
+    expect((await db.items.get(inA.id))?.archived).toBe(false);
   });
 });

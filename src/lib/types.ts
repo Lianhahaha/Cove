@@ -73,6 +73,8 @@ export interface Space {
   archived: boolean;
   /** Items in this space are never sent to AI. */
   aiExcluded: boolean;
+  /** The class's own page, like its Google Classroom link, opened in one tap from the space. */
+  link?: string | null;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;

@@ -153,6 +153,7 @@ export function toSpace(v: unknown): Space | null {
     order: num(r.order) ?? 0,
     archived: bool(r.archived),
     aiExcluded: bool(r.aiExcluded),
+    link: httpUrl(r.link),
     createdAt: stamp(r.createdAt) ?? now,
     updatedAt: stamp(r.updatedAt) ?? 0,
     deletedAt: stamp(r.deletedAt),

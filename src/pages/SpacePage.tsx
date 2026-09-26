@@ -1,8 +1,10 @@
 import { useState } from 'preact/hooks';
-import { FolderOpen, Settings2 } from 'lucide-preact';
+import { ExternalLink, FolderOpen, GraduationCap, Settings2 } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
-import { isActive } from '../lib/queries';
+import { hostOf, isActive } from '../lib/queries';
+import { isClassroom } from '../lib/links';
+import { LinkGlyph } from '../components/QuickLinks';
 import { ItemsView } from '../components/ItemsView';
 import { EmptyState } from '../components/EmptyState';
 import { SpaceSettings } from '../components/SpaceSettings';
@@ -35,12 +37,25 @@ export function SpacePage({ id }: { id: string }) {
           </>
         }
         intro={
-          space.archived ? (
-            <div class="card p-3 flex items-center gap-3 text-sm bg-surface2">
-              <span class="flex-1">This space is archived, so it's hidden from the sidebar and Home.</span>
-              <button class="btn" onClick={() => updateSpace(space.id, { archived: false })}>Unarchive</button>
-            </div>
-          ) : undefined
+          <>
+            {space.archived && (
+              <div class="card p-3 flex items-center gap-3 text-sm bg-surface2">
+                <span class="flex-1">This space is archived, so it's hidden from the sidebar and Home.</span>
+                <button class="btn" onClick={() => updateSpace(space.id, { archived: false })}>Unarchive</button>
+              </div>
+            )}
+            {space.link ? (
+              <a class="btn btn-soft" href={space.link} target="_blank" rel="noopener noreferrer">
+                <LinkGlyph url={space.link} size={16} />
+                {isClassroom(space.link) ? 'Open in Google Classroom' : `Open ${hostOf(space.link)}`}
+                <ExternalLink size={14} class="opacity-70" />
+              </a>
+            ) : (
+              <button class="btn btn-ghost -ml-2 text-sm text-subtle" onClick={() => setEditing(true)}>
+                <GraduationCap size={16} /> Add this class’s Classroom link
+              </button>
+            )}
+          </>
         }
         defaultSpaceId={id}
         showSpace={false}

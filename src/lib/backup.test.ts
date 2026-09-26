@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { addFile, addItem, addSpace, updateItem } from './repo';
-import { exportBackup, importBackup, importBookmarks, itemToMarkdown, parseBookmarksHtml, toItem } from './backup';
+import { exportBackup, importBackup, importBookmarks, itemToMarkdown, parseBookmarksHtml, toItem, toSpace } from './backup';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -92,6 +92,14 @@ describe('toItem', () => {
   it('drops records without a usable id', () => {
     expect(toItem({ id: '../../etc' })).toBeNull();
     expect(toItem('nope')).toBeNull();
+  });
+});
+
+describe('toSpace', () => {
+  it('keeps only an http(s) class link', () => {
+    expect(toSpace({ id: 's1', link: 'https://classroom.google.com/c/MTIz' })?.link).toBe('https://classroom.google.com/c/MTIz');
+    expect(toSpace({ id: 's1', link: 'javascript:alert(1)' })?.link).toBeNull();
+    expect(toSpace({ id: 's1' })?.link).toBeNull();
   });
 });
 

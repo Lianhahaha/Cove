@@ -5,6 +5,7 @@ import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { reorderSpaces, restoreItems, SPACE_COLORS, trashSpace, updateItem, updateSpace } from '../lib/repo';
 import { toast } from '../lib/toast';
+import { toWebUrl } from '../lib/links';
 import type { Space } from '../lib/types';
 import { Modal } from './Modal';
 
@@ -19,6 +20,21 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
   const itemCount = useLive(() => db.items.where('spaceId').equals(space.id).filter((i) => !i.deletedAt).count(), [space.id]) ?? 0;
 
   const patch = (p: Partial<Space>) => updateSpace(space.id, p);
+
+  const [link, setLink] = useState(space.link ?? '');
+  function saveLink() {
+    if (!link.trim()) {
+      if (space.link) void patch({ link: null });
+      return;
+    }
+    const url = toWebUrl(link);
+    if (!url) {
+      toast('That doesn’t look like a web address', { tone: 'error' });
+      return;
+    }
+    setLink(url);
+    if (url !== space.link) void patch({ link: url });
+  }
 
   function move(delta: number) {
     const ids = spaces.map((s) => s.id);
@@ -59,6 +75,27 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
             onBlur={() => name.trim() && patch({ name })}
             onKeyDown={(e) => e.key === 'Enter' && name.trim() && patch({ name })}
           />
+        </div>
+
+        <div>
+          <label class="label" for="space-link">Class link</label>
+          <input
+            id="space-link"
+            class="input"
+            // Text, not type="url", so an address without https:// isn't silently refused.
+            inputMode="url"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellcheck={false}
+            placeholder="classroom.google.com/c/…"
+            value={link}
+            onInput={(e) => setLink(e.currentTarget.value)}
+            onBlur={saveLink}
+            onKeyDown={(e) => e.key === 'Enter' && saveLink()}
+          />
+          <p class="text-xs text-subtle mt-1.5">
+            Paste this class’s Google Classroom link, or any class site. It shows as a button at the top of the space.
+          </p>
         </div>
 
         <div>

@@ -102,7 +102,7 @@ export async function restoreItems(ids: string[]): Promise<void> {
     const items = await db.items.bulkGet(ids);
     for (const item of items) {
       if (!item) continue;
-      // Restoring into a deleted space would hide the item, so send it to the Inbox.
+      // Restoring into a deleted space would hide the item, so send it to Unsorted.
       const space = item.spaceId ? await db.spaces.get(item.spaceId) : null;
       const spaceId = space && !space.deletedAt ? item.spaceId : null;
       await db.items.update(item.id, { deletedAt: null, spaceId, updatedAt: now });
@@ -169,7 +169,7 @@ export async function updateSpace(id: string, patch: Partial<Space>): Promise<vo
 }
 
 /**
- * Sends a space to the trash. Its items either move to the Inbox or go to
+ * Sends a space to the trash. Its items either move to Unsorted or go to
  * the trash with it.
  */
 export async function trashSpace(id: string, items: 'inbox' | 'trash'): Promise<void> {

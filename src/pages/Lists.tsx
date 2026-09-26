@@ -1,4 +1,4 @@
-import { Archive, CalendarRange, Clock, Hash, Inbox as InboxIcon, Layers, NotebookPen, Star, Tags as TagsIcon } from 'lucide-preact';
+import { Archive, CalendarRange, Clock, FolderInput, Hash, Layers, NotebookPen, Star, Tags as TagsIcon } from 'lucide-preact';
 import { dueBucket } from '../lib/dates';
 import { NotFound } from './NotFound';
 import { ItemsView } from '../components/ItemsView';
@@ -8,17 +8,18 @@ import { isActive, isOpenTask } from '../lib/queries';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 
-export function Inbox() {
+/** Items not in any space yet. It was called Inbox, which read like email. */
+export function Unsorted() {
   return (
     <ItemsView
-      title="Inbox"
-      subtitle="Everything not filed under a space yet"
+      title="Unsorted"
+      subtitle="Things you haven’t put in a space yet"
       prefKey="inbox"
       showSpace={false}
       filter={(i) => isActive(i) && i.spaceId === null}
       empty={
-        <EmptyState icon={<InboxIcon size={22} />} title="Inbox is clear">
-          Paste a link or jot a note above. Add <span class="kbd">@space</span> to file it straight away.
+        <EmptyState icon={<FolderInput size={22} />} title="Everything is sorted">
+          Paste a link or jot a note above. Add <span class="kbd">@space</span> to put it in a space straight away.
         </EmptyState>
       }
     />
@@ -120,8 +121,9 @@ const VIEWS = {
     empty: <EmptyState icon={<CalendarRange size={22} />} title="Nothing due this week">Enjoy it.</EmptyState>,
   },
   untagged: {
-    title: 'Untagged',
-    subtitle: 'Items without any tags, to sort when you have a minute',
+    title: 'No tags',
+    // Spaces aren't tags, so something in a space still shows here until it gets a tag.
+    subtitle: 'Items without tags. A space isn’t a tag, so filed items can show here too.',
     filter: (i: Parameters<typeof isActive>[0]) => isActive(i) && i.tags.length === 0,
     empty: <EmptyState icon={<TagsIcon size={22} />} title="Everything is tagged" />,
   },

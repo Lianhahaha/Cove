@@ -180,7 +180,7 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
                     {space.name} has {itemCount} item{itemCount === 1 ? '' : 's'}. What should happen to {itemCount === 1 ? 'it' : 'them'}?
                   </p>
                   <div class="flex flex-wrap gap-2">
-                    <button class="btn" onClick={() => remove('inbox')}>Move to Inbox</button>
+                    <button class="btn" onClick={() => remove('inbox')}>Move to Unsorted</button>
                     <button class="btn btn-danger" onClick={() => remove('trash')}>Delete them too</button>
                     <button class="btn btn-ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
                   </div>

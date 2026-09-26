@@ -3,14 +3,15 @@ import { useLocation } from 'preact-iso';
 import { menuOpen, openCapture, paletteOpen, shortcutsOpen, capture } from '../state';
 import { Modal } from './Modal';
 
-const GO: Record<string, string> = { h: '/', i: '/inbox', t: '/tasks', a: '/all', f: '/favorites', s: '/settings' };
+// I still works for Unsorted, which used to be called Inbox.
+const GO: Record<string, string> = { h: '/', u: '/unsorted', i: '/unsorted', t: '/tasks', a: '/all', f: '/favorites', s: '/settings' };
 
 const SHORTCUTS: [string, string][] = [
   ['Ctrl / ⌘ + K', 'Command palette'],
   ['N', 'New item'],
   ['/', 'Search'],
   ['G then H', 'Home'],
-  ['G then I', 'Inbox'],
+  ['G then U', 'Unsorted'],
   ['G then T', 'Tasks'],
   ['G then A', 'All items'],
   ['G then F', 'Favorites'],

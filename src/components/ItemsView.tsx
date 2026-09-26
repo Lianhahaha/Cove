@@ -198,7 +198,7 @@ function BulkBar({ ids, all, onDone, onSelectAll }: { ids: string[]; all: Item[]
           <span class="hidden sm:inline">Move</span>
           <select class="absolute inset-0 opacity-0" aria-label="Move to space" value="" onChange={(e) => move(e.currentTarget.value)}>
             <option value="" disabled>Move to…</option>
-            <option value="">Inbox</option>
+            <option value="">No space (Unsorted)</option>
             {spaces.map((s) => (
               <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>
             ))}

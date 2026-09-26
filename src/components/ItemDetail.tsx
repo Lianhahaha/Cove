@@ -259,9 +259,9 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <FieldLabel text="Space" htmlFor="item-space" info="The subject or project this belongs to. Items with no space wait in the Inbox. When adding, type @ and the space’s name to file it straight away." />
+            <FieldLabel text="Space" htmlFor="item-space" info="The subject or project this belongs to. Items with no space wait in Unsorted. When adding, type @ and the space’s name to file it straight away." />
             <select id="item-space" class="input" value={item.spaceId ?? ''} onChange={(e) => patch({ spaceId: e.currentTarget.value || null })}>
-              <option value="">Inbox</option>
+              <option value="">No space (Unsorted)</option>
               {spaces.map((s) => (
                 <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>
               ))}

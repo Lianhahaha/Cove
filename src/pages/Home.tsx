@@ -97,7 +97,7 @@ export function Home() {
           <section>
             <div class="flex items-center gap-1.5 mb-2">
               <h2 class="section-title">Spaces</h2>
-              <InfoTip label="Spaces">A space holds everything for one subject or project: links, notes, files and tasks. Anything without a space waits in the Inbox.</InfoTip>
+              <InfoTip label="Spaces">A space holds everything for one subject or project: links, notes, files and tasks. Anything without a space waits in Unsorted.</InfoTip>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {spaces.map((s) => (

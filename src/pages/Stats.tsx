@@ -138,7 +138,7 @@ export function Stats() {
   }, [items]);
 
   const rows = [
-    { id: null as string | null, name: 'Inbox', emoji: '📥' },
+    { id: null as string | null, name: 'Unsorted', emoji: '🗂️' },
     ...spaces.map((s) => ({ id: s.id as string | null, name: s.name, emoji: s.emoji })),
   ].filter((r) => data.bySpace.has(r.id));
   const maxItems = Math.max(1, ...rows.map((r) => data.bySpace.get(r.id)!.items));

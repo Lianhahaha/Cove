@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
 import type { ComponentChildren } from 'preact';
-import { Archive, ChartColumn, Timer, CornerDownLeft, Hash, House, Inbox, Layers, Moon, NotebookPen, Plus, Search, Settings, SquareCheck, Star, Trash } from 'lucide-preact';
+import { Archive, ChartColumn, Timer, CornerDownLeft, FolderInput, Hash, House, Layers, Moon, NotebookPen, Plus, Search, Settings, SquareCheck, Star, Trash } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { search, searchIndex, startSearchIndex } from '../lib/search';
@@ -55,7 +55,7 @@ function PaletteBody() {
       },
       { id: 'notes', label: 'Go to Notes', icon: <NotebookPen size={16} />, run: go('/notes') },
       { id: 'home', label: 'Go to Home', icon: <House size={16} />, run: go('/') },
-      { id: 'inbox', label: 'Go to Inbox', icon: <Inbox size={16} />, run: go('/inbox') },
+      { id: 'unsorted', label: 'Go to Unsorted', icon: <FolderInput size={16} />, run: go('/unsorted') },
       { id: 'tasks', label: 'Go to Tasks', icon: <SquareCheck size={16} />, run: go('/tasks') },
       { id: 'all', label: 'Go to All items', icon: <Layers size={16} />, run: go('/all') },
       { id: 'fav', label: 'Go to Favorites', icon: <Star size={16} />, run: go('/favorites') },

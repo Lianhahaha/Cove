@@ -33,7 +33,7 @@ export interface Item {
   body: string;
   url: string | null;
   preview: LinkPreview | null;
-  /** null means the item sits in the Inbox. */
+  /** null means the item isn’t in a space yet (the Unsorted list). */
   spaceId: string | null;
   tags: string[];
   pinned: boolean;

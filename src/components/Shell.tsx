@@ -28,7 +28,7 @@ function TabFace({ active, label, icon: Icon }: { active: boolean; label: string
 function BottomNav() {
   const { path } = useLocation();
   const isOn = (href: string) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/'));
-  // Pages without their own tab (Inbox, spaces, Settings…) are reached through More, so More shows as current.
+  // Pages without their own tab (Unsorted, spaces, Settings…) are reached through More, so More shows as current.
   const inMore = !['/', '/tasks', '/search'].some(isOn);
   const tab = (href: string, label: string, icon: typeof House) => (
     <a href={href} class="tab" aria-current={isOn(href) ? 'page' : undefined}>

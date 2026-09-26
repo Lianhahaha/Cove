@@ -64,7 +64,7 @@ export function Search() {
         <div class="flex flex-wrap gap-2 text-sm">
           <select class="input w-auto min-h-8 h-8 py-0" value={spaceId} onChange={(e) => setParams({ space: e.currentTarget.value })} aria-label="Space">
             <option value="">All spaces</option>
-            <option value="inbox">Inbox</option>
+            <option value="inbox">Unsorted</option>
             {spaces.map((s) => (
               <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>
             ))}

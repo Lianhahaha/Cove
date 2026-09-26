@@ -85,7 +85,7 @@ export function Tasks() {
         <div class="flex items-center gap-3 flex-wrap text-sm">
           <select class="input w-auto min-h-8 h-8 py-0" value={spaceFilter} onChange={(e) => setSpaceFilter(e.currentTarget.value)} aria-label="Filter by space">
             <option value="all">All spaces</option>
-            <option value="inbox">Inbox only</option>
+            <option value="inbox">Unsorted only</option>
             {spaces.map((s) => (
               <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>
             ))}

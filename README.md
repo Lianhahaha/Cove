@@ -16,7 +16,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Quick links on Home: one tap opens Google Classroom (there by default), Drive, Gmail or any site, or its app when one is installed. Tiles show each app's real logo: bundled for Google apps (`public/brand/`, trademarks of Google LLC, used only to link to those services), and the site's own icon for anything else.
 
 **Organize**
-- Spaces for each subject, with an emoji, color and order; an Inbox for everything unfiled.
+- Spaces for each subject, with an emoji, color and order; Unsorted holds anything not in a space yet.
 - Tags, pins, favorites, archive, and a 30-day trash with undo.
 - List and grid layouts, type filters, sorting, and bulk actions (move, tag, finish, archive, delete).
 - Drag items onto a space in the sidebar to move them.
@@ -31,7 +31,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 
 **Find**
 - Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.
-- Smart views: This week, Untagged and Recently edited.
+- Smart views: This week, No tags and Recently edited.
 - A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/I/T/A/F/S` to jump, `?` for the list).
 
 **AI helpers (optional)**

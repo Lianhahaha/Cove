@@ -266,7 +266,7 @@ export async function exportMarkdown(): Promise<Blob> {
     return p;
   };
   for (const item of items) {
-    const folder = safeName(item.spaceId ? spaceName.get(item.spaceId) ?? 'Inbox' : 'Inbox');
+    const folder = safeName(item.spaceId ? spaceName.get(item.spaceId) ?? 'Unsorted' : 'Unsorted');
     const base = safeName(displayTitle(item)).slice(0, 80);
     entries[unique(`${folder}/${base}.md`)] = [strToU8(itemToMarkdown(item, item.spaceId ? spaceName.get(item.spaceId) ?? null : null)), { level: 6 }];
     for (const f of files.filter((x) => x.itemId === item.id)) {

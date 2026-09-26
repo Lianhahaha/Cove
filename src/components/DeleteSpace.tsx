@@ -6,7 +6,7 @@ import { toast } from '../lib/toast';
 import type { Space } from '../lib/types';
 import { Modal } from './Modal';
 
-/** Deletes a space and offers Undo. Its items either move to the Inbox or go to the trash with it. */
+/** Deletes a space and offers Undo. Its items either move to Unsorted or go to the trash with it. */
 export async function deleteSpaceWithUndo(space: Space, mode: 'inbox' | 'trash') {
   const itemIds = (await db.items.where('spaceId').equals(space.id).filter((i) => !i.deletedAt).primaryKeys()) as string[];
   await trashSpace(space.id, mode);
@@ -53,7 +53,7 @@ export function DeleteSpaceDialog({ space, onClose }: { space: Space; onClose: (
           <div class="flex flex-col gap-2">
             <button class="btn justify-start h-auto py-2.5 text-left" onClick={() => void remove('inbox')}>
               <span>
-                <span class="block">Keep {count === 1 ? 'it' : 'them'} in the Inbox</span>
+                <span class="block">Keep {count === 1 ? 'it' : 'them'} in Unsorted</span>
                 <span class="block text-xs text-subtle font-normal">Only the space is deleted.</span>
               </span>
             </button>

@@ -6,6 +6,7 @@ import { isActive } from '../lib/queries';
 import { ItemsView } from '../components/ItemsView';
 import { EmptyState } from '../components/EmptyState';
 import { SpaceSettings } from '../components/SpaceSettings';
+import { NewNoteButton } from '../components/NewNote';
 import { updateSpace } from '../lib/repo';
 import { NotFound } from './NotFound';
 
@@ -26,9 +27,12 @@ export function SpacePage({ id }: { id: string }) {
         prefKey="space"
         deps={[id]}
         headerActions={
-          <button class="icon-btn" title="Space settings" aria-label="Space settings" onClick={() => setEditing(true)}>
-            <Settings2 size={18} />
-          </button>
+          <>
+            <NewNoteButton spaceId={id} variant="icon" />
+            <button class="icon-btn" title="Space settings" aria-label="Space settings" onClick={() => setEditing(true)}>
+              <Settings2 size={18} />
+            </button>
+          </>
         }
         intro={
           space.archived ? (

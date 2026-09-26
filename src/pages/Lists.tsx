@@ -1,8 +1,9 @@
-import { Archive, CalendarRange, Clock, Hash, Inbox as InboxIcon, Layers, Star, Tags as TagsIcon } from 'lucide-preact';
+import { Archive, CalendarRange, Clock, Hash, Inbox as InboxIcon, Layers, NotebookPen, Star, Tags as TagsIcon } from 'lucide-preact';
 import { dueBucket } from '../lib/dates';
 import { NotFound } from './NotFound';
 import { ItemsView } from '../components/ItemsView';
 import { EmptyState } from '../components/EmptyState';
+import { NewNoteButton } from '../components/NewNote';
 import { isActive, isOpenTask } from '../lib/queries';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
@@ -18,6 +19,26 @@ export function Inbox() {
       empty={
         <EmptyState icon={<InboxIcon size={22} />} title="Inbox is clear">
           Paste a link or jot a note above. Add <span class="kbd">@space</span> to file it straight away.
+        </EmptyState>
+      }
+    />
+  );
+}
+
+/** Notes that aren't tasks, shown as cards like a notebook. */
+export function Notes() {
+  return (
+    <ItemsView
+      title="Notes"
+      subtitle="Lecture notes, drafts and ideas"
+      prefKey="notes"
+      defaultLayout="grid"
+      showQuickAdd={false}
+      intro={<NewNoteButton />}
+      filter={(i) => isActive(i) && i.kind === 'note' && i.status === 'none'}
+      empty={
+        <EmptyState icon={<NotebookPen size={22} />} title="No notes yet">
+          Write lecture notes, drafts or ideas. Notes support Markdown and work offline.
         </EmptyState>
       }
     />

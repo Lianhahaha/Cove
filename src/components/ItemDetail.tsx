@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   Archive,
   ArchiveRestore,
@@ -37,6 +37,7 @@ import { AI_TASK_LABELS, aiBlockedReason, aiEnabled, type AiTask } from '../lib/
 import { AiPanel } from './AiPanel';
 import { FocusStarter } from './FocusTimer';
 import { addFiles, filesFromClipboard } from '../lib/files';
+import { discardIfBlank } from '../lib/notes';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
   { value: 'todo', label: 'To do' },
@@ -86,6 +87,18 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
 
   useDebouncedSave(title, (v) => updateItem(item.id, { title: v }));
   useDebouncedSave(body, (v) => updateItem(item.id, { body: v }));
+
+  const titleRef = useRef<HTMLTextAreaElement | null>(null);
+  const typed = useRef({ title, body });
+  typed.current = { title, body };
+  useEffect(() => {
+    // A new, empty item opens ready to type its title.
+    if (!item.title && !item.body && !item.url) titleRef.current?.focus();
+    // Closing a note you never wrote in deletes it. The saves above flush first, so typed text is never lost.
+    return () => {
+      if (!typed.current.title.trim() && !typed.current.body.trim()) void discardIfBlank(item.id);
+    };
+  }, []);
 
   const patch = (p: Partial<Item>) => updateItem(item.id, p);
   const isTask = item.status !== 'none';
@@ -182,6 +195,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
             e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
           }}
           ref={(el) => {
+            titleRef.current = el;
             if (el) {
               el.style.height = 'auto';
               el.style.height = el.scrollHeight + 'px';

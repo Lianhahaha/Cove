@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
 import type { ComponentChildren } from 'preact';
-import { Archive, ChartColumn, Timer, CornerDownLeft, Hash, House, Inbox, Layers, Moon, Plus, Search, Settings, SquareCheck, Star, Trash } from 'lucide-preact';
+import { Archive, ChartColumn, Timer, CornerDownLeft, Hash, House, Inbox, Layers, Moon, NotebookPen, Plus, Search, Settings, SquareCheck, Star, Trash } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { search, searchIndex, startSearchIndex } from '../lib/search';
@@ -11,6 +11,7 @@ import { openCapture, paletteOpen } from '../state';
 import type { Item } from '../lib/types';
 import { VIEW_NAMES, VIEW_TITLES } from '../pages/Lists';
 import { startFocus } from '../lib/focus';
+import { createNote } from '../lib/notes';
 
 interface Command {
   id: string;
@@ -45,6 +46,14 @@ function PaletteBody() {
   const commands: Command[] = useMemo(
     () => [
       { id: 'new', label: 'New item', hint: 'N', icon: <Plus size={16} />, run: () => openCapture() },
+      {
+        id: 'new-note',
+        label: 'New note',
+        icon: <NotebookPen size={16} />,
+        // Inside a space, the note lands in that space.
+        run: () => void createNote(path.startsWith('/s/') ? path.slice(3) : null).then((n) => route(`${path}?item=${n.id}`)),
+      },
+      { id: 'notes', label: 'Go to Notes', icon: <NotebookPen size={16} />, run: go('/notes') },
       { id: 'home', label: 'Go to Home', icon: <House size={16} />, run: go('/') },
       { id: 'inbox', label: 'Go to Inbox', icon: <Inbox size={16} />, run: go('/inbox') },
       { id: 'tasks', label: 'Go to Tasks', icon: <SquareCheck size={16} />, run: go('/tasks') },
@@ -66,7 +75,7 @@ function PaletteBody() {
       ...VIEW_NAMES.map((v) => ({ id: `view-${v}`, label: `Go to ${VIEW_TITLES[v]}`, icon: <Layers size={16} />, run: go(`/view/${v}`) })),
       ...spaces.map((s) => ({ id: `space-${s.id}`, label: `Go to ${s.name}`, icon: <span>{s.emoji}</span>, run: go(`/s/${s.id}`) })),
     ],
-    [spaces],
+    [spaces, path],
   );
 
   const query = q.trim().toLowerCase();

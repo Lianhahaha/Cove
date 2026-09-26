@@ -32,10 +32,11 @@ interface Props {
   headerActions?: ComponentChildren;
   /** Extra content under the header, like a space's description. */
   intro?: ComponentChildren;
+  defaultLayout?: 'list' | 'grid';
 }
 
-export function ItemsView({ title, subtitle, prefKey, filter, deps = [], defaultSpaceId = null, showSpace = true, showQuickAdd = true, empty, headerActions, intro }: Props) {
-  const [layout, setLayout] = usePref<'list' | 'grid'>(`${prefKey}:layout`, 'list');
+export function ItemsView({ title, subtitle, prefKey, filter, deps = [], defaultSpaceId = null, showSpace = true, showQuickAdd = true, empty, headerActions, intro, defaultLayout = 'list' }: Props) {
+  const [layout, setLayout] = usePref<'list' | 'grid'>(`${prefKey}:layout`, defaultLayout);
   const [sort, setSort] = usePref<SortMode>(`${prefKey}:sort`, 'recent');
   const [kind, setKind] = useState<KindFilter>('all');
   const [selected, setSelected] = useState<Set<string> | null>(null);
@@ -109,6 +110,8 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
 
         {(items?.length ?? 0) > 0 && (
           <div class="flex items-center gap-2 flex-wrap">
+            {/* Only worth showing when there's more than one type to pick from. */}
+            {kindsPresent.length > 2 && (
             <div class="flex gap-1 overflow-x-auto" role="tablist" aria-label="Filter by type">
               {kindsPresent.map((k) => (
                 <button
@@ -122,6 +125,7 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
                 </button>
               ))}
             </div>
+            )}
             <div class="flex-1" />
             <label class="flex items-center gap-1.5 text-sm text-subtle">
               <span class="sr-only sm:not-sr-only">Sort</span>

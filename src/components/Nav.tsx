@@ -12,6 +12,7 @@ import {
   Layers,
   Monitor,
   Moon,
+  NotebookPen,
   Download,
   Plus,
   Search,
@@ -127,6 +128,7 @@ export function Nav() {
         <NavLink href="/search" icon={<Search size={18} />} label="Search" />
         <NavLink href="/inbox" icon={<Inbox size={18} />} label="Inbox" count={counts?.inbox} />
         <NavLink href="/tasks" icon={<SquareCheck size={18} />} label="Tasks" count={counts?.due} />
+        <NavLink href="/notes" icon={<NotebookPen size={18} />} label="Notes" />
         <NavLink href="/all" icon={<Layers size={18} />} label="All items" />
         <NavLink href="/favorites" icon={<Star size={18} />} label="Favorites" />
         <NavLink href="/tags" icon={<Hash size={18} />} label="Tags" />

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
-import { Paperclip, Sparkles, X } from 'lucide-preact';
+import { NotebookPen, Paperclip, Sparkles, X } from 'lucide-preact';
 import { capture, closeCapture } from '../state';
 import { addFiles, filesFromClipboard, formatBytes, nameForPasted } from '../lib/files';
 import { toast } from '../lib/toast';
@@ -8,6 +8,7 @@ import { Modal } from './Modal';
 import { QuickAdd } from './QuickAdd';
 import { useLazyComponent } from './lazy';
 import { aiEnabled } from '../lib/ai';
+import { createNote } from '../lib/notes';
 
 /** The capture dialog opened from the + button, shortcuts, drops, pastes and the share target. */
 export function CaptureSheet() {
@@ -60,6 +61,20 @@ function CaptureBody() {
             <>
               <button type="button" class="btn btn-ghost" onClick={() => input.current?.click()}>
                 <Paperclip size={16} /> Attach
+              </button>
+              <button
+                type="button"
+                class="btn btn-ghost"
+                title="Open the full editor for a longer note"
+                onClick={async () => {
+                  // Anything typed so far becomes the start of the note.
+                  const note = await createNote(defaultSpaceId ?? null, text.trim());
+                  if (files.length) await addFiles(note.id, files);
+                  closeCapture();
+                  route(`${path}?item=${note.id}`);
+                }}
+              >
+                <NotebookPen size={16} /> Note
               </button>
               {aiEnabled.value && text.trim().length >= 30 && (
                 <button type="button" class="btn btn-ghost" onClick={() => setFindTasks(true)} title="Find tasks and deadlines in this text with AI">

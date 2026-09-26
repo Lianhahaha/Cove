@@ -20,6 +20,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Tags, pins, favorites, archive, and a 30-day trash with undo.
 - List and grid layouts, type filters, sorting, and bulk actions (move, tag, finish, archive, delete).
 - Drag items onto a space in the sidebar to move them.
+- Light, dark or system theme in four soft palettes: Lavender, Sage, Sky and Rose. All four pass WCAG AA contrast.
 
 **Tasks**
 - Any item can be a task, with status, due date and time, priority, checklist and repeats (daily, weekly, monthly, every N).

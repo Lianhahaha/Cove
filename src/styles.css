@@ -1,68 +1,103 @@
 @import "tailwindcss";
 
-/* ─── Palette ──────────────────────────────────────────────────────────────
-   Colors from the ThesisWeb palette: warm cream neutrals and one lavender
-   accent. Components read the semantic tokens below, never raw hex. */
+/* ─── Palettes ─────────────────────────────────────────────────────────────
+   Lavender is the ThesisWeb palette: warm cream neutrals and one lavender accent.
+   Sage, Sky and Rose are derived from it in OKLCH: same lightness, a new hue and a
+   little less chroma, so they stay as soft and every text pairing still passes
+   WCAG AA. Each palette sets light (--l-*) and dark (--d-*) values; the blocks
+   after them pick a side. Components read the --c-* tokens, never raw hex. */
 :root {
-  --c-bg: #fdfcf0;
-  --c-surface: #fffffa;
-  --c-surface2: #f8f6e9;
-  --c-surface3: #f0eddd;
-  --c-border: #e4e1cf;
-  --c-border2: #ccc8b4;
-  --c-text: #1c1b18;
-  --c-muted: #4a473f;
-  --c-subtle: #635f55;
-  --c-accent: #684c96;
-  --c-accent-fill: #ede1fc;
-  --c-accent-hover: #e2d0fa;
-  --c-on-accent: #fffffa;
-  --c-danger: #a3413a;
-  --c-danger-fill: #f8e3df;
-  /* Chart marks: validated for lightness, chroma and contrast on each surface. */
-  --c-chart: #684c96;
+  --l-bg: #fdfcf0; --l-surface: #fffffa; --l-surface2: #f8f6e9; --l-surface3: #f0eddd; --l-border: #e4e1cf; --l-border2: #ccc8b4;
+  --l-text: #1c1b18; --l-muted: #4a473f; --l-subtle: #635f55; --l-accent: #684c96; --l-accent-fill: #ede1fc; --l-accent-hover: #e2d0fa;
+  --l-on-accent: #fffffa; --l-danger: #a3413a; --l-danger-fill: #f8e3df; --l-chart: #684c96;
+  --d-bg: #191816; --d-surface: #21201d; --d-surface2: #292724; --d-surface3: #34322e; --d-border: #3c3a35; --d-border2: #56534c;
+  --d-text: #ede9e0; --d-muted: #beb8ac; --d-subtle: #9e988d; --d-accent: #c6b4f0; --d-accent-fill: #362e4a; --d-accent-hover: #43395c;
+  --d-on-accent: #191816; --d-danger: #f0a39b; --d-danger-fill: #4a2a27; --d-chart: #9a7ee0;
+}
+:root[data-palette="sage"] {
+  --l-bg: #fbfcf3; --l-surface: #fefffc; --l-surface2: #f5f7ec; --l-surface3: #eceee1; --l-border: #e0e2d4; --l-border2: #c7c9b9;
+  --l-text: #1b1b19; --l-muted: #474841; --l-subtle: #5f6058; --l-accent: #3e6947; --l-accent-fill: #dcecdf; --l-accent-hover: #c9e1cd;
+  --l-on-accent: #fefffc; --l-danger: #a3413a; --l-danger-fill: #f8e3df; --l-chart: #197037;
+  --d-bg: #181817; --d-surface: #20201e; --d-surface2: #272825; --d-surface3: #32332f; --d-border: #3a3b36; --d-border2: #53544e;
+  --d-text: #e9eae3; --d-muted: #b8bab0; --d-subtle: #989a90; --d-accent: #a8caae; --d-accent-fill: #28382b; --d-accent-hover: #324636;
+  --d-on-accent: #181817; --d-danger: #f0a39b; --d-danger-fill: #4a2a27; --d-chart: #44aa61;
+}
+:root[data-palette="sky"] {
+  --l-bg: #f7fcff; --l-surface: #feffff; --l-surface2: #f1f7f9; --l-surface3: #e7eef1; --l-border: #dae2e5; --l-border2: #c0c9cd;
+  --l-text: #1a1b1c; --l-muted: #444849; --l-subtle: #5c6062; --l-accent: #326289; --l-accent-fill: #d9e9f8; --l-accent-hover: #c3ddf4;
+  --l-on-accent: #feffff; --l-danger: #a3413a; --l-danger-fill: #f8e3df; --l-chart: #02629c;
+  --d-bg: #171819; --d-surface: #1f2021; --d-surface2: #262828; --d-surface3: #313333; --d-border: #383b3c; --d-border2: #515455;
+  --d-text: #e6eaec; --d-muted: #b4babc; --d-subtle: #949a9c; --d-accent: #a0c4e4; --d-accent-fill: #243644; --d-accent-hover: #2d4255;
+  --d-on-accent: #171819; --d-danger: #f0a39b; --d-danger-fill: #4a2a27; --d-chart: #3399e4;
+}
+:root[data-palette="rose"] {
+  --l-bg: #fefaf9; --l-surface: #fffcfb; --l-surface2: #fef3ee; --l-surface3: #f7e9e3; --l-border: #ecddd6; --l-border2: #d5c3bc;
+  --l-text: #1d1a19; --l-muted: #4d4542; --l-subtle: #665d59; --l-accent: #854665; --l-accent-fill: #f8dfea; --l-accent-hover: #f3cdde;
+  --l-on-accent: #fffcfb; --l-danger: #a3413a; --l-danger-fill: #f8e3df; --l-chart: #8e3d67;
+  --d-bg: #1a1817; --d-surface: #221f1e; --d-surface2: #2a2725; --d-surface3: #353130; --d-border: #3e3937; --d-border2: #58524f;
+  --d-text: #f0e7e4; --d-muted: #c1b6b1; --d-subtle: #a19692; --d-accent: #e3aec6; --d-accent-fill: #432b36; --d-accent-hover: #533543;
+  --d-on-accent: #1a1817; --d-danger: #f0a39b; --d-danger-fill: #4a2a27; --d-chart: #d26a9f;
+}
+
+:root {
+  --c-bg: var(--l-bg);
+  --c-surface: var(--l-surface);
+  --c-surface2: var(--l-surface2);
+  --c-surface3: var(--l-surface3);
+  --c-border: var(--l-border);
+  --c-border2: var(--l-border2);
+  --c-text: var(--l-text);
+  --c-muted: var(--l-muted);
+  --c-subtle: var(--l-subtle);
+  --c-accent: var(--l-accent);
+  --c-accent-fill: var(--l-accent-fill);
+  --c-accent-hover: var(--l-accent-hover);
+  --c-on-accent: var(--l-on-accent);
+  --c-danger: var(--l-danger);
+  --c-danger-fill: var(--l-danger-fill);
+  --c-chart: var(--l-chart);
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --c-bg: #191816;
-  --c-surface: #21201d;
-  --c-surface2: #292724;
-  --c-surface3: #34322e;
-  --c-border: #3c3a35;
-  --c-border2: #56534c;
-  --c-text: #ede9e0;
-  --c-muted: #beb8ac;
-  --c-subtle: #9e988d;
-  --c-accent: #c6b4f0;
-  --c-accent-fill: #362e4a;
-  --c-accent-hover: #43395c;
-  --c-on-accent: #191816;
-  --c-danger: #f0a39b;
-  --c-danger-fill: #4a2a27;
-  --c-chart: #9a7ee0;
+  --c-bg: var(--d-bg);
+  --c-surface: var(--d-surface);
+  --c-surface2: var(--d-surface2);
+  --c-surface3: var(--d-surface3);
+  --c-border: var(--d-border);
+  --c-border2: var(--d-border2);
+  --c-text: var(--d-text);
+  --c-muted: var(--d-muted);
+  --c-subtle: var(--d-subtle);
+  --c-accent: var(--d-accent);
+  --c-accent-fill: var(--d-accent-fill);
+  --c-accent-hover: var(--d-accent-hover);
+  --c-on-accent: var(--d-on-accent);
+  --c-danger: var(--d-danger);
+  --c-danger-fill: var(--d-danger-fill);
+  --c-chart: var(--d-chart);
   color-scheme: dark;
 }
 
 /* Follow the OS until the user picks a theme. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --c-bg: #191816;
-    --c-surface: #21201d;
-    --c-surface2: #292724;
-    --c-surface3: #34322e;
-    --c-border: #3c3a35;
-    --c-border2: #56534c;
-    --c-text: #ede9e0;
-    --c-muted: #beb8ac;
-    --c-subtle: #9e988d;
-    --c-accent: #c6b4f0;
-    --c-accent-fill: #362e4a;
-    --c-accent-hover: #43395c;
-    --c-on-accent: #191816;
-    --c-danger: #f0a39b;
-    --c-danger-fill: #4a2a27;
-    --c-chart: #9a7ee0;
+    --c-bg: var(--d-bg);
+    --c-surface: var(--d-surface);
+    --c-surface2: var(--d-surface2);
+    --c-surface3: var(--d-surface3);
+    --c-border: var(--d-border);
+    --c-border2: var(--d-border2);
+    --c-text: var(--d-text);
+    --c-muted: var(--d-muted);
+    --c-subtle: var(--d-subtle);
+    --c-accent: var(--d-accent);
+    --c-accent-fill: var(--d-accent-fill);
+    --c-accent-hover: var(--d-accent-hover);
+    --c-on-accent: var(--d-on-accent);
+    --c-danger: var(--d-danger);
+    --c-danger-fill: var(--d-danger-fill);
+    --c-chart: var(--d-chart);
     color-scheme: dark;
   }
 }

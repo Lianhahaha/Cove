@@ -1,9 +1,11 @@
 // Runs before first paint. Kept as a file (not inline) so the Content-Security-Policy can forbid inline scripts.
 
-// Applies the saved theme so there's no flash of the wrong one.
+// Applies the saved theme and color palette so there's no flash of the wrong ones.
 try {
   var t = localStorage.getItem('cove-theme');
   if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+  var p = localStorage.getItem('cove-palette');
+  if (p === 'sage' || p === 'sky' || p === 'rose') document.documentElement.dataset.palette = p;
 } catch (e) {}
 
 // iOS zooms the page into any text box smaller than 16px. maximum-scale stops that

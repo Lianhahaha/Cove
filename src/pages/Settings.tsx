@@ -2,7 +2,7 @@ import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Download, HardDrive, Keyboard, Monitor, Moon, Smartphone, Sun, Upload } from 'lucide-preact';
 import { PageHeader } from '../components/PageHeader';
-import { themePref, type ThemePref } from '../lib/theme';
+import { PALETTES, palettePref, themePref, type ThemePref } from '../lib/theme';
 import { installPrompt, isIOS, isStandalone, promptInstall } from '../lib/pwa';
 import { previewsEnabled } from '../lib/previews';
 import { archiveSemester, setSetting, unarchiveSemester } from '../lib/repo';
@@ -146,18 +146,41 @@ export function Settings() {
       <PageHeader title="Settings" />
       <div class="px-3 md:px-6 py-3 md:py-4 max-w-2xl mx-auto w-full space-y-4">
         <Section title="Appearance">
-          <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Theme">
-            {themes.map((t) => (
-              <button
-                key={t.value}
-                role="radio"
-                aria-checked={themePref.value === t.value}
-                class={`btn h-11 ${themePref.value === t.value ? 'btn-soft ring-1 ring-accent' : ''}`}
-                onClick={() => (themePref.value = t.value)}
-              >
-                {t.icon} {t.label}
-              </button>
-            ))}
+          <div>
+            <span class="label" id="theme-label">Theme</span>
+            <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-labelledby="theme-label">
+              {themes.map((t) => (
+                <button
+                  key={t.value}
+                  role="radio"
+                  aria-checked={themePref.value === t.value}
+                  class={`btn h-11 ${themePref.value === t.value ? 'btn-soft ring-1 ring-accent' : ''}`}
+                  onClick={() => (themePref.value = t.value)}
+                >
+                  {t.icon} {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <span class="label" id="palette-label">Color</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" aria-labelledby="palette-label">
+              {PALETTES.map((p) => {
+                const on = palettePref.value === p.value;
+                return (
+                  <button
+                    key={p.value}
+                    role="radio"
+                    aria-checked={on}
+                    class={`btn h-11 justify-start ${on ? 'btn-soft ring-1 ring-accent' : ''}`}
+                    onClick={() => (palettePref.value = p.value)}
+                  >
+                    <span class="w-5 h-5 rounded-full shrink-0 border border-border2" style={{ background: p.swatch }} />
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </Section>
 

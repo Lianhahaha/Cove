@@ -13,42 +13,43 @@ import { capture, menuOpen, openCapture, paletteOpen } from '../state';
 import { filesFromClipboard } from '../lib/files';
 import { online } from '../lib/pwa';
 
+function TabFace({ active, label, icon: Icon }: { active: boolean; label: string; icon: typeof House }) {
+  return (
+    <>
+      <span class="tab-pill" data-active={active || undefined}>
+        <Icon size={20} strokeWidth={active ? 2.25 : 1.75} />
+      </span>
+      <span class="tab-label" data-active={active || undefined}>{label}</span>
+    </>
+  );
+}
+
 function BottomNav() {
   const { path } = useLocation();
-  const tab = (href: string, label: string, icon: ComponentChildren) => {
-    const active = href === '/' ? path === '/' : path.startsWith(href);
-    return (
-      <a
-        href={href}
-        aria-current={active ? 'page' : undefined}
-        class={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] ${active ? 'text-accent' : 'text-subtle'}`}
-      >
-        {icon}
-        {label}
-      </a>
-    );
-  };
+  const isOn = (href: string) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/'));
+  // Pages without their own tab (Inbox, spaces, Settings…) are reached through More, so More shows as current.
+  const inMore = !['/', '/tasks', '/search'].some(isOn);
+  const tab = (href: string, label: string, icon: typeof House) => (
+    <a href={href} class="tab" aria-current={isOn(href) ? 'page' : undefined}>
+      <TabFace active={isOn(href)} label={label} icon={icon} />
+    </a>
+  );
   return (
     <nav
       class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-border pb-[env(safe-area-inset-bottom)]"
       aria-label="Tabs"
     >
-      <div class="flex h-14 items-stretch">
-        {tab('/', 'Home', <House size={19} />)}
-        {tab('/tasks', 'Tasks', <SquareCheck size={19} />)}
+      <div class="flex h-[3.75rem] items-stretch px-1">
+        {tab('/', 'Home', House)}
+        {tab('/tasks', 'Tasks', SquareCheck)}
         <div class="flex-1 grid place-items-center">
-          <button
-            class="w-11 h-11 rounded-xl bg-accent text-on-accent grid place-items-center shadow-md active:scale-95 transition-transform"
-            aria-label="Capture something"
-            onClick={() => openCapture()}
-          >
-            <Plus size={22} />
+          <button class="create-btn" aria-label="Capture something" onClick={() => openCapture()}>
+            <Plus size={22} strokeWidth={2.25} />
           </button>
         </div>
-        {tab('/search', 'Search', <Search size={19} />)}
-        <button class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] text-subtle" onClick={() => (menuOpen.value = true)}>
-          <Menu size={19} />
-          More
+        {tab('/search', 'Search', Search)}
+        <button class="tab" aria-haspopup="dialog" aria-expanded={menuOpen.value} onClick={() => (menuOpen.value = true)}>
+          <TabFace active={inMore || menuOpen.value} label="More" icon={Menu} />
         </button>
       </div>
     </nav>

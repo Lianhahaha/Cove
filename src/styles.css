@@ -137,6 +137,47 @@
 
 /* ─── Components ───────────────────────────────────────────────────────── */
 @layer components {
+  /* Phone tab bar: the current tab gets a filled pill behind its icon, not just a color change. */
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    color: var(--c-subtle);
+    user-select: none;
+  }
+  .tab-pill {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 1.875rem;
+    border-radius: 999px;
+    transition: background-color 150ms, color 150ms, transform 150ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .tab-pill[data-active] { background: var(--c-accent-fill); color: var(--c-accent); }
+  .tab:active .tab-pill { transform: scale(0.92); }
+  .tab-label { font-size: 0.75rem; line-height: 1; }
+  .tab-label[data-active] { color: var(--c-text); font-weight: 600; }
+  @media (hover: hover) {
+    .tab:hover .tab-pill:not([data-active]) { background: var(--c-surface3); color: var(--c-text); }
+  }
+  .create-btn {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 2.5rem;
+    border-radius: 1rem;
+    background: var(--c-accent);
+    color: var(--c-on-accent);
+    box-shadow: 0 3px 10px -3px color-mix(in oklab, var(--c-accent) 60%, transparent), 0 1px 2px rgb(0 0 0 / 0.15);
+    transition: transform 150ms cubic-bezier(0.2, 0, 0, 1), filter 150ms;
+  }
+  .create-btn:active { transform: scale(0.94); }
+  @media (hover: hover) {
+    .create-btn:hover { filter: brightness(1.06); }
+  }
   .card {
     background: var(--c-surface);
     border: 1px solid var(--c-border);

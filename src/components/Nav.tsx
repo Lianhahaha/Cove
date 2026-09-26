@@ -33,6 +33,7 @@ import { ITEM_MIME, SPACE_MIME } from '../lib/dnd';
 import { themePref, type ThemePref } from '../lib/theme';
 import { menuOpen } from '../state';
 import { installPrompt, promptInstall } from '../lib/pwa';
+import { InfoTip } from './InfoTip';
 
 function NavLink({ href, icon, label, count, exact }: { href: string; icon: ComponentChildren; label: string; count?: number; exact?: boolean }) {
   const { path } = useLocation();
@@ -133,14 +134,20 @@ export function Nav() {
         <NavLink href="/tags" icon={<Hash size={18} />} label="Tags" />
 
         <div class="pt-5 pb-1 px-2.5">
-          <span class="group-label">Views</span>
+          <span class="flex items-center gap-1">
+            <span class="group-label">Views</span>
+            <InfoTip label="Views">Saved filters across all your spaces: tasks due this week, items with no tags, and what you changed lately.</InfoTip>
+          </span>
         </div>
         <NavLink href="/view/week" icon={<CalendarRange size={18} />} label="This week" />
         <NavLink href="/view/untagged" icon={<TagsIcon size={18} />} label="Untagged" />
         <NavLink href="/view/recent" icon={<Clock size={18} />} label="Recently edited" />
 
         <div class="flex items-center justify-between pt-5 pb-1 px-2.5">
-          <span class="group-label">Spaces</span>
+          <span class="flex items-center gap-1">
+            <span class="group-label">Spaces</span>
+            <InfoTip label="Spaces">A space holds everything for one subject or project: links, notes, files and tasks. Anything without a space waits in the Inbox.</InfoTip>
+          </span>
           <button class="icon-btn w-7 h-7" aria-label="New space" title="New space" onClick={() => setAdding(true)}>
             <Plus size={16} />
           </button>

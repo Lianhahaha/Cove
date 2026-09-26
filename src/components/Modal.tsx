@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { X } from 'lucide-preact';
+import { infoTipOpen } from './InfoTip';
 
 interface Props {
   title: string;
@@ -17,7 +18,8 @@ export function Modal({ title, onClose, children, size = 'md' }: Props) {
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      // An open help tip closes first; the dialog stays.
+      if (e.key === 'Escape' && !infoTipOpen()) {
         e.stopPropagation();
         onClose();
       }

@@ -38,6 +38,7 @@ import { AiPanel } from './AiPanel';
 import { FocusStarter } from './FocusTimer';
 import { addFiles, filesFromClipboard } from '../lib/files';
 import { discardIfBlank } from '../lib/notes';
+import { FieldLabel, InfoTip } from './InfoTip';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
   { value: 'todo', label: 'To do' },
@@ -206,7 +207,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
 
         {(item.kind === 'link' || item.url) && (
           <div>
-            <label class="label" for="item-url">Link</label>
+            <FieldLabel text="Link" htmlFor="item-url" info="The web address this item saves. When you’re online, Cove fetches its title, picture and icon. Tap Open to visit it." />
             <div class="flex gap-2">
               <input id="item-url" class="input" type="url" inputMode="url" value={url} placeholder="https://" onInput={(e) => setUrl(e.currentTarget.value)} onBlur={saveUrl} onKeyDown={(e) => e.key === 'Enter' && saveUrl()} />
               {item.url && (
@@ -234,7 +235,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="label" for="item-space">Space</label>
+            <FieldLabel text="Space" htmlFor="item-space" info="The subject or project this belongs to. Items with no space wait in the Inbox. When adding, type @ and the space’s name to file it straight away." />
             <select id="item-space" class="input" value={item.spaceId ?? ''} onChange={(e) => patch({ spaceId: e.currentTarget.value || null })}>
               <option value="">Inbox</option>
               {spaces.map((s) => (
@@ -243,16 +244,21 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
             </select>
           </div>
           <div>
-            <span class="label">Tags</span>
+            <FieldLabel text="Tags" info="Labels like lab or exam that work across subjects. Tap a tag anywhere to see everything with it. When adding, type #tag." />
             <TagEditor tags={item.tags} onChange={(tags) => patch({ tags })} suggestions={allTags} />
           </div>
         </div>
 
         <section class="card p-4 space-y-4 bg-surface2">
           {!isTask ? (
-            <button class="btn btn-soft w-full" onClick={() => patch({ status: 'todo' })}>
-              <SquareCheck size={16} /> Make it a task
-            </button>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-soft flex-1" onClick={() => patch({ status: 'todo' })}>
+                <SquareCheck size={16} /> Make it a task
+              </button>
+              <InfoTip label="a task">
+                Adds a due date, priority, checklist, reminder and repeats. Tasks show in Tasks, and on Home when they’re due.
+              </InfoTip>
+            </div>
           ) : (
             <>
               <div class="flex items-center justify-between gap-2">
@@ -280,7 +286,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
 
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
-                  <label class="label" for="due-date">Due</label>
+                  <FieldLabel text="Due" htmlFor="due-date" info="When it’s due. Overdue tasks and today’s show on Home and in Tasks, and the installed app’s icon counts them." />
                   <input id="due-date" type="date" class="input" value={dueDate} onChange={(e) => setDue(e.currentTarget.value, dueTime)} />
                 </div>
                 <div>
@@ -288,7 +294,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
                   <input id="due-time" type="time" class="input" value={dueTime} disabled={!dueDate} onChange={(e) => setDue(dueDate, e.currentTarget.value)} />
                 </div>
                 <div class="col-span-2 sm:col-span-1">
-                  <label class="label" for="priority">Priority</label>
+                  <FieldLabel text="Priority" htmlFor="priority" info="Low, Medium or High. High tasks get a red ring. When adding, type ! for Low, !! for Medium or !!! for High." />
                   <select id="priority" class="input" value={item.priority} onChange={(e) => patch({ priority: Number(e.currentTarget.value) as Priority })}>
                     {PRIORITIES.map((p, i) => (
                       <option key={p} value={i}>{p}</option>
@@ -308,7 +314,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
               )}
 
               <div>
-                <span class="label">Checklist</span>
+                <FieldLabel text="Checklist" info="Steps inside this task. Its card shows your progress, like 2/5." />
                 <ChecklistEditor items={item.checklist} onChange={(checklist) => patch({ checklist })} />
               </div>
             </>
@@ -328,7 +334,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
 function RecurrenceField({ value, disabled, onChange }: { value: Recurrence | null; disabled: boolean; onChange: (r: Recurrence | null) => void }) {
   return (
     <div>
-      <label class="label" for="repeat">Repeat</label>
+      <FieldLabel text="Repeat" htmlFor="repeat" info="When you finish this task, Cove adds the next one, due a day, week or month later. Needs a due date." />
       <div class="flex gap-2">
         <select
           id="repeat"
@@ -377,7 +383,7 @@ function ReminderField({ item, onChange }: { item: Item; onChange: (remindAt: nu
 
   return (
     <div>
-      <label class="label" for="remind">Remind me</label>
+      <FieldLabel text="Remind me" htmlFor="remind" info="A notification at the time you pick, while Cove is open. To be alerted when it’s closed, use Add to my calendar." />
       <select
         id="remind"
         class="input"

@@ -11,6 +11,7 @@ import { PageHeader } from '../components/PageHeader';
 import { QuickAdd } from '../components/QuickAdd';
 import { EmptyState } from '../components/EmptyState';
 import { QuickLinks } from '../components/QuickLinks';
+import { InfoTip } from '../components/InfoTip';
 
 function greeting(d = new Date()) {
   const h = d.getHours();
@@ -94,7 +95,10 @@ export function Home() {
 
         {spaces && spaces.length > 0 && (
           <section>
-            <h2 class="section-title mb-2">Spaces</h2>
+            <div class="flex items-center gap-1.5 mb-2">
+              <h2 class="section-title">Spaces</h2>
+              <InfoTip label="Spaces">A space holds everything for one subject or project: links, notes, files and tasks. Anything without a space waits in the Inbox.</InfoTip>
+            </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {spaces.map((s) => (
                 <a key={s.id} href={`/s/${s.id}`} class="card p-2.5 flex items-center gap-2.5 hover:border-border2 transition-colors">

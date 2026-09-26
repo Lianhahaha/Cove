@@ -6,6 +6,7 @@ import { addFiles, formatBytes } from '../lib/files';
 import { deleteFile } from '../lib/repo';
 import { toast } from '../lib/toast';
 import type { StoredFile } from '../lib/types';
+import { InfoTip } from './InfoTip';
 
 /** An object URL for a blob that is revoked when the component goes away. */
 function useObjectUrl(blob: Blob | null): string | null {
@@ -101,7 +102,10 @@ export function Attachments({ itemId }: { itemId: string }) {
       }}
     >
       <div class="flex items-center justify-between mb-1.5">
-        <span class="label mb-0">Files</span>
+        <span class="flex items-center gap-1">
+          <span class="label mb-0">Files</span>
+          <InfoTip label="Files">PDFs, slides and photos saved on this device, so they open offline. Up to 25 MB each. Text inside PDFs shows up in search.</InfoTip>
+        </span>
         <button class="btn btn-ghost min-h-8 text-sm" onClick={() => input.current?.click()}>
           <Paperclip size={15} /> Attach
         </button>

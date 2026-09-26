@@ -3,6 +3,7 @@ import { Globe, Plus, X } from 'lucide-preact';
 import { addQuickLink, LINK_PRESETS, logoFor, QUICK_LINK_LIMITS, quickLinks, removeQuickLink } from '../lib/links';
 import { hostOf } from '../lib/queries';
 import { Modal } from './Modal';
+import { InfoTip } from './InfoTip';
 
 /** Icons that failed to load this session, so tiles fall back to the globe without retrying. */
 const broken = new Set<string>();
@@ -42,7 +43,10 @@ export function QuickLinks() {
   return (
     <section>
       <div class="flex items-center justify-between mb-2">
-        <h2 class="section-title">Quick links</h2>
+        <div class="flex items-center gap-1.5">
+          <h2 class="section-title">Quick links</h2>
+          <InfoTip label="Quick links">One tap opens these sites, or their app if it’s installed on your phone. Tap Add for more, or Edit to remove one.</InfoTip>
+        </div>
         {links.length > 0 && (
           <button class="text-sm text-accent hover:underline" aria-pressed={editing} onClick={() => setEditing(!editing)}>
             {editing ? 'Done' : 'Edit'}

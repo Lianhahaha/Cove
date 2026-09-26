@@ -6,6 +6,7 @@ import { useLive } from '../lib/live';
 import { reorderSpaces, restoreItems, SPACE_COLORS, trashSpace, updateItem, updateSpace } from '../lib/repo';
 import { toast } from '../lib/toast';
 import { toWebUrl } from '../lib/links';
+import { FieldLabel } from './InfoTip';
 import type { Space } from '../lib/types';
 import { Modal } from './Modal';
 
@@ -78,7 +79,7 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
         </div>
 
         <div>
-          <label class="label" for="space-link">Class link</label>
+          <FieldLabel text="Class link" htmlFor="space-link" info="This class’s page in Google Classroom or your school’s site. It becomes a one-tap button at the top of the space." />
           <input
             id="space-link"
             class="input"

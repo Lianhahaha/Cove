@@ -373,15 +373,16 @@
 }
 
 /* ─── Scroll edge ─────────────────────────────────────────────────────── */
-/* The header's bottom edge fades in once content scrolls under it.
-   Browsers without scroll-driven animations keep the edge showing. */
+/* The header's bottom edge fades in once content scrolls under it; a page too short to
+   scroll never shows it. Browsers without scroll-driven animations keep the edge showing. */
 @supports (animation-timeline: scroll()) {
   .page-header {
+    border-bottom-color: transparent;
     animation: header-edge linear both;
     animation-timeline: scroll(root);
     animation-range: 0 2rem;
   }
 }
 @keyframes header-edge {
-  from { border-bottom-color: transparent; }
+  to { border-bottom-color: var(--c-border); }
 }

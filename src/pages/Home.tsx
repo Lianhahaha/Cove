@@ -94,11 +94,17 @@ export function Home() {
             <h2 class="section-title mb-2">Spaces</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {spaces.map((s) => (
-                <a key={s.id} href={`/s/${s.id}`} class="card p-2.5 flex items-center gap-2.5 hover:border-border2" style={{ borderLeft: `4px solid ${s.color}` }}>
-                  <span class="text-lg">{s.emoji}</span>
+                <a key={s.id} href={`/s/${s.id}`} class="card p-2.5 flex items-center gap-2.5 hover:border-border2 transition-colors">
+                  {/* The space's color tints the tile behind its emoji. */}
+                  <span
+                    class="w-9 h-9 shrink-0 grid place-items-center rounded-[0.625rem] text-lg"
+                    style={{ background: `color-mix(in oklab, ${s.color} 24%, transparent)` }}
+                  >
+                    {s.emoji}
+                  </span>
                   <span class="min-w-0">
-                    <span class="block font-medium truncate">{s.name}</span>
-                    <span class="block text-xs text-subtle">{counts.get(s.id) ?? 0} {counts.get(s.id) === 1 ? 'item' : 'items'}</span>
+                    <span class="block font-[450] truncate">{s.name}</span>
+                    <span class="block text-xs text-subtle tabular-nums">{counts.get(s.id) ?? 0} {counts.get(s.id) === 1 ? 'item' : 'items'}</span>
                   </span>
                 </a>
               ))}

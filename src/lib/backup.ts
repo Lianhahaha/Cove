@@ -116,6 +116,7 @@ export function toItem(v: unknown): Item | null {
     estimateMins: num(r.estimateMins),
     completedAt: num(r.completedAt),
     focusMins: Math.max(0, Math.round(num(r.focusMins) ?? 0)),
+    nextId: isId(r.nextId) ? r.nextId : null,
     order: num(r.order) ?? now,
     createdAt: num(r.createdAt) ?? now,
     updatedAt: num(r.updatedAt) ?? now,

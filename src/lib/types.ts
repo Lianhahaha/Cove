@@ -52,6 +52,8 @@ export interface Item {
   remindAt: number | null;
   estimateMins: number | null;
   completedAt: number | null;
+  /** The repeat that finishing this task scheduled, so reopening it can take that back. */
+  nextId?: string | null;
   /** Minutes spent in focus sessions on this item. Missing on items made before the timer existed. */
   focusMins?: number;
   /** Manual sort position within a board column or list. */

@@ -249,7 +249,11 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
                       role="radio"
                       aria-checked={item.status === s.value}
                       class={`px-3 h-8 rounded-md text-sm ${item.status === s.value ? 'bg-surface shadow-sm font-medium' : 'text-muted'}`}
-                      onClick={() => (s.value === 'done' ? setDone(item, true) : patch({ status: s.value, completedAt: null }))}
+                      onClick={async () => {
+                        if (s.value === 'done') return setDone(item, true);
+                        if (item.status === 'done') await setDone(item, false);
+                        await patch({ status: s.value, completedAt: null });
+                      }}
                     >
                       {s.label}
                     </button>

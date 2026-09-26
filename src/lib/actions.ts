@@ -1,5 +1,5 @@
 import { db } from './db';
-import { addItem, restoreItems, trashItems, updateItem } from './repo';
+import { addItem, purgeItems, restoreItems, trashItems, updateItem } from './repo';
 import { toast } from './toast';
 import type { Item } from './types';
 import type { Parsed } from './parse';
@@ -49,27 +49,43 @@ export async function archiveWithUndo(ids: string[], archived = true) {
  */
 export async function setDone(item: Item, done: boolean) {
   const now = Date.now();
+  // Work from the stored record: the caller's copy may be stale after a quick double click.
+  const current = await db.items.get(item.id);
+  if (!current) return;
+
   if (!done) {
-    await updateItem(item.id, { status: 'todo', completedAt: null });
+    if (current.status !== 'done') return;
+    await updateItem(current.id, { status: 'todo', completedAt: null, nextId: null });
+    // Reopening takes back the repeat it scheduled, unless that one has been touched since.
+    if (current.nextId) {
+      const next = await db.items.get(current.nextId);
+      if (next && next.status !== 'done' && !next.deletedAt && next.updatedAt === next.createdAt) await purgeItems([next.id]);
+    }
     return;
   }
-  await updateItem(item.id, { status: 'done', completedAt: now });
-  if (item.recurrence && item.due !== null) {
-    const next = nextOccurrence(item.due, item.recurrence, now);
-    const copy = { ...item } as Partial<Item>;
+
+  if (current.status === 'done') return;
+  let nextId: string | null = null;
+  if (current.recurrence && current.due !== null) {
+    const due = nextOccurrence(current.due, current.recurrence, now);
+    const copy = { ...current } as Partial<Item>;
     delete copy.id;
-    await addItem({
+    const created = await addItem({
       ...copy,
       status: 'todo',
       completedAt: null,
-      due: next,
-      remindAt: item.remindAt !== null ? next - (item.due - item.remindAt) : null,
-      checklist: item.checklist.map((c) => ({ ...c, done: false })),
+      nextId: null,
+      due,
+      remindAt: current.remindAt !== null ? due - (current.due - current.remindAt) : null,
+      checklist: current.checklist.map((c) => ({ ...c, done: false })),
+      focusMins: 0,
       createdAt: now,
       updatedAt: now,
     });
+    nextId = created.id;
     toast(`Next one scheduled`);
   }
+  await updateItem(current.id, { status: 'done', completedAt: now, nextId });
 }
 
 /** The first repeat of `due` that lands after today, so an overdue series doesn't pile up. */

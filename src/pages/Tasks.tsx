@@ -196,6 +196,8 @@ function Board({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
       else if (next !== undefined) order = next - (ids.length - n);
       else order = Date.now() + n;
       if (status === 'done' && item.status !== 'done') await setDone(item, true);
+      // Leaving Done goes through setDone too, so a repeat it scheduled is taken back.
+      if (status !== 'done' && item.status === 'done') await setDone(item, false);
       await updateItem(id, status === 'done' ? { order } : { status, order, completedAt: null });
     }
   }

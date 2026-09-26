@@ -53,3 +53,38 @@ describe('setDone', () => {
     expect(await db.items.get(item.id)).toMatchObject({ status: 'todo', completedAt: null });
   });
 });
+
+describe('setDone with repeats', () => {
+  const repeating = () =>
+    addItem({ title: 'Weekly quiz', status: 'todo', due: at(2099, 1, 5), recurrence: { freq: 'weekly', interval: 1 } });
+
+  it('schedules only one repeat however often it is ticked', async () => {
+    const item = await repeating();
+    await setDone(item, true);
+    await setDone(item, true);
+    await setDone(item, false);
+    await setDone(item, true);
+    const open = (await db.items.toArray()).filter((i) => i.status === 'todo');
+    expect(open).toHaveLength(1);
+    expect(open[0].due).toBe(at(2099, 1, 12));
+  });
+
+  it('takes back the scheduled repeat when reopened', async () => {
+    const item = await repeating();
+    await setDone(item, true);
+    await setDone(item, false);
+    const all = await db.items.toArray();
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({ status: 'todo', nextId: null });
+  });
+
+  it('keeps a repeat that was edited in the meantime', async () => {
+    const item = await repeating();
+    await setDone(item, true);
+    const { nextId } = (await db.items.get(item.id))!;
+    await new Promise((r) => setTimeout(r, 2));
+    await db.items.update(nextId!, { title: 'Weekly quiz (moved room)', updatedAt: Date.now() });
+    await setDone(item, false);
+    expect(await db.items.get(nextId!)).toBeDefined();
+  });
+});

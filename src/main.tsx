@@ -15,6 +15,8 @@ import { loadQuickLinks } from './lib/links';
 import '@fontsource-variable/dm-sans/wght.css';
 import '@fontsource-variable/fraunces/wght.css';
 import '@fontsource-variable/jetbrains-mono/wght.css';
+// The Cove wordmark only: one Latin italic file.
+import '@fontsource/instrument-serif/latin-400-italic.css';
 import './styles.css';
 
 render(<App />, document.getElementById('app')!);

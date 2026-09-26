@@ -7,6 +7,7 @@ import { deleteFile } from '../lib/repo';
 import { toast } from '../lib/toast';
 import type { StoredFile } from '../lib/types';
 import { InfoTip } from './InfoTip';
+import { confirmAction } from '../lib/confirm';
 
 /** An object URL for a blob that is revoked when the component goes away. */
 function useObjectUrl(blob: Blob | null): string | null {
@@ -43,6 +44,8 @@ function FileRow({ file }: { file: StoredFile }) {
   const Icon = isImage ? ImageIcon : file.type === 'application/pdf' || file.type.startsWith('text/') ? FileText : FileIcon;
 
   async function remove() {
+    const ok = await confirmAction({ title: 'Remove this file?', body: `“${file.name}” is removed from this item.`, confirmLabel: 'Remove' });
+    if (!ok) return;
     await deleteFile(file.id);
     toast(`Removed ${file.name}`, { action: { label: 'Undo', run: () => void db.files.add(file) } });
   }

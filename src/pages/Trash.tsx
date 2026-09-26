@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'preact/hooks';
+import { useMemo } from 'preact/hooks';
 import { ArchiveRestore, Trash as TrashIcon } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
@@ -6,6 +6,7 @@ import { emptyTrash, purgeItems, restoreItems, TRASH_DAYS, updateSpace } from '.
 import { displayTitle } from '../lib/queries';
 import { timeAgo } from '../lib/dates';
 import { toast } from '../lib/toast';
+import { confirmAction } from '../lib/confirm';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyState } from '../components/EmptyState';
 
@@ -14,16 +15,28 @@ const DAY = 86_400_000;
 export function Trash() {
   const items = useLive(() => db.items.where('deletedAt').above(0).toArray(), []);
   const spaces = useLive(() => db.spaces.where('deletedAt').above(0).toArray(), []) ?? [];
-  const [confirming, setConfirming] = useState(false);
 
   const sorted = useMemo(() => [...(items ?? [])].sort((a, b) => (b.deletedAt ?? 0) - (a.deletedAt ?? 0)), [items]);
   const daysLeft = (deletedAt: number) => Math.max(0, Math.ceil((deletedAt + TRASH_DAYS * DAY - Date.now()) / DAY));
 
   async function empty() {
+    const total = sorted.length + spaces.length;
+    const ok = await confirmAction({
+      title: 'Empty the trash?',
+      body: `${total} thing${total === 1 ? '' : 's'} will be deleted for good. This can’t be undone.`,
+      confirmLabel: 'Delete all for good',
+    });
+    if (!ok) return;
     const n = await emptyTrash();
     await db.spaces.bulkDelete(spaces.map((s) => s.id));
-    setConfirming(false);
     toast(`Deleted ${n} item${n === 1 ? '' : 's'} for good`);
+  }
+
+  async function purge(id: string, title: string) {
+    const ok = await confirmAction({ title: 'Delete for good?', body: `“${title}” will be gone for good. This can’t be undone.`, confirmLabel: 'Delete for good' });
+    if (!ok) return;
+    await purgeItems([id]);
+    toast('Deleted for good');
   }
 
   return (
@@ -32,15 +45,9 @@ export function Trash() {
         title="Trash"
         subtitle={`Items are deleted for good after ${TRASH_DAYS} days`}
         actions={
-          (sorted.length > 0 || spaces.length > 0) &&
-          (confirming ? (
-            <div class="flex gap-1">
-              <button class="btn btn-danger" onClick={empty}>Delete all for good</button>
-              <button class="btn btn-ghost" onClick={() => setConfirming(false)}>Cancel</button>
-            </div>
-          ) : (
-            <button class="btn" onClick={() => setConfirming(true)}>Empty trash</button>
-          ))
+          (sorted.length > 0 || spaces.length > 0) && (
+            <button class="btn" onClick={() => void empty()}>Empty trash</button>
+          )
         }
       />
       <div class="px-3 md:px-6 py-3 md:py-4 max-w-3xl mx-auto w-full space-y-6">
@@ -91,7 +98,7 @@ export function Trash() {
                   class="icon-btn text-danger"
                   aria-label={`Delete ${displayTitle(i)} for good`}
                   title="Delete for good"
-                  onClick={() => purgeItems([i.id]).then(() => toast('Deleted for good'))}
+                  onClick={() => void purge(i.id, displayTitle(i))}
                 >
                   <TrashIcon size={16} />
                 </button>

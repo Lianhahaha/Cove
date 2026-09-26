@@ -4,6 +4,7 @@ import { useLocation } from 'preact-iso';
 import { House, Plus, Search, SquareCheck, Menu, WifiOff } from 'lucide-preact';
 import { Nav } from './Nav';
 import { Toasts } from './Toasts';
+import { ConfirmHost } from './Confirm';
 import { CaptureSheet } from './CaptureSheet';
 import { useLazyComponent } from './lazy';
 import { FocusPill } from './FocusTimer';
@@ -137,6 +138,7 @@ export function Shell({ children }: { children: ComponentChildren }) {
       {Palette && <Palette />}
       <ShortcutsHelp />
       <FocusPill />
+      <ConfirmHost />
       <Toasts />
     </div>
   );

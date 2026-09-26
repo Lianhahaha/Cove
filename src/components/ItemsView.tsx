@@ -7,8 +7,9 @@ import { usePref } from '../lib/prefs';
 import { SORT_LABELS, sortItems, type SortMode } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
 import { archiveWithUndo, trashWithUndo } from '../lib/actions';
-import { normalizeTag, updateItem } from '../lib/repo';
+import { normalizeTag, TRASH_DAYS, updateItem } from '../lib/repo';
 import { toast } from '../lib/toast';
+import { confirmAction } from '../lib/confirm';
 import type { Item } from '../lib/types';
 import { ItemRow, ItemTile } from './ItemCard';
 import { PageHeader } from './PageHeader';
@@ -206,7 +207,14 @@ function BulkBar({ ids, all, onDone, onSelectAll }: { ids: string[]; all: Item[]
         <button class="btn btn-ghost" disabled={none} onClick={addTag} title="Add tag"><Hash size={16} /><span class="hidden sm:inline">Tag</span></button>
         <button class="btn btn-ghost" disabled={none} onClick={markDone} title="Mark done"><CheckCheck size={16} /><span class="hidden sm:inline">Done</span></button>
         <button class="btn btn-ghost" disabled={none} onClick={() => archiveWithUndo(ids).then(onDone)} title="Archive"><Archive size={16} /></button>
-        <button class="btn btn-ghost text-danger" disabled={none} onClick={() => trashWithUndo(ids).then(onDone)} title="Delete"><Trash size={16} /></button>
+        <button class="btn btn-ghost text-danger" disabled={none} onClick={async () => {
+            const ok = await confirmAction({
+              title: `Delete ${ids.length} item${ids.length === 1 ? '' : 's'}?`,
+              body: `${ids.length === 1 ? 'It moves' : 'They move'} to Trash, where you can restore ${ids.length === 1 ? 'it' : 'them'} for ${TRASH_DAYS} days.`,
+              confirmLabel: 'Delete',
+            });
+            if (ok) await trashWithUndo(ids).then(onDone);
+          }} title="Delete"><Trash size={16} /></button>
         <button class="icon-btn" aria-label="Cancel selection" onClick={onDone}><X size={16} /></button>
       </div>
     </div>

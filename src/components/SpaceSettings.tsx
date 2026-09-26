@@ -161,19 +161,31 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
 
         <div class="border-t border-border pt-4">
           {!confirmDelete ? (
-            <button class="btn btn-danger" onClick={() => (itemCount ? setConfirmDelete(true) : remove('inbox'))}>
+            <button class="btn btn-danger" onClick={() => setConfirmDelete(true)}>
               Delete space
             </button>
           ) : (
             <div class="space-y-2">
-              <p class="text-sm">
-                {space.name} has {itemCount} item{itemCount === 1 ? '' : 's'}. What should happen to {itemCount === 1 ? 'it' : 'them'}?
-              </p>
-              <div class="flex flex-wrap gap-2">
-                <button class="btn" onClick={() => remove('inbox')}>Move to Inbox</button>
-                <button class="btn btn-danger" onClick={() => remove('trash')}>Delete them too</button>
-                <button class="btn btn-ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
-              </div>
+              {itemCount === 0 ? (
+                <>
+                  <p class="text-sm">Delete {space.name}? It’s empty.</p>
+                  <div class="flex flex-wrap gap-2">
+                    <button class="btn btn-danger" onClick={() => remove('inbox')}>Delete space</button>
+                    <button class="btn btn-ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p class="text-sm">
+                    {space.name} has {itemCount} item{itemCount === 1 ? '' : 's'}. What should happen to {itemCount === 1 ? 'it' : 'them'}?
+                  </p>
+                  <div class="flex flex-wrap gap-2">
+                    <button class="btn" onClick={() => remove('inbox')}>Move to Inbox</button>
+                    <button class="btn btn-danger" onClick={() => remove('trash')}>Delete them too</button>
+                    <button class="btn btn-ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

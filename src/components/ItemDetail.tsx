@@ -23,7 +23,7 @@ import {
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { useItemNav } from '../lib/nav';
-import { updateItem } from '../lib/repo';
+import { TRASH_DAYS, updateItem } from '../lib/repo';
 import { archiveWithUndo, duplicateItem, setDone, trashWithUndo } from '../lib/actions';
 import { fromInputs, timeAgo, toDateInput, toTimeInput } from '../lib/dates';
 import { displayTitle, hostOf } from '../lib/queries';
@@ -39,6 +39,7 @@ import { AiPanel } from './AiPanel';
 import { FocusStarter } from './FocusTimer';
 import { addFiles, filesFromClipboard } from '../lib/files';
 import { discardIfBlank } from '../lib/notes';
+import { confirmAction } from '../lib/confirm';
 import { FieldLabel, InfoTip } from './InfoTip';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
@@ -178,7 +179,13 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
           toast('Duplicated');
         })}
         {iconAction(item.archived ? 'Unarchive' : 'Archive', item.archived ? <ArchiveRestore size={18} /> : <Archive size={18} />, () => archiveWithUndo([item.id], !item.archived))}
-        {iconAction('Delete', <Trash size={18} />, () => {
+        {iconAction('Delete', <Trash size={18} />, async () => {
+          const ok = await confirmAction({
+            title: `Delete this ${noun}?`,
+            body: `“${displayTitle(item)}” moves to Trash, where you can restore it for ${TRASH_DAYS} days.`,
+            confirmLabel: 'Delete',
+          });
+          if (!ok) return;
           void trashWithUndo([item.id]);
           onClose();
         })}

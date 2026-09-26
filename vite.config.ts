@@ -71,7 +71,11 @@ export default defineConfig(({ mode }) => {
         filename: 'sw.ts',
         registerType: 'prompt',
         injectRegister: false,
-        injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'] },
+        injectManifest: {
+          globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+          // pdf.js is 1.7 MB and only needed once a PDF is attached, so it's cached on first use instead.
+          globIgnores: ['**/pdf-*.js', '**/pdf.worker*'],
+        },
         devOptions: { enabled: false },
         manifest: {
           id: '/',

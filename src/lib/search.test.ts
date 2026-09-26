@@ -4,7 +4,14 @@ import { newItem } from './repo';
 
 function indexOf(...items: ReturnType<typeof newItem>[]) {
   const index = createIndex();
-  index.addAll(items.map((i) => toDoc(i, i.id === 'b' ? ['Thevenin worksheet.pdf'] : [])));
+  index.addAll(
+    items.map((i) =>
+      toDoc(
+        i,
+        i.id === 'b' ? [{ name: 'Thevenin worksheet.pdf', text: 'Norton equivalent networks and superposition' }] : i.id === 's' ? [{ name: 'statement.pdf', text: 'account balance 99999' }] : [],
+      ),
+    ),
+  );
   return (q: string) => index.search(q).map((r) => r.id);
 }
 
@@ -29,6 +36,10 @@ describe('search index', () => {
     expect(find('thevenin')).toEqual(['b']);
   });
 
+  it('finds words inside PDFs', () => {
+    expect(find('superposition')).toEqual(['b']);
+  });
+
   it('requires every word to match', () => {
     expect(find('kirchhoff notes')).toEqual(['a']);
     expect(find('kirchhoff recursion')).toEqual([]);
@@ -37,5 +48,7 @@ describe('search index', () => {
   it('keeps the contents of private items out of the index', () => {
     expect(find('4321')).toEqual([]);
     expect(find('bank')).toEqual(['s']);
+    expect(find('99999')).toEqual([]);
+    expect(find('statement')).toEqual(['s']);
   });
 });

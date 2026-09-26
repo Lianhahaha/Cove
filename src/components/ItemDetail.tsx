@@ -407,7 +407,10 @@ function AiMenu({ item }: { item: Item }) {
   // Tags already in use, so suggestions reuse them instead of inventing near-duplicates.
   const allTags = useLive(async () => (await db.items.orderBy('tags').uniqueKeys()) as string[], []) ?? [];
   const blocked = aiBlockedReason(item, space);
-  const text = [item.body, item.preview?.description, item.checklist.map((c) => `- ${c.text}`).join('\n')].filter(Boolean).join('\n\n');
+  // Text read from attached PDFs goes last, so the item's own notes come first within the size cap.
+  const pdfText =
+    useLive(async () => (await db.files.where('itemId').equals(item.id).toArray()).map((f) => f.text ?? '').filter(Boolean).join('\n\n'), [item.id]) ?? '';
+  const text = [item.body, item.preview?.description, item.checklist.map((c) => `- ${c.text}`).join('\n'), pdfText].filter(Boolean).join('\n\n');
   const needs: Record<AiTask, number> = { summarize: 1, tags: 0, extract_tasks: 1, quiz: 80 };
 
   useEffect(() => {

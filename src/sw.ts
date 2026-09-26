@@ -50,6 +50,12 @@ registerRoute(
 // API calls must hit the network; the app keeps its own results in IndexedDB.
 registerRoute(({ url }) => url.pathname.startsWith('/api/'), new NetworkOnly());
 
+// pdf.js isn't precached (it's large); keep it once it has been downloaded, for offline PDF reading.
+registerRoute(
+  ({ url }) => url.origin === sw.location.origin && /^\/assets\/pdf(-|\.worker)/.test(url.pathname),
+  new CacheFirst({ cacheName: 'cove-pdfjs', plugins: [new ExpirationPlugin({ maxEntries: 6 })] }),
+);
+
 // Link preview images and favicons from other sites, so cards still look right offline.
 registerRoute(
   ({ request, url }) => request.destination === 'image' && url.origin !== sw.location.origin,

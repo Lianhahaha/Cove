@@ -84,6 +84,9 @@ export interface StoredFile {
   size: number;
   blob: Blob;
   createdAt: number;
+  /** Text read from a PDF, for search and AI. */
+  text?: string;
+  textStatus?: 'pending' | 'done' | 'failed';
 }
 
 export interface Setting {

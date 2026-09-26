@@ -9,6 +9,7 @@ import { loadAiSettings } from './lib/ai';
 import { autoTagEnabled } from './lib/actions';
 import { getSetting } from './lib/repo';
 import { startFocusClock } from './lib/focus';
+import { startPdfQueue } from './lib/pdf-text';
 import './styles.css';
 
 render(<App />, document.getElementById('app')!);
@@ -16,6 +17,7 @@ startPwa();
 startPreviewQueue();
 startReminders();
 startFocusClock();
+startPdfQueue();
 void handleLaunchParams();
 void loadAiSettings();
 void getSetting('autoTag', true).then((v) => (autoTagEnabled.value = v));

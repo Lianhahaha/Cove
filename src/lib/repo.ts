@@ -203,6 +203,8 @@ export async function addFile(itemId: string, file: File | Blob, name?: string):
     size: file.size,
     blob: file,
     createdAt: Date.now(),
+    // PDFs get their text read in the background so search can find what's inside.
+    ...(file.type === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf') ? { textStatus: 'pending' as const } : {}),
   };
   await db.files.add(rec);
   await db.items.update(itemId, { updatedAt: Date.now() });

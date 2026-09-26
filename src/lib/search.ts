@@ -15,8 +15,13 @@ interface Doc {
   files: string;
 }
 
-/** Indexes every item that isn't in the trash. Private items are searchable by title only. */
-export function toDoc(item: Item, fileNames: string[] = []): Doc {
+export interface FileText {
+  name: string;
+  text?: string;
+}
+
+/** Indexes every item that isn't in the trash. Private items are searchable by title and file names only. */
+export function toDoc(item: Item, files: FileText[] = []): Doc {
   return {
     id: item.id,
     title: item.title,
@@ -24,7 +29,7 @@ export function toDoc(item: Item, fileNames: string[] = []): Doc {
     url: item.url ? `${hostOf(item.url)} ${item.url}` : '',
     tags: item.tags.join(' '),
     preview: item.private ? '' : [item.preview?.title, item.preview?.description, item.preview?.siteName].filter(Boolean).join(' '),
-    files: fileNames.join(' '),
+    files: files.map((f) => (item.private ? f.name : `${f.name} ${f.text ?? ''}`)).join(' '),
   };
 }
 
@@ -53,9 +58,9 @@ export function startSearchIndex(): void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   liveQuery(async () => {
     const items = await db.items.filter((i) => !i.deletedAt).toArray();
-    const names = new Map<string, string[]>();
-    // Reads only names, but Dexie still hands back each record; blobs aren't read into memory.
-    await db.files.each((f) => names.set(f.itemId, [...(names.get(f.itemId) ?? []), f.name]));
+    const names = new Map<string, FileText[]>();
+    // File names plus any text read from PDFs. Blobs come back as handles and aren't read.
+    await db.files.each((f) => names.set(f.itemId, [...(names.get(f.itemId) ?? []), { name: f.name, text: f.text }]));
     return items.map((i) => toDoc(i, names.get(i.id)));
   }).subscribe({
     next: (docs) => {

@@ -23,6 +23,7 @@
     "lucide-preact": "^1.48.0",
     "marked": "^18.0.14",
     "minisearch": "^7.2.0",
+    "pdfjs-dist": "^6.3.289",
     "preact": "^10.29.8",
     "preact-iso": "^2.12.2"
   },

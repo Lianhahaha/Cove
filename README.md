@@ -24,9 +24,11 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - List grouped by Overdue, Today, Tomorrow, Next 7 days and Later; a Kanban board with drag and drop; a month calendar where tasks can be dragged to another day.
 - Reminders as notifications while Cove is open, and `.ics` export so the phone's own calendar can alert even when it isn't.
 - The installed app's icon shows how many tasks are due today.
+- A focus timer (15, 25 or 50 minutes) on any task that logs your focused time, with breaks.
 
 **Find**
-- Offline full-text search over titles, notes, links, previews, tags and file names, with prefix matching and typo tolerance.
+- Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.
+- Smart views: This week, Untagged and Recently edited.
 - A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/I/T/A/F/S` to jump, `?` for the list).
 
 **AI helpers (optional)**
@@ -36,7 +38,8 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Backups as a zip with every file, importable on any device without overwriting newer edits.
 - Export everything as Markdown, one folder per space. Import browser bookmarks.
 - Storage meter and a request for persistent storage.
-- Light, dark and system themes, and a stats page with streaks and a 14-day activity chart.
+- Start a new semester by archiving every space in one step.
+- Light, dark and system themes, and a stats page with streaks, focus time and a 14-day activity chart.
 
 ## AI safety
 
@@ -71,7 +74,7 @@ In the app (`src/lib/ai.ts`):
 - Vercel Functions for `/api/preview` and `/api/ai`, calling [Groq](https://groq.com)'s free tier
 - [Vitest](https://vitest.dev) and fake-indexeddb for tests, GitHub Actions for CI
 
-The first load is about 75 KB of gzipped JavaScript. The item editor, AI panel, command palette, search index, backups and less-used screens load the first time they are opened, and the service worker precaches them all for offline use.
+The first load is about 75 KB of gzipped JavaScript. The item editor, AI panel, command palette, search index, backups and less-used screens load the first time they are opened, and the service worker precaches them all for offline use. pdf.js (1.7 MB) is the exception: it downloads the first time a PDF is attached and is cached from then on.
 
 ## Getting started
 
@@ -123,5 +126,3 @@ docs/PLAN.md         Build plan and roadmap
 
 - Optional sign-in and sync across devices (Firebase on the free Spark plan, loaded only for users who sign in)
 - Shared spaces for group projects
-- Search inside PDFs
-- Focus timer attached to tasks

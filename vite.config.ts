@@ -86,6 +86,17 @@ export default defineConfig(({ mode }) => {
           background_color: '#fdfcf0',
           theme_color: '#684c96',
           categories: ['education', 'productivity'],
+          share_target: {
+            action: '/share-target',
+            method: 'POST',
+            enctype: 'multipart/form-data',
+            params: { title: 'title', text: 'text', url: 'url', files: [{ name: 'files', accept: ['*/*'] }] },
+          },
+          shortcuts: [
+            { name: 'Quick add', short_name: 'Add', url: '/?capture=1', icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }] },
+            { name: 'Tasks', short_name: 'Tasks', url: '/tasks', icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }] },
+            { name: 'Search', short_name: 'Search', url: '/search', icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }] },
+          ],
           icons: [
             { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
             { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },

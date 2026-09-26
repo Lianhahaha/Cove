@@ -21,6 +21,32 @@ cleanupOutdatedCaches();
 // Every page is the same single-page app, so serve index.html offline for any route.
 registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html'), { denylist: [/^\/api\//] }));
 
+// Android's share sheet POSTs shared links, text and files here. They're parked in a
+// cache for the page to pick up, since a service worker can't open the capture dialog itself.
+const SHARE_CACHE = 'cove-share';
+registerRoute(
+  ({ url, request }) => url.pathname === '/share-target' && request.method === 'POST',
+  async ({ request }) => {
+    const id = crypto.randomUUID();
+    try {
+      const form = await request.formData();
+      const cache = await caches.open(SHARE_CACHE);
+      const text = ['title', 'text', 'url'].map((k) => String(form.get(k) ?? '').slice(0, 20_000));
+      await cache.put(`/__share/${id}/meta`, new Response(JSON.stringify(text), { headers: { 'content-type': 'application/json' } }));
+      const files = form.getAll('files').filter((f): f is File => f instanceof File && f.size > 0).slice(0, 20);
+      await Promise.all(
+        files.map((f, i) =>
+          cache.put(`/__share/${id}/file/${i}`, new Response(f, { headers: { 'content-type': f.type || 'application/octet-stream', 'x-file-name': encodeURIComponent(f.name) } })),
+        ),
+      );
+    } catch {
+      // Nothing usable was shared; open the app anyway.
+    }
+    return Response.redirect(`/?share=${id}`, 303);
+  },
+  'POST',
+);
+
 // API calls must hit the network; the app keeps its own results in IndexedDB.
 registerRoute(({ url }) => url.pathname.startsWith('/api/'), new NetworkOnly());
 

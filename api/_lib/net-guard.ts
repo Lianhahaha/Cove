@@ -67,7 +67,10 @@ function v6Blocked(ip: string): boolean {
   if (allZeroUntil(7) && (g[7] === 0 || g[7] === 1)) return true; // :: and ::1
   if (allZeroUntil(5) && g[5] === 0xffff) return v4Blocked(embeddedV4(g)); // IPv4-mapped
   if (allZeroUntil(6)) return v4Blocked(embeddedV4(g)); // IPv4-compatible (deprecated)
+  if (allZeroUntil(4) && g[4] === 0xffff && g[5] === 0) return v4Blocked(embeddedV4(g)); // IPv4-translated (SIIT)
   if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every((x) => x === 0)) return v4Blocked(embeddedV4(g)); // NAT64
+  if (g[0] === 0x64 && g[1] === 0xff9b && g[2] === 1) return true; // local-use NAT64 64:ff9b:1::/48
+  if ((g[0] & 0xffc0) === 0xfec0) return true; // deprecated site-local fec0::/10
   if ((g[0] & 0xfe00) === 0xfc00) return true; // unique local fc00::/7
   if ((g[0] & 0xffc0) === 0xfe80) return true; // link-local fe80::/10
   if ((g[0] & 0xff00) === 0xff00) return true; // multicast
@@ -96,7 +99,8 @@ export function assertFetchableUrl(raw: string | URL): URL {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new BlockedUrlError('Only http and https links');
   if (url.username || url.password) throw new BlockedUrlError('Links with credentials are not fetched');
   if (url.port && url.port !== '80' && url.port !== '443') throw new BlockedUrlError('Only default ports');
-  const host = url.hostname.replace(/^\[|\]$/g, '');
+  // "metadata.google.internal." (trailing dot) is the same host as without it.
+  const host = url.hostname.replace(/^\[|\]$/g, '').replace(/\.+$/, '').toLowerCase();
   if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) {
     throw new BlockedUrlError('Local addresses are not fetched');
   }

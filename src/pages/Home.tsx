@@ -10,6 +10,7 @@ import { ItemRow } from '../components/ItemCard';
 import { PageHeader } from '../components/PageHeader';
 import { QuickAdd } from '../components/QuickAdd';
 import { EmptyState } from '../components/EmptyState';
+import { QuickLinks } from '../components/QuickLinks';
 
 function greeting(d = new Date()) {
   const h = d.getHours();
@@ -62,6 +63,8 @@ export function Home() {
       <PageHeader title={greeting()} subtitle={today} />
       <div class="px-3 md:px-6 py-3 md:py-4 max-w-3xl mx-auto w-full space-y-5 md:space-y-7">
         <QuickAdd />
+
+        <QuickLinks />
 
         {items !== undefined && items.length === 0 && (
           <EmptyState icon={<Sparkles size={22} />} title="Welcome to Cove">

@@ -12,6 +12,8 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Attach PDFs, slides and photos by picking, dropping or pasting them. Files are stored offline, up to 25 MB each.
 - Share links, text and files into Cove from any Android app, or paste and drop anywhere in the app.
 - Link previews (title, description, image, site icon) fetched through a guarded server function, with oEmbed for YouTube, Vimeo, TikTok and Spotify.
+- A Notes page and a New note button (in each space, the + sheet and the palette) that opens straight into the Markdown editor. Notes left empty are discarded.
+- Quick links on Home: one tap opens Google Classroom (there by default), Drive, Gmail or any site, or its app when one is installed.
 
 **Organize**
 - Spaces for each subject, with an emoji, color and order; an Inbox for everything unfiled.

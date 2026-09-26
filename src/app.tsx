@@ -8,6 +8,7 @@ import { Tags } from './pages/Tags';
 import { SpacePage } from './pages/SpacePage';
 import { Tasks } from './pages/Tasks';
 import { Search } from './pages/Search';
+import { Trash } from './pages/Trash';
 
 const page = (title: string) => () => <Placeholder title={title} />;
 
@@ -26,7 +27,7 @@ export function App() {
           <Route path="/s/:id" component={SpacePage} />
           <Route path="/search" component={Search} />
           <Route path="/archive" component={ArchivePage} />
-          <Route path="/trash" component={page('Trash')} />
+          <Route path="/trash" component={Trash} />
           <Route path="/stats" component={page('Stats')} />
           <Route path="/settings" component={page('Settings')} />
           <Route default component={NotFound} />

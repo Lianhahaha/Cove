@@ -182,6 +182,8 @@ function Board({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
     e.stopPropagation();
     setOver(null);
     const ids = e.dataTransfer?.getData(ITEM_MIME)?.split(',').filter(Boolean) ?? [];
+    // Letting go of a card where it started (on itself) isn't a move.
+    if (beforeId && ids.includes(beforeId)) return;
     const col = columns.find((c) => c.status === status)!.items.filter((i) => !ids.includes(i.id));
     const idx = beforeId ? col.findIndex((i) => i.id === beforeId) : col.length;
     const prev = col[idx - 1]?.order;

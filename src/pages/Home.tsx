@@ -20,7 +20,7 @@ function Section({ title, icon, href, children }: { title: string; icon: Compone
   return (
     <section>
       <div class="flex items-center justify-between mb-1.5">
-        <h2 class="eyebrow flex items-center gap-2">
+        <h2 class="section-title flex items-center gap-2">
           {icon}
           {title}
         </h2>
@@ -74,7 +74,7 @@ export function Home() {
         )}
 
         {due.length > 0 && (
-          <Section title="Due today" icon={<CalendarCheck size={13} />} href="/tasks">
+          <Section title="Due today" icon={<CalendarCheck size={15} class="text-subtle" />} href="/tasks">
             {due.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}
@@ -82,7 +82,7 @@ export function Home() {
         )}
 
         {pinned.length > 0 && (
-          <Section title="Pinned" icon={<Pin size={13} />}>
+          <Section title="Pinned" icon={<Pin size={15} class="text-subtle" />}>
             {pinned.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}
@@ -91,7 +91,7 @@ export function Home() {
 
         {spaces && spaces.length > 0 && (
           <section>
-            <h2 class="eyebrow mb-2">Spaces</h2>
+            <h2 class="section-title mb-2">Spaces</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {spaces.map((s) => (
                 <a key={s.id} href={`/s/${s.id}`} class="card p-2.5 flex items-center gap-2.5 hover:border-border2" style={{ borderLeft: `4px solid ${s.color}` }}>
@@ -107,7 +107,7 @@ export function Home() {
         )}
 
         {recent.length > 0 && (
-          <Section title="Recent" icon={<Clock size={13} />} href="/all">
+          <Section title="Recent" icon={<Clock size={15} class="text-subtle" />} href="/all">
             {recent.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}

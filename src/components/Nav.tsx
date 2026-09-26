@@ -47,7 +47,7 @@ function NavLink({ href, icon, label, count, exact }: { href: string; icon: Comp
     >
       <span class="shrink-0 w-5 grid place-items-center">{icon}</span>
       <span class="flex-1 truncate">{label}</span>
-      {!!count && <span class="text-xs tabular-nums text-subtle">{count}</span>}
+      {!!count && <span class="font-mono text-xs tabular-nums text-subtle">{count}</span>}
     </a>
   );
 }
@@ -132,14 +132,14 @@ export function Nav() {
         <NavLink href="/tags" icon={<Hash size={18} />} label="Tags" />
 
         <div class="pt-5 pb-1 px-2.5">
-          <span class="eyebrow">Views</span>
+          <span class="group-label">Views</span>
         </div>
         <NavLink href="/view/week" icon={<CalendarRange size={18} />} label="This week" />
         <NavLink href="/view/untagged" icon={<TagsIcon size={18} />} label="Untagged" />
         <NavLink href="/view/recent" icon={<Clock size={18} />} label="Recently edited" />
 
         <div class="flex items-center justify-between pt-5 pb-1 px-2.5">
-          <span class="eyebrow">Spaces</span>
+          <span class="group-label">Spaces</span>
           <button class="icon-btn w-7 h-7" aria-label="New space" title="New space" onClick={() => setAdding(true)}>
             <Plus size={16} />
           </button>

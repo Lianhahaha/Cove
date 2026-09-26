@@ -12,7 +12,7 @@ import { EmptyState } from '../components/EmptyState';
 function Tile({ label, value, note }: { label: string; value: string | number; note?: string }) {
   return (
     <div class="card p-4">
-      <p class="eyebrow">{label}</p>
+      <p class="group-label">{label}</p>
       <p class="font-display text-3xl font-medium tabular-nums mt-1">{value}</p>
       {note && <p class="text-xs text-subtle mt-1">{note}</p>}
     </div>

@@ -134,8 +134,8 @@ function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; s
     <div class="space-y-6">
       {groups.map(([bucket, items]) => (
         <section key={bucket}>
-          <h2 class={`eyebrow mb-1 ${bucket === 'overdue' ? 'text-danger' : bucket === 'today' ? 'text-accent' : 'text-subtle'}`}>
-            {BUCKET_LABELS[bucket]} <span class="font-normal text-subtle">{items.length}</span>
+          <h2 class={`section-title mb-1 ${bucket === 'overdue' ? 'text-danger' : bucket === 'today' ? 'text-accent' : ''}`}>
+            {BUCKET_LABELS[bucket]} <span class="count">{items.length}</span>
           </h2>
           <div class="-mx-3 space-y-0.5">
             {items.map((i) => <ItemRow key={i.id} item={i} ctx={ctx} />)}
@@ -144,7 +144,7 @@ function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; s
       ))}
       {showDone && done.length > 0 && (
         <section>
-          <h2 class="eyebrow mb-1">Done <span class="font-normal">{done.length}</span></h2>
+          <h2 class="section-title mb-1">Done <span class="count">{done.length}</span></h2>
           <div class="-mx-3 space-y-0.5">
             {done.slice(0, 100).map((i) => <ItemRow key={i.id} item={i} ctx={ctx} />)}
           </div>
@@ -347,7 +347,7 @@ function Calendar({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
 
       <section>
         <div class="flex items-center justify-between mb-1">
-          <h3 class="eyebrow">{selectedLabel}</h3>
+          <h3 class="section-title">{selectedLabel}</h3>
           <button
             class="btn btn-soft min-h-8"
             // Written with the year so a past day isn't read as next year's.

@@ -98,7 +98,7 @@ export function Home() {
                   <span class="text-lg">{s.emoji}</span>
                   <span class="min-w-0">
                     <span class="block font-medium truncate">{s.name}</span>
-                    <span class="block text-xs text-subtle">{counts.get(s.id) ?? 0} items</span>
+                    <span class="block text-xs text-subtle">{counts.get(s.id) ?? 0} {counts.get(s.id) === 1 ? 'item' : 'items'}</span>
                   </span>
                 </a>
               ))}

@@ -346,7 +346,8 @@ function NewSemester() {
             onClick={async () => {
               const changed = await archiveSemester();
               setConfirming(false);
-              toast(`Archived ${changed.spaceIds.length} spaces and ${changed.itemIds.length} items`, {
+              const count = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+              toast(`Archived ${count(changed.spaceIds.length, 'space')} and ${count(changed.itemIds.length, 'item')}`, {
                 action: { label: 'Undo', run: () => void unarchiveSemester(changed) },
                 ms: 10_000,
               });

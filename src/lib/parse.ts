@@ -99,7 +99,10 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
         const unit = m[2].toLowerCase();
         if (unit.startsWith('d')) return addDays(today, n);
         if (unit.startsWith('w')) return addDays(today, n * 7);
-        return makeDate(today.getFullYear(), today.getMonth() + n, today.getDate()) ?? addDays(today, n * 30);
+        // Same day N months on, or that month's last day (Jan 31 + 1 month = Feb 28). Works across year ends.
+        const first = new Date(today.getFullYear(), today.getMonth() + n, 1);
+        const last = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+        return new Date(first.getFullYear(), first.getMonth(), Math.min(today.getDate(), last));
       },
     ],
     [

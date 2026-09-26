@@ -62,6 +62,12 @@ describe('dates', () => {
     expect(p('plan next week').due).toBe(day(2026, 9, 28));
   });
 
+  it('adds months across the year end and clamps to short months', () => {
+    expect(parseQuickAdd('plan in 2 months', { now: new Date(2026, 10, 15) }).due).toBe(day(2027, 1, 15));
+    expect(parseQuickAdd('plan in 3 mo', { now: new Date(2026, 9, 31) }).due).toBe(day(2027, 1, 31));
+    expect(parseQuickAdd('plan in 1 month', { now: new Date(2027, 0, 31) }).due).toBe(day(2027, 2, 28));
+  });
+
   it('resolves weekdays to the coming one, today included', () => {
     expect(p('essay fri').due).toBe(day(2026, 9, 25));
     expect(p('essay wednesday').due).toBe(day(2026, 9, 23));

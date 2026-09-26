@@ -10,3 +10,6 @@ export const menuOpen = signal(false);
 
 /** Command palette. */
 export const paletteOpen = signal(false);
+
+/** Keyboard shortcut help. */
+export const shortcutsOpen = signal(false);

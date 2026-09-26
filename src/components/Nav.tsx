@@ -11,6 +11,7 @@ import {
   Monitor,
   Moon,
   Plus,
+  Search,
   Settings,
   SquareCheck,
   Star,
@@ -118,6 +119,7 @@ export function Nav() {
 
       <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5">
         <NavLink href="/" exact icon={<House size={18} />} label="Home" />
+        <NavLink href="/search" icon={<Search size={18} />} label="Search" />
         <NavLink href="/inbox" icon={<Inbox size={18} />} label="Inbox" count={counts?.inbox} />
         <NavLink href="/tasks" icon={<SquareCheck size={18} />} label="Tasks" count={counts?.due} />
         <NavLink href="/all" icon={<Layers size={18} />} label="All items" />

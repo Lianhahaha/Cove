@@ -6,6 +6,8 @@ import { Nav } from './Nav';
 import { Toasts } from './Toasts';
 import { CaptureSheet } from './CaptureSheet';
 import { ItemDetail } from './ItemDetail';
+import { Palette } from './Palette';
+import { ShortcutsHelp, useShortcuts } from './Shortcuts';
 import { capture, menuOpen, openCapture } from '../state';
 import { filesFromClipboard } from '../lib/files';
 
@@ -108,6 +110,7 @@ function useGlobalFileCapture() {
 
 export function Shell({ children }: { children: ComponentChildren }) {
   useGlobalFileCapture();
+  useShortcuts();
   return (
     <div class="min-h-dvh flex">
       <aside class="hidden md:block w-64 shrink-0 sticky top-0 h-dvh border-r border-border bg-surface">
@@ -120,6 +123,8 @@ export function Shell({ children }: { children: ComponentChildren }) {
       <MobileMenu />
       <ItemDetail />
       <CaptureSheet />
+      <Palette />
+      <ShortcutsHelp />
       <Toasts />
     </div>
   );

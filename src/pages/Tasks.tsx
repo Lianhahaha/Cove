@@ -77,14 +77,11 @@ export function Tasks() {
         }
       />
       <div class={`px-4 md:px-6 py-4 mx-auto w-full space-y-4 ${view === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}>
-        <div class="card p-2.5">
-          <QuickAdd
-            compact
-            extra={{ status: 'todo' }}
-            defaultSpaceId={spaceFilter !== 'all' && spaceFilter !== 'inbox' ? spaceFilter : null}
-            placeholder="Add a task…  fri 5pm  #tag  @space  !!"
-          />
-        </div>
+        <QuickAdd
+          extra={{ status: 'todo' }}
+          defaultSpaceId={spaceFilter !== 'all' && spaceFilter !== 'inbox' ? spaceFilter : null}
+          placeholder="Add a task…"
+        />
         <div class="flex items-center gap-3 flex-wrap text-sm">
           <select class="input w-auto min-h-8 h-8 py-0" value={spaceFilter} onChange={(e) => setSpaceFilter(e.currentTarget.value)} aria-label="Filter by space">
             <option value="all">All spaces</option>

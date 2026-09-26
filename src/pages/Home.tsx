@@ -61,9 +61,7 @@ export function Home() {
     <>
       <PageHeader title={greeting()} subtitle={today} />
       <div class="px-4 md:px-6 py-4 max-w-3xl mx-auto w-full space-y-7">
-        <div class="card p-2.5">
-          <QuickAdd compact />
-        </div>
+        <QuickAdd />
 
         {items !== undefined && items.length === 0 && (
           <EmptyState icon={<Sparkles size={22} />} title="Welcome to Cove">

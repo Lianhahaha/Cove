@@ -27,7 +27,6 @@ interface Props {
   attachments?: File[];
   /** Lets a parent see the text, e.g. to offer AI on a pasted announcement. */
   onTextChange?: (text: string) => void;
-  compact?: boolean;
 }
 
 const PRIORITY_LABEL = ['', 'Low', 'Medium', 'High'];
@@ -44,7 +43,7 @@ function Chip({ icon, label, onRemove }: { icon: ComponentChildren; label: strin
   );
 }
 
-export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, extra, placeholder, onCreated, footer, beforeDone, attachments = [], onTextChange, compact }: Props) {
+export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, extra, placeholder, onCreated, footer, beforeDone, attachments = [], onTextChange }: Props) {
   const [text, setText] = useState(initialText);
   const [ignore, setIgnore] = useState<Set<ParsePart>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -63,7 +62,9 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
   // The autofocus attribute is ignored after page load, so focus by hand and put the caret after any prefilled text.
   useEffect(() => {
     const el = ref.current;
-    if (!autoFocus || !el) return;
+    if (!el) return;
+    autoGrow(el);
+    if (!autoFocus) return;
     el.focus();
     el.setSelectionRange(el.value.length, el.value.length);
   }, []);
@@ -111,15 +112,17 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
   function autoGrow(el: HTMLTextAreaElement) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 240) + 'px';
+    // Only scroll once the box stops growing; a scrollbar on one line looks like a second box.
+    el.style.overflowY = el.scrollHeight > 240 ? 'auto' : 'hidden';
   }
 
   return (
-    <div class={compact ? '' : 'space-y-2'}>
+    <div class="composer">
       <textarea
         ref={ref}
         rows={1}
-        class="input resize-none leading-relaxed"
-        placeholder={placeholder ?? 'Paste a link or type a note…  #tag  @space  fri 5pm  !!'}
+        class="composer-input"
+        placeholder={placeholder ?? 'Paste a link, note or task…'}
         value={text}
         autoFocus={autoFocus}
         maxLength={20_000}
@@ -131,8 +134,14 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
         }}
         onKeyDown={onKeyDown}
       />
+      <p class="composer-hint" aria-hidden="true">
+        <span>#tag</span>
+        <span>@space</span>
+        <span>fri 5pm</span>
+        <span>!! priority</span>
+      </p>
       {parsed && (
-        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+        <div class="flex flex-wrap items-center gap-1.5 px-3 pb-2">
           {parsed.url && <span class="chip"><LinkIcon size={12} />{hostOf(parsed.url)}</span>}
           {spaceName && <Chip icon={<Folder size={12} />} label={spaceName} onRemove={() => skip('space')} />}
           {parsed.due !== null && (
@@ -144,7 +153,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
         </div>
       )}
       {(parsed || footer || attachments.length > 0) && (
-        <div class="flex items-center gap-2 mt-2">
+        <div class="flex items-center gap-2 px-1.5 pb-1.5">
           {footer}
           <div class="flex-1" />
           {lines.length > 1 && (

@@ -201,6 +201,36 @@
   }
   .input::placeholder { color: var(--c-subtle); }
   .input:focus { outline: none; border-color: var(--c-accent); background: var(--c-surface); }
+  /* Quick add: one box holding the text, the parsed chips and the buttons. */
+  .composer {
+    border: 1px solid var(--c-border);
+    border-radius: 0.875rem;
+    background: var(--c-surface);
+    transition: border-color 120ms;
+  }
+  .composer:focus-within { border-color: var(--c-accent); }
+  .composer-input {
+    display: block;
+    width: 100%;
+    resize: none;
+    overflow-y: hidden;
+    padding: 0.625rem 0.875rem;
+    line-height: 1.5;
+    background: transparent;
+    color: var(--c-text);
+    outline: none;
+  }
+  .composer-input::placeholder { color: var(--c-subtle); }
+  .composer-hint {
+    display: none;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    padding: 0 0.875rem 0.5rem;
+    font-size: 0.6875rem;
+    color: var(--c-subtle);
+  }
+  /* Syntax hints show only while the box is focused and empty. */
+  .composer:has(.composer-input:focus:placeholder-shown) .composer-hint { display: flex; }
   .label {
     display: block;
     font-size: 0.75rem;

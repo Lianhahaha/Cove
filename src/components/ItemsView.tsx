@@ -105,11 +105,7 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
 
       <div class="px-4 md:px-6 py-4 max-w-5xl mx-auto w-full space-y-4">
         {intro}
-        {showQuickAdd && (
-          <div class="card p-2.5">
-            <QuickAdd defaultSpaceId={defaultSpaceId} compact />
-          </div>
-        )}
+        {showQuickAdd && <QuickAdd defaultSpaceId={defaultSpaceId} />}
 
         {(items?.length ?? 0) > 0 && (
           <div class="flex items-center gap-2 flex-wrap">

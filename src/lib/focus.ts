@@ -116,27 +116,49 @@ async function notify(title: string, body: string) {
 
 let finishing = false;
 
+/**
+ * Runs `fn` once per finished session across all open tabs: a Web Lock makes
+ * tabs take turns, and a marker in localStorage tells later tabs it's done.
+ */
+async function once(key: string, fn: () => Promise<void>) {
+  const run = async () => {
+    try {
+      if (localStorage.getItem('cove-focus-finished') === key) return;
+      localStorage.setItem('cove-focus-finished', key);
+    } catch {
+      /* no storage: fall through and run in this tab */
+    }
+    await fn();
+  };
+  if (navigator.locks) await navigator.locks.request('cove-focus-finish', run);
+  else await run();
+}
+
 async function finish(s: FocusState) {
   if (finishing) return;
   finishing = true;
   try {
-    chime();
-    if (s.mode === 'focus') {
-      await logSession(s.itemId, s.minutes);
-      const ms = BREAK_MINUTES * 60_000;
-      save({ ...s, mode: 'break', minutes: BREAK_MINUTES, endsAt: Date.now() + ms, remaining: ms });
-      toast(`Nice. ${s.minutes} minutes of focus logged. Take a ${BREAK_MINUTES}-minute break.`, { ms: 10_000 });
-      void notify('Focus done', `${s.minutes} minutes on ${s.title}. Break time.`);
-    } else {
-      save(null);
-      toast('Break’s over', {
-        action: { label: 'Focus again', run: () => void startFocus(s.itemId, 25) },
-        ms: 15_000,
-      });
-      void notify('Break’s over', 'Ready for another round?');
-    }
+    await once(`${s.mode}:${s.endsAt}`, () => finishOnce(s));
   } finally {
     finishing = false;
+  }
+}
+
+async function finishOnce(s: FocusState) {
+  chime();
+  if (s.mode === 'focus') {
+    await logSession(s.itemId, s.minutes);
+    const ms = BREAK_MINUTES * 60_000;
+    save({ ...s, mode: 'break', minutes: BREAK_MINUTES, endsAt: Date.now() + ms, remaining: ms });
+    toast(`Nice. ${s.minutes} minutes of focus logged. Take a ${BREAK_MINUTES}-minute break.`, { ms: 10_000 });
+    void notify('Focus done', `${s.minutes} minutes on ${s.title}. Break time.`);
+  } else {
+    save(null);
+    toast('Break’s over', {
+      action: { label: 'Focus again', run: () => void startFocus(s.itemId, 25) },
+      ms: 15_000,
+    });
+    void notify('Break’s over', 'Ready for another round?');
   }
 }
 
@@ -149,6 +171,10 @@ export function startFocusClock() {
   };
   setInterval(tick, 1000);
   document.addEventListener('visibilitychange', tick);
+  // Starting, pausing or stopping in one tab updates the others.
+  window.addEventListener('storage', (e) => {
+    if (e.key === KEY) focus.value = load();
+  });
   tick();
 }
 

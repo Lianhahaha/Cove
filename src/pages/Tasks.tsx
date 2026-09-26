@@ -310,7 +310,9 @@ function Calendar({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
                     // Keep the time of day when moving to another date.
                     const time = t.due !== null && t.dueHasTime ? new Date(t.due) : null;
                     const due = time ? new Date(d.getFullYear(), d.getMonth(), d.getDate(), time.getHours(), time.getMinutes()).getTime() : d.getTime();
-                    await updateItem(id, { due });
+                    // The reminder moves with the task, keeping the same distance before it.
+                    const remindAt = t.remindAt !== null && t.due !== null ? due - (t.due - t.remindAt) : t.remindAt;
+                    await updateItem(id, { due, remindAt });
                   }
                 }}
                 class={`min-h-16 sm:min-h-24 border-b border-r border-border p-1 text-left cursor-pointer ${inMonth ? '' : 'bg-surface2/60 text-subtle'} ${isSel ? 'bg-accent-fill/60' : 'hover:bg-surface3/50'}`}

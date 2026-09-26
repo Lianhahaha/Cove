@@ -11,6 +11,8 @@ const inFlight = new Set<string>();
 let running = false;
 /** Set when the endpoint isn't there (e.g. a static host), so we stop asking this session. */
 let unavailable = false;
+/** After a 429 the queue waits until this time before asking again. */
+let pausedUntil = 0;
 
 async function fetchPreview(url: string): Promise<{ ok: true; data: LinkPreview } | { ok: false; retry: boolean; error?: string }> {
   const controller = new AbortController();
@@ -38,8 +40,14 @@ async function fetchPreview(url: string): Promise<{ ok: true; data: LinkPreview 
         },
       };
     }
-    // Rate limited or the server hiccuped: try again later. Anything else is the link's fault.
-    const retry = res.status === 429 || res.status >= 500;
+    if (res.status === 429) {
+      const wait = Number(res.headers.get('retry-after')) || 60;
+      pausedUntil = Date.now() + Math.min(wait, 600) * 1000;
+      setTimeout(() => void processPreviewQueue(), Math.min(wait, 600) * 1000 + 500);
+      return { ok: false, retry: true };
+    }
+    // The server hiccuped: try again later. Anything else is the link's fault.
+    const retry = res.status >= 500;
     return { ok: false, retry, error: str(body.error, 200) };
   } catch {
     return { ok: false, retry: true };
@@ -53,14 +61,14 @@ const httpUrl = (v: unknown) => (typeof v === 'string' && /^https?:\/\//i.test(v
 
 /** Fetches previews for every link still marked pending, two at a time. */
 export async function processPreviewQueue(): Promise<void> {
-  if (running || unavailable || !previewsEnabled.value || !navigator.onLine) return;
+  if (running || unavailable || !previewsEnabled.value || !navigator.onLine || Date.now() < pausedUntil) return;
   running = true;
   try {
     const pending = await db.items.filter((i) => !i.deletedAt && !!i.url && i.preview?.status === 'pending' && !inFlight.has(i.id)).toArray();
     const queue = [...pending];
     const worker = async () => {
       for (let item = queue.shift(); item; item = queue.shift()) {
-        if (!navigator.onLine || unavailable) return;
+        if (!navigator.onLine || unavailable || Date.now() < pausedUntil) return;
         inFlight.add(item.id);
         try {
           const result = await fetchPreview(item.url!);

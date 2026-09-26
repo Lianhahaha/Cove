@@ -103,7 +103,7 @@
   /* Phones get a denser layout: every rem-based size (text, spacing, bars) shrinks together.
      A percentage keeps the user's own browser text-size setting in charge. */
   @media (max-width: 639px) {
-    html { font-size: 93.75%; }
+    html { font-size: 96.875%; }
   }
   body {
     background-color: var(--c-bg);

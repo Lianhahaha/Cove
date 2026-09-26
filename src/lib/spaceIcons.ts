@@ -20,7 +20,7 @@ const RULES: [RegExp, string[]][] = [
   [/\b(english|literature|writing|reading|communication|journalism)/i, ['✍️', '📖']],
   [/\b(filipino|language|spanish|japanese|korean|mandarin|french|german|speech)/i, ['🗣️', '💬']],
   [/\b(history|rizal|social|politic|government|sociology|anthropology)/i, ['🏛️', '🌏']],
-  [/\b(econ|business|accounting|finance|marketing|management|entrepreneur)/i, ['📈', '💼']],
+  [/\b(econ|business|account|finance|marketing|management|entrepreneur|tax)/i, ['📈', '💼', '🧾']],
   [/\b(art|drawing|design|drafting|photography)/i, ['🎨', '🖌️']],
   [/\bmusic/i, ['🎵', '🎸']],
   [/\b(pe|physical education|pathfit|sports?|fitness|nstp)\b/i, ['🏀', '⚽']],

@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { ExternalLink, FolderOpen, GraduationCap, Settings2 } from 'lucide-preact';
+import { ExternalLink, FolderOpen, GraduationCap, Settings2, Trash } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { hostOf, isActive } from '../lib/queries';
@@ -9,12 +9,14 @@ import { ItemsView } from '../components/ItemsView';
 import { EmptyState } from '../components/EmptyState';
 import { SpaceSettings } from '../components/SpaceSettings';
 import { NewNoteButton } from '../components/NewNote';
+import { DeleteSpaceDialog } from '../components/DeleteSpace';
 import { updateSpace } from '../lib/repo';
 import { NotFound } from './NotFound';
 
 export function SpacePage({ id }: { id: string }) {
   const space = useLive(() => db.spaces.get(id), [id]);
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   if (space === undefined) return null;
   if (!space || space.deletedAt) return <NotFound />;
   return (
@@ -33,6 +35,9 @@ export function SpacePage({ id }: { id: string }) {
             <NewNoteButton spaceId={id} variant="icon" />
             <button class="icon-btn" title="Space settings" aria-label="Space settings" onClick={() => setEditing(true)}>
               <Settings2 size={18} />
+            </button>
+            <button class="icon-btn hover:text-danger" title="Delete space" aria-label="Delete space" onClick={() => setDeleting(true)}>
+              <Trash size={18} />
             </button>
           </>
         }
@@ -67,6 +72,7 @@ export function SpacePage({ id }: { id: string }) {
         }
       />
       {editing && <SpaceSettings space={space} onClose={() => setEditing(false)} />}
+      {deleting && <DeleteSpaceDialog space={space} onClose={() => setDeleting(false)} />}
     </>
   );
 }

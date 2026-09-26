@@ -112,6 +112,13 @@ export function Nav() {
       return;
     }
     try {
+      const twin = await db.spaces.filter((s) => !s.deletedAt && s.name.trim().toLowerCase() === trimmed.toLowerCase()).first();
+      if (twin) {
+        menuOpen.value = false;
+        route(`/s/${twin.id}`);
+        toast(`You already have ${twin.name}`);
+        return;
+      }
       const space = await addSpace({ name: trimmed });
       menuOpen.value = false;
       route(`/s/${space.id}`);

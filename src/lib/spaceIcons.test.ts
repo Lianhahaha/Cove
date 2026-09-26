@@ -15,6 +15,7 @@ describe('suggestEmoji', () => {
     expect(suggestEmoji('Calculus 2', [])).toBe('🧮');
     expect(suggestEmoji('General Chemistry', [])).toBe('🧪');
     expect(suggestEmoji('PE 3', [])).toBe('🏀');
+    expect(suggestEmoji('accountancy', [])).toBe('📈');
   });
 
   it('picks another fitting emoji when the first is taken', () => {

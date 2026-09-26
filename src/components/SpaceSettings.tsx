@@ -3,7 +3,8 @@ import { useLocation } from 'preact-iso';
 import { ArrowDown, ArrowUp } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
-import { reorderSpaces, restoreItems, SPACE_COLORS, trashSpace, updateItem, updateSpace } from '../lib/repo';
+import { reorderSpaces, SPACE_COLORS, updateSpace } from '../lib/repo';
+import { deleteSpaceWithUndo } from './DeleteSpace';
 import { toast } from '../lib/toast';
 import { toWebUrl } from '../lib/links';
 import { FieldLabel } from './InfoTip';
@@ -46,20 +47,10 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
   }
 
   async function remove(mode: 'inbox' | 'trash') {
-    const itemIds = (await db.items.where('spaceId').equals(space.id).filter((i) => !i.deletedAt).primaryKeys()) as string[];
-    await trashSpace(space.id, mode);
+    await deleteSpaceWithUndo(space, mode);
     onClose();
-    route('/');
-    toast(`Deleted ${space.name}`, {
-      action: {
-        label: 'Undo',
-        run: async () => {
-          await updateSpace(space.id, { deletedAt: null });
-          if (mode === 'trash') await restoreItems(itemIds);
-          else await Promise.all(itemIds.map((id) => updateItem(id, { spaceId: space.id })));
-        },
-      },
-    });
+    // Replace, so Back doesn't return to a space that's gone.
+    route('/', true);
   }
 
   return (

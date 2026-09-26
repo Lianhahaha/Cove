@@ -13,6 +13,7 @@ import {
   Pin,
   PinOff,
   RefreshCw,
+  Sparkles,
   Star,
   SquareCheck,
   Trash,
@@ -32,6 +33,8 @@ import { Attachments } from './Attachments';
 import { refreshPreview } from '../lib/previews';
 import { downloadIcs } from '../lib/ics';
 import { REMINDER_PRESETS, remindersEnabled } from '../lib/reminders';
+import { AI_TASK_LABELS, aiBlockedReason, aiEnabled, type AiTask } from '../lib/ai';
+import { AiPanel } from './AiPanel';
 import { addFiles, filesFromClipboard } from '../lib/files';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
@@ -144,6 +147,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
       <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-1 px-2 h-14 border-b border-border">
         <button class="icon-btn md:hidden" aria-label="Back" onClick={onClose}><ArrowLeft size={20} /></button>
         <div class="flex-1" />
+        <AiMenu item={item} />
         {iconAction(item.pinned ? 'Unpin' : 'Pin', item.pinned ? <PinOff size={18} /> : <Pin size={18} />, () => patch({ pinned: !item.pinned }), item.pinned)}
         {iconAction(item.favorite ? 'Remove from favorites' : 'Add to favorites', <Star size={18} class={item.favorite ? 'fill-current' : ''} />, () => patch({ favorite: !item.favorite }), item.favorite)}
         {iconAction(item.private ? 'Make not private' : 'Make private (never sent to AI)', item.private ? <Lock size={18} /> : <LockOpen size={18} />, () => patch({ private: !item.private }), item.private)}
@@ -388,6 +392,70 @@ function ReminderField({ item, onChange }: { item: Item; onChange: (remindAt: nu
         <p class="text-xs text-subtle mt-1">
           Shows inside Cove while it’s open. Turn on notifications in <a class="underline" href="/settings">Settings</a>, or add it to your calendar.
         </p>
+      )}
+    </div>
+  );
+}
+
+function AiMenu({ item }: { item: Item }) {
+  const [open, setOpen] = useState(false);
+  const [task, setTask] = useState<AiTask | null>(null);
+  const space = useLive(() => (item.spaceId ? db.spaces.get(item.spaceId) : undefined), [item.spaceId]);
+  // Tags already in use, so suggestions reuse them instead of inventing near-duplicates.
+  const allTags = useLive(async () => (await db.items.orderBy('tags').uniqueKeys()) as string[], []) ?? [];
+  const blocked = aiBlockedReason(item, space);
+  const text = [item.body, item.preview?.description, item.checklist.map((c) => `- ${c.text}`).join('\n')].filter(Boolean).join('\n\n');
+  const needs: Record<AiTask, number> = { summarize: 1, tags: 0, extract_tasks: 1, quiz: 80 };
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    // Close on the next click anywhere; the menu's own buttons run first.
+    const t = setTimeout(() => addEventListener('click', close, { once: true }));
+    return () => {
+      clearTimeout(t);
+      removeEventListener('click', close);
+    };
+  }, [open]);
+
+  return (
+    <div class="relative">
+      <button class={`icon-btn ${open ? 'bg-surface3' : ''}`} title="AI" aria-label="AI actions" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen(!open)}>
+        <Sparkles size={18} />
+      </button>
+      {open && (
+        <div class="absolute right-0 top-11 z-20 w-64 card shadow-xl p-1.5" role="menu">
+          {!aiEnabled.value ? (
+            <p class="text-sm text-muted p-2">
+              AI is off. Turn it on in{' '}
+              <a class="underline text-accent" href="/settings">Settings</a>.
+            </p>
+          ) : blocked ? (
+            <p class="text-sm text-muted p-2">{blocked}</p>
+          ) : (
+            (Object.keys(AI_TASK_LABELS) as AiTask[]).map((t) => {
+              const tooShort = text.length < needs[t];
+              return (
+                <button
+                  key={t}
+                  role="menuitem"
+                  disabled={tooShort}
+                  title={tooShort ? 'Add more to the description first' : undefined}
+                  class="w-full text-left px-3 h-9 rounded-lg text-sm hover:bg-surface3 disabled:opacity-40"
+                  onClick={() => {
+                    setOpen(false);
+                    setTask(t);
+                  }}
+                >
+                  {AI_TASK_LABELS[t]}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+      {task && (
+        <AiPanel task={task} item={item} payload={{ title: displayTitle(item), text, existingTags: allTags }} onClose={() => setTask(null)} />
       )}
     </div>
   );

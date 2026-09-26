@@ -12,6 +12,8 @@ import { toast, toastError } from '../lib/toast';
 import { db } from '../lib/db';
 import { shortcutsOpen } from '../state';
 import { enableReminders, remindersEnabled } from '../lib/reminders';
+import { AI_DAILY_LIMIT, aiAvailable, aiEnabled, aiReview, checkAiAvailable, setAiEnabled, setAiReview, usedToday } from '../lib/ai';
+import { Modal } from '../components/Modal';
 
 export function Section({ title, description, children }: { title: string; description?: string; children: ComponentChildren }) {
   return (
@@ -186,6 +188,8 @@ export function Settings() {
           />
         </Section>
 
+        <AiSettings />
+
         <Section title="Links">
           <Toggle
             label="Fetch link previews"
@@ -261,5 +265,60 @@ export function Settings() {
         <p class="text-xs text-subtle text-center pb-4">Cove {__APP_VERSION__}</p>
       </div>
     </>
+  );
+}
+
+function AiSettings() {
+  const [consenting, setConsenting] = useState(false);
+  useEffect(() => void checkAiAvailable(), []);
+
+  return (
+    <Section title="AI helpers" description="Optional. Summarize notes, suggest tags, pull tasks and deadlines out of announcements, and make practice quizzes.">
+      {aiAvailable.value === false && <p class="text-sm text-subtle">AI isn’t set up on this server, so these features are unavailable.</p>}
+      <Toggle
+        label="Turn on AI helpers"
+        description="Off by default. Nothing is sent until you pick an AI action on an item."
+        checked={aiEnabled.value}
+        onChange={(v) => (v ? setConsenting(true) : void setAiEnabled(false))}
+      />
+      <Toggle
+        label="Show me what’s sent first"
+        description="Review the exact text before each request."
+        checked={aiReview.value}
+        onChange={(v) => void setAiReview(v)}
+      />
+      {aiEnabled.value && (
+        <p class="text-xs text-subtle">
+          Used today on this device: {usedToday()} of {AI_DAILY_LIMIT}.
+        </p>
+      )}
+      {consenting && (
+        <Modal title="Before you turn on AI" onClose={() => setConsenting(false)}>
+          <div class="space-y-3 text-sm pt-1">
+            <p>When you use an AI action, the item’s text is sent to Groq, an AI provider, to produce the answer. Cove’s server passes it along and doesn’t store it.</p>
+            <ul class="list-disc pl-5 space-y-1 text-muted">
+              <li>Private items and spaces set to stay away from AI are never sent.</li>
+              <li>Emails, phone numbers, passwords and keys are hidden before sending.</li>
+              <li>At most 8,000 characters go out per request, and only when you ask.</li>
+              <li>Results are suggestions: nothing changes until you accept them.</li>
+              <li>AI can be wrong. Don’t rely on it for grades without checking.</li>
+            </ul>
+            <div class="flex justify-end gap-2 pt-2">
+              <button class="btn btn-ghost" onClick={() => setConsenting(false)}>Not now</button>
+              <button
+                class="btn btn-primary"
+                onClick={async () => {
+                  await setAiEnabled(true);
+                  setConsenting(false);
+                  toast('AI helpers are on. Find them under the ✨ button on any item.');
+                }}
+              >
+                Turn on
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </Section>
   );
 }

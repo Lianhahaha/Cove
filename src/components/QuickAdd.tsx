@@ -25,6 +25,8 @@ interface Props {
   beforeDone?: (items: Item[]) => Promise<void>;
   /** Files waiting to be attached. With files, the text may be empty. */
   attachments?: File[];
+  /** Lets a parent see the text, e.g. to offer AI on a pasted announcement. */
+  onTextChange?: (text: string) => void;
   compact?: boolean;
 }
 
@@ -42,7 +44,7 @@ function Chip({ icon, label, onRemove }: { icon: ComponentChildren; label: strin
   );
 }
 
-export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, extra, placeholder, onCreated, footer, beforeDone, attachments = [], compact }: Props) {
+export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, extra, placeholder, onCreated, footer, beforeDone, attachments = [], onTextChange, compact }: Props) {
   const [text, setText] = useState(initialText);
   const [ignore, setIgnore] = useState<Set<ParsePart>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -89,6 +91,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
       }
       await beforeDone?.(created);
       setText('');
+      onTextChange?.('');
       setIgnore(new Set());
       if (created.length > 1) toast(`Saved ${created.length} items`);
       onCreated?.(created);
@@ -123,6 +126,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
         aria-label="Quick add"
         onInput={(e) => {
           setText(e.currentTarget.value);
+          onTextChange?.(e.currentTarget.value);
           autoGrow(e.currentTarget);
         }}
         onKeyDown={onKeyDown}

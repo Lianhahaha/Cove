@@ -1,11 +1,13 @@
 import { useRef, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
-import { Paperclip, X } from 'lucide-preact';
+import { Paperclip, Sparkles, X } from 'lucide-preact';
 import { capture, closeCapture } from '../state';
 import { addFiles, filesFromClipboard, formatBytes, nameForPasted } from '../lib/files';
 import { toast } from '../lib/toast';
 import { Modal } from './Modal';
 import { QuickAdd } from './QuickAdd';
+import { AiPanel } from './AiPanel';
+import { aiEnabled } from '../lib/ai';
 
 /** The capture dialog opened from the + button, shortcuts, drops, pastes and the share target. */
 export function CaptureSheet() {
@@ -19,6 +21,8 @@ function CaptureBody() {
   const { path, route } = useLocation();
   const c = capture.value;
   const [files, setFiles] = useState<File[]>(c.files ?? []);
+  const [text, setText] = useState(c.text ?? '');
+  const [findTasks, setFindTasks] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   // Inside a space, new items land in that space unless the text says otherwise.
   const spaceFromRoute = path.startsWith('/s/') ? path.slice(3) : null;
@@ -41,6 +45,7 @@ function CaptureBody() {
           defaultSpaceId={defaultSpaceId}
           extra={path === '/tasks' ? { status: 'todo' } : undefined}
           attachments={files}
+          onTextChange={setText}
           beforeDone={async (items) => {
             if (files.length) await addFiles(items[0].id, files);
           }}
@@ -55,6 +60,11 @@ function CaptureBody() {
               <button type="button" class="btn btn-ghost" onClick={() => input.current?.click()}>
                 <Paperclip size={16} /> Attach
               </button>
+              {aiEnabled.value && text.trim().length >= 30 && (
+                <button type="button" class="btn btn-ghost" onClick={() => setFindTasks(true)} title="Find tasks and deadlines in this text with AI">
+                  <Sparkles size={16} /> <span class="hidden sm:inline">Find tasks</span>
+                </button>
+              )}
               <input
                 ref={input}
                 type="file"
@@ -84,6 +94,15 @@ function CaptureBody() {
           </ul>
         )}
       </div>
+      {findTasks && (
+        <AiPanel
+          task="extract_tasks"
+          payload={{ title: '', text }}
+          spaceId={defaultSpaceId}
+          onClose={() => setFindTasks(false)}
+          onTasksCreated={() => closeCapture()}
+        />
+      )}
       <p class="text-xs text-subtle mt-3 hidden sm:block">
         <span class="kbd">Enter</span> to save, <span class="kbd">Shift</span>+<span class="kbd">Enter</span> for a new line. Paste an image to attach it.
       </p>

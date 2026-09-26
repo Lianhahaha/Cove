@@ -3,16 +3,17 @@
  * don't share memory, so this slows abuse per instance rather than enforcing
  * an exact global quota.
  */
-const windows = new Map<string, { start: number; count: number }>();
+const windows = new Map<string, { start: number; count: number; windowMs: number }>();
 
 export function rateLimit(key: string, limit: number, windowMs: number, now = Date.now()): { ok: boolean; retryAfter: number } {
-  // Drop stale entries now and then so the map can't grow without bound.
+  // Drop expired entries now and then so the map can't grow without bound. Each entry
+  // expires on its own window, so a short per-IP window can't wipe a daily counter.
   if (windows.size > 5000) {
-    for (const [k, w] of windows) if (now - w.start > windowMs) windows.delete(k);
+    for (const [k, w] of windows) if (now - w.start > w.windowMs) windows.delete(k);
   }
   const w = windows.get(key);
   if (!w || now - w.start > windowMs) {
-    windows.set(key, { start: now, count: 1 });
+    windows.set(key, { start: now, count: 1, windowMs });
     return { ok: true, retryAfter: 0 };
   }
   w.count++;

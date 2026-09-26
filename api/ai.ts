@@ -39,9 +39,6 @@ export async function POST(request: Request): Promise<Response> {
 
   const perIp = rateLimit(`ai:${clientIp(request)}`, AI_LIMITS.perIpPer10Min, 10 * 60_000);
   if (!perIp.ok) return json({ error: 'You’ve used AI a lot just now. Try again in a few minutes.' }, 429, { ...NO_STORE, 'retry-after': String(perIp.retryAfter) });
-  const global = rateLimit('ai:instance', AI_LIMITS.perInstancePerDay, 24 * 60 * 60_000);
-  if (!global.ok) return json({ error: 'AI is busy today. Try again later.' }, 429, { ...NO_STORE, 'retry-after': String(global.retryAfter) });
-
   let task = 'unknown';
   try {
     const raw = await request.text();
@@ -54,6 +51,12 @@ export async function POST(request: Request): Promise<Response> {
     }
     const parsed = parseRequest(body);
     task = parsed.task;
+    // Only requests that will reach the model count toward the daily cap, so junk can't use it up.
+    const global = rateLimit('ai:instance', AI_LIMITS.perInstancePerDay, 24 * 60 * 60_000);
+    if (!global.ok) {
+      log(task, 429, started);
+      return json({ error: 'AI is busy today. Try again later.' }, 429, { ...NO_STORE, 'retry-after': String(global.retryAfter) });
+    }
     const { messages, temperature, max_tokens } = buildMessages(parsed.task, parsed.input);
 
     const controller = new AbortController();

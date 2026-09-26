@@ -14,6 +14,7 @@ import { shortcutsOpen } from '../state';
 import { enableReminders, remindersEnabled } from '../lib/reminders';
 import { AI_DAILY_LIMIT, aiAvailable, aiEnabled, aiReview, checkAiAvailable, setAiEnabled, setAiReview, usedToday } from '../lib/ai';
 import { Modal } from '../components/Modal';
+import { autoTagEnabled } from '../lib/actions';
 
 export function Section({ title, description, children }: { title: string; description?: string; children: ComponentChildren }) {
   return (
@@ -191,6 +192,15 @@ export function Settings() {
         <AiSettings />
 
         <Section title="Links">
+          <Toggle
+            label="Tag links by site"
+            description="Adds #video for YouTube, #docs for Google Docs, #code for GitHub, #classroom, #meeting and a few more."
+            checked={autoTagEnabled.value}
+            onChange={(v) => {
+              autoTagEnabled.value = v;
+              void setSetting('autoTag', v);
+            }}
+          />
           <Toggle
             label="Fetch link previews"
             description="Sends saved links to Cove’s server to read their title, description and image. Turn off to keep links entirely on this device."

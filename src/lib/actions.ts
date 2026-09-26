@@ -3,6 +3,11 @@ import { addItem, restoreItems, trashItems, updateItem } from './repo';
 import { toast } from './toast';
 import type { Item } from './types';
 import type { Parsed } from './parse';
+import { autoTagsFor } from './autotag';
+import { signal } from '@preact/signals';
+
+/** Mirrors the "Tag links by site" setting. */
+export const autoTagEnabled = signal(true);
 
 /** Creates an item from parsed quick-add text. */
 export async function createFromParsed(p: Parsed, extra: Partial<Item> = {}): Promise<Item> {
@@ -12,7 +17,7 @@ export async function createFromParsed(p: Parsed, extra: Partial<Item> = {}): Pr
     url: p.url,
     // Links wait in the preview queue until the app is online.
     preview: p.url ? { status: 'pending' } : null,
-    tags: p.tags,
+    tags: autoTagEnabled.value ? [...p.tags, ...autoTagsFor(p.url)] : p.tags,
     priority: p.priority,
     spaceId: p.spaceId,
     due: p.due,

@@ -10,6 +10,7 @@ import {
   Layers,
   Monitor,
   Moon,
+  Download,
   Plus,
   Search,
   Settings,
@@ -27,6 +28,7 @@ import { toast } from '../lib/toast';
 import { ITEM_MIME, SPACE_MIME } from '../lib/dnd';
 import { themePref, type ThemePref } from '../lib/theme';
 import { menuOpen } from '../state';
+import { installPrompt, promptInstall } from '../lib/pwa';
 
 function NavLink({ href, icon, label, count, exact }: { href: string; icon: ComponentChildren; label: string; count?: number; exact?: boolean }) {
   const { path } = useLocation();
@@ -173,6 +175,12 @@ export function Nav() {
       </div>
 
       <div class="border-t border-border p-2 space-y-0.5 shrink-0">
+        {installPrompt.value && (
+          <button class="w-full flex items-center gap-2.5 px-2.5 h-9 rounded-lg text-sm text-accent bg-accent-fill hover:bg-accent-hover" onClick={() => void promptInstall()}>
+            <Download size={18} />
+            Install Cove
+          </button>
+        )}
         <NavLink href="/stats" icon={<ChartColumn size={18} />} label="Stats" />
         <NavLink href="/archive" icon={<Archive size={18} />} label="Archive" />
         <NavLink href="/trash" icon={<Trash size={18} />} label="Trash" />

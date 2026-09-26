@@ -1,7 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
-import { House, Plus, Search, SquareCheck, Menu } from 'lucide-preact';
+import { House, Plus, Search, SquareCheck, Menu, WifiOff } from 'lucide-preact';
 import { Nav } from './Nav';
 import { Toasts } from './Toasts';
 import { CaptureSheet } from './CaptureSheet';
@@ -10,6 +10,7 @@ import { Palette } from './Palette';
 import { ShortcutsHelp, useShortcuts } from './Shortcuts';
 import { capture, menuOpen, openCapture } from '../state';
 import { filesFromClipboard } from '../lib/files';
+import { online } from '../lib/pwa';
 
 function BottomNav() {
   const { path } = useLocation();
@@ -117,6 +118,11 @@ export function Shell({ children }: { children: ComponentChildren }) {
         <Nav />
       </aside>
       <div class="flex-1 min-w-0 flex flex-col">
+        {!online.value && (
+          <div class="bg-surface3 text-muted text-xs flex items-center justify-center gap-2 py-1.5 px-4" role="status">
+            <WifiOff size={14} /> Offline. Everything still works; link previews will load when you're back.
+          </div>
+        )}
         <main class="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-10">{children}</main>
       </div>
       <BottomNav />

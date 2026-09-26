@@ -3,6 +3,7 @@ import { loadEnv, type Plugin } from 'vite';
 import type { IncomingMessage } from 'node:http';
 import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 function readBody(req: IncomingMessage, max = 64 * 1024): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -59,7 +60,40 @@ export default defineConfig(({ mode }) => {
   // Server-side keys (like GROQ_API_KEY) for the dev API; never exposed to the client bundle.
   Object.assign(process.env, loadEnv(mode, process.cwd(), ''));
   return {
-    plugins: [preact(), tailwindcss(), devApi()],
+    plugins: [
+      preact(),
+      tailwindcss(),
+      devApi(),
+      VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
+        registerType: 'prompt',
+        injectRegister: false,
+        injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'] },
+        devOptions: { enabled: false },
+        manifest: {
+          id: '/',
+          name: 'Cove',
+          short_name: 'Cove',
+          description: 'Links, notes, files and tasks for every class, in one place. Works offline.',
+          start_url: '/',
+          scope: '/',
+          display: 'standalone',
+          display_override: ['window-controls-overlay', 'standalone'],
+          orientation: 'any',
+          background_color: '#fdfcf0',
+          theme_color: '#684c96',
+          categories: ['education', 'productivity'],
+          icons: [
+            { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+            { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+            { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          ],
+        },
+      }),
+    ],
     test: {
       environment: 'node',
       include: ['src/**/*.test.ts', 'api/**/*.test.ts'],

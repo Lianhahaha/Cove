@@ -67,6 +67,7 @@ In the app (`src/lib/ai.ts`):
 
 - [Preact](https://preactjs.com) + TypeScript, built with [Vite](https://vite.dev)
 - [Tailwind CSS v4](https://tailwindcss.com), with the theme in CSS variables
+- Self-hosted fonts from [Fontsource](https://fontsource.org): DM Sans, Fraunces and JetBrains Mono
 - [Dexie](https://dexie.org) over IndexedDB for items, spaces and file blobs
 - [MiniSearch](https://lucaong.github.io/minisearch/) for offline search
 - [marked](https://marked.js.org) + [DOMPurify](https://github.com/cure53/DOMPurify) for safe Markdown

@@ -257,7 +257,7 @@ function QuizResult({ questions, item, onClose }: { questions: Extract<AiResult,
   if (done) {
     return (
       <div class="space-y-4 text-center py-4">
-        <p class="text-3xl font-semibold">
+        <p class="font-display text-3xl font-medium">
           {score}/{questions.length}
         </p>
         <p class="text-muted">{score === questions.length ? 'Perfect. You know this.' : score >= questions.length / 2 ? 'Good work. Review the ones you missed.' : 'Worth another read before the exam.'}</p>

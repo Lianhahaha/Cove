@@ -20,7 +20,7 @@ export function Section({ title, description, children }: { title: string; descr
   return (
     <section class="card p-4 sm:p-5 space-y-4">
       <div>
-        <h2 class="font-semibold">{title}</h2>
+        <h2 class="font-display text-base font-medium">{title}</h2>
         {description && <p class="text-sm text-subtle mt-0.5">{description}</p>}
       </div>
       {children}

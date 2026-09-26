@@ -10,6 +10,10 @@ import { autoTagEnabled } from './lib/actions';
 import { getSetting } from './lib/repo';
 import { startFocusClock } from './lib/focus';
 import { startPdfQueue } from './lib/pdf-text';
+// Self-hosted variable fonts, so text looks the same offline and nothing loads from a font CDN.
+import '@fontsource-variable/dm-sans/wght.css';
+import '@fontsource-variable/fraunces/wght.css';
+import '@fontsource-variable/jetbrains-mono/wght.css';
 import './styles.css';
 
 render(<App />, document.getElementById('app')!);

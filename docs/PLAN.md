@@ -33,7 +33,7 @@ This document is the plan: what gets built, with which tools, in what order, and
 | Tests | Vitest + fake-indexeddb | Parser, database, guardrails and API handlers. |
 | CI | GitHub Actions | Typecheck, test and build on every push. |
 
-No web fonts: the system font stack keeps the first paint instant.
+Fonts: DM Sans (text), Fraunces (titles) and JetBrains Mono (labels), self-hosted as variable fonts. Only the Latin files (about 114 KB) are precached, and `font-display: swap` shows system text until they load.
 
 ## Theme
 

@@ -12,8 +12,8 @@ import { EmptyState } from '../components/EmptyState';
 function Tile({ label, value, note }: { label: string; value: string | number; note?: string }) {
   return (
     <div class="card p-4">
-      <p class="text-xs font-medium text-subtle uppercase tracking-wider">{label}</p>
-      <p class="text-3xl font-semibold tabular-nums mt-1">{value}</p>
+      <p class="eyebrow">{label}</p>
+      <p class="font-display text-3xl font-medium tabular-nums mt-1">{value}</p>
       {note && <p class="text-xs text-subtle mt-1">{note}</p>}
     </div>
   );
@@ -34,7 +34,7 @@ function FinishedChart({ series }: { series: { date: Date; count: number }[] }) 
     <section class="card p-4 sm:p-5">
       <div class="flex items-baseline justify-between gap-2 mb-4">
         <div>
-          <h2 class="font-semibold">Tasks finished</h2>
+          <h2 class="font-display font-medium">Tasks finished</h2>
           <p class="text-xs text-subtle">Last 14 days · {total} in total</p>
         </div>
         <button class="text-xs text-subtle underline" onClick={() => setAsTable(!asTable)}>
@@ -166,7 +166,7 @@ export function Stats() {
             <FinishedChart series={data.series} />
 
             <section class="card p-4 sm:p-5">
-              <h2 class="font-semibold mb-3">By space</h2>
+              <h2 class="font-display font-medium mb-3">By space</h2>
               <div class="space-y-2.5">
                 {rows.map((r) => {
                   const row = data.bySpace.get(r.id)!;

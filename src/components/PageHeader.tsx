@@ -16,7 +16,7 @@ export function PageHeader({ title, subtitle, actions }: Props) {
           <Menu size={20} />
         </button>
         <div class="min-w-0 flex-1">
-          <h1 class="text-lg font-semibold truncate leading-tight">{title}</h1>
+          <h1 class="font-display text-lg font-medium truncate leading-tight">{title}</h1>
           {subtitle && <p class="text-xs text-subtle truncate">{subtitle}</p>}
         </div>
         {actions && <div class="flex items-center gap-1 shrink-0">{actions}</div>}

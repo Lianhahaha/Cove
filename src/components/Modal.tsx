@@ -39,7 +39,7 @@ export function Modal({ title, onClose, children, size = 'md' }: Props) {
         class={`relative w-full ${WIDTH[size]} bg-surface border border-border rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)]`}
       >
         <div class="flex items-center justify-between px-4 pt-3 pb-1">
-          <h2 class="font-semibold">{title}</h2>
+          <h2 class="font-display text-lg font-medium">{title}</h2>
           <button class="icon-btn -mr-2" aria-label="Close" onClick={onClose}>
             <X size={18} />
           </button>

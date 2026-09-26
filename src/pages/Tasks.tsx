@@ -134,7 +134,7 @@ function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; s
     <div class="space-y-6">
       {groups.map(([bucket, items]) => (
         <section key={bucket}>
-          <h2 class={`text-sm font-semibold mb-1 ${bucket === 'overdue' ? 'text-danger' : bucket === 'today' ? 'text-accent' : 'text-subtle'}`}>
+          <h2 class={`eyebrow mb-1 ${bucket === 'overdue' ? 'text-danger' : bucket === 'today' ? 'text-accent' : 'text-subtle'}`}>
             {BUCKET_LABELS[bucket]} <span class="font-normal text-subtle">{items.length}</span>
           </h2>
           <div class="-mx-3 space-y-0.5">
@@ -144,7 +144,7 @@ function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; s
       ))}
       {showDone && done.length > 0 && (
         <section>
-          <h2 class="text-sm font-semibold mb-1 text-subtle">Done <span class="font-normal">{done.length}</span></h2>
+          <h2 class="eyebrow mb-1">Done <span class="font-normal">{done.length}</span></h2>
           <div class="-mx-3 space-y-0.5">
             {done.slice(0, 100).map((i) => <ItemRow key={i.id} item={i} ctx={ctx} />)}
           </div>
@@ -275,7 +275,7 @@ function Calendar({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
   return (
     <div class="space-y-4">
       <div class="flex items-center gap-2">
-        <h2 class="font-semibold text-lg flex-1">{monthLabel}</h2>
+        <h2 class="font-display font-medium text-lg flex-1">{monthLabel}</h2>
         <button class="btn" onClick={() => { const d = new Date(); setMonth(new Date(d.getFullYear(), d.getMonth(), 1)); setSelected(startOfDay(d)); }}>Today</button>
         <button class="icon-btn" aria-label="Previous month" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft size={18} /></button>
         <button class="icon-btn" aria-label="Next month" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight size={18} /></button>
@@ -347,7 +347,7 @@ function Calendar({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
 
       <section>
         <div class="flex items-center justify-between mb-1">
-          <h3 class="text-sm font-semibold text-subtle">{selectedLabel}</h3>
+          <h3 class="eyebrow">{selectedLabel}</h3>
           <button
             class="btn btn-soft min-h-8"
             // Written with the year so a past day isn't read as next year's.

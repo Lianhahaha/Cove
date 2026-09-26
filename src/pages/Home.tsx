@@ -20,7 +20,7 @@ function Section({ title, icon, href, children }: { title: string; icon: Compone
   return (
     <section>
       <div class="flex items-center justify-between mb-1.5">
-        <h2 class="text-sm font-semibold text-subtle uppercase tracking-wider flex items-center gap-2">
+        <h2 class="eyebrow flex items-center gap-2">
           {icon}
           {title}
         </h2>
@@ -91,7 +91,7 @@ export function Home() {
 
         {spaces && spaces.length > 0 && (
           <section>
-            <h2 class="text-sm font-semibold text-subtle uppercase tracking-wider mb-2">Spaces</h2>
+            <h2 class="eyebrow mb-2">Spaces</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {spaces.map((s) => (
                 <a key={s.id} href={`/s/${s.id}`} class="card p-3 flex items-center gap-3 hover:border-border2" style={{ borderLeft: `4px solid ${s.color}` }}>

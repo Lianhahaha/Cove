@@ -86,9 +86,11 @@
   --color-chart: var(--c-chart);
 }
 
+/* Three voices: DM Sans for reading, Fraunces for titles, JetBrains Mono for small labels and syntax. */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans: "DM Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --breakpoint-xs: 480px;
 }
 
@@ -226,19 +228,24 @@
     flex-wrap: wrap;
     gap: 0.25rem 0.75rem;
     padding: 0 0.875rem 0.5rem;
+    font-family: var(--font-mono);
     font-size: 0.6875rem;
     color: var(--c-subtle);
   }
   /* Syntax hints show only while the box is focused and empty. */
   .composer:has(.composer-input:focus:placeholder-shown) .composer-hint { display: flex; }
+  /* Small uppercase section and field labels. */
+  .eyebrow, .label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--c-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
   .label {
     display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--c-subtle);
     margin-bottom: 0.3rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
   .chip {
     display: inline-flex;
@@ -271,7 +278,7 @@
 @layer components {
   .prose-cove { font-size: 0.95rem; line-height: 1.65; overflow-wrap: anywhere; }
   .prose-cove > * + * { margin-top: 0.6em; }
-  .prose-cove h1, .prose-cove h2, .prose-cove h3 { font-weight: 600; line-height: 1.3; margin-top: 1em; }
+  .prose-cove h1, .prose-cove h2, .prose-cove h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.3; margin-top: 1em; }
   .prose-cove h1 { font-size: 1.3em; }
   .prose-cove h2 { font-size: 1.15em; }
   .prose-cove h3 { font-size: 1.05em; }

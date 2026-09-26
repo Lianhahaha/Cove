@@ -23,7 +23,7 @@ export function FocusPill() {
         onClick={() => s.itemId && navigate(`${location.pathname}?item=${s.itemId}`)}
       >
         <Timer size={16} class={s.mode === 'focus' ? 'text-accent' : 'text-subtle'} />
-        <span class="font-semibold tabular-nums">{formatClock(left)}</span>
+        <span class="font-mono font-medium tabular-nums">{formatClock(left)}</span>
         <span class="text-xs text-subtle truncate max-w-32 hidden xs:inline">{s.mode === 'focus' ? s.title : 'Break'}</span>
       </button>
       <button class="icon-btn w-8 h-8" aria-label={paused ? 'Resume' : 'Pause'} onClick={() => (paused ? resumeFocus() : pauseFocus())}>

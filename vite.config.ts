@@ -72,7 +72,8 @@ export default defineConfig(({ mode }) => {
         registerType: 'prompt',
         injectRegister: false,
         injectManifest: {
-          globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+          // Only the Latin font files are precached; other scripts load their fonts on first use.
+          globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}', '**/*-latin-wght-normal-*.woff2'],
           // pdf.js is 1.7 MB and only needed once a PDF is attached, so it's cached on first use instead.
           globIgnores: ['**/pdf-*.js', '**/pdf.worker*'],
         },

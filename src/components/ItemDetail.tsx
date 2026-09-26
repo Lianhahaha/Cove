@@ -171,7 +171,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
         )}
 
         <textarea
-          class="w-full bg-transparent outline-none text-xl font-semibold resize-none leading-snug"
+          class="w-full bg-transparent outline-none font-display text-xl font-medium resize-none leading-snug"
           rows={1}
           placeholder={displayTitle(item) === 'Untitled' ? 'Title' : displayTitle(item)}
           value={title}

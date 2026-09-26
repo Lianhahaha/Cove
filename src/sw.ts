@@ -69,6 +69,9 @@ registerRoute(
   }),
 );
 
+// Take control of open pages on first install, so notification clicks and offline work right away.
+sw.addEventListener('activate', (event) => event.waitUntil(sw.clients.claim()));
+
 sw.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') void sw.skipWaiting();
 });
@@ -83,7 +86,9 @@ sw.addEventListener('notificationclick', (event) => {
       const client = clients.find((c) => new URL(c.url).origin === sw.location.origin);
       if (client) {
         await client.focus();
-        await (client as WindowClient).navigate(url).catch(() => client.postMessage({ type: 'NAVIGATE', url }));
+        // navigate() fails on pages this worker doesn't control yet; ask the page to route itself then.
+        const path = new URL(url).pathname + new URL(url).search;
+        await (client as WindowClient).navigate(url).catch(() => client.postMessage({ type: 'NAVIGATE', url: path }));
       } else {
         await sw.clients.openWindow(url);
       }

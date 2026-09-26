@@ -35,7 +35,14 @@ export function startPwa(): void {
   if (!('serviceWorker' in navigator) || import.meta.env.DEV) return;
   // The service worker asks the page to open a task when a reminder is clicked.
   navigator.serviceWorker.addEventListener('message', (e) => {
-    if (e.data?.type === 'NAVIGATE' && typeof e.data.url === 'string' && e.data.url.startsWith('/')) navigate(e.data.url);
+    if (e.data?.type !== 'NAVIGATE' || typeof e.data.url !== 'string') return;
+    // Only ever route within the app: resolve the URL and require the same origin ("//evil.example" resolves elsewhere).
+    try {
+      const target = new URL(e.data.url, location.origin);
+      if (target.origin === location.origin) navigate(target.pathname + target.search);
+    } catch {
+      /* not a URL */
+    }
   });
   const updateSW = registerSW({
     onNeedRefresh() {

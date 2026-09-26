@@ -61,7 +61,7 @@ In the app (`src/lib/ai.ts`):
 
 ## Link preview safety
 
-`/api/preview` fetches URLs that users typed, which is a classic server-side request forgery risk. It only fetches public `http(s)` URLs on default ports, checks every address a hostname resolves to inside the connection's own DNS lookup (so DNS rebinding can't slip past), refuses private, loopback, link-local, carrier-grade NAT, multicast and other reserved ranges for both IPv4 and IPv6, re-checks each redirect, and stops after 6 seconds or 512 KB. See `api/_lib/net-guard.ts` and its tests.
+`/api/preview` fetches URLs that users typed, which is a classic server-side request forgery risk. It only fetches public `http(s)` URLs on default ports, checks every address a hostname resolves to inside the connection's own DNS lookup (so DNS rebinding can't slip past), refuses private, loopback, link-local, carrier-grade NAT, multicast and other reserved ranges for both IPv4 and IPv6, re-checks each redirect, and stops after 6 seconds or 1 MB (with headers capped at 64 KB). See `api/_lib/net-guard.ts` and its tests.
 
 ## Tech stack
 

@@ -24,12 +24,17 @@ export function decodeEntities(s: string): string {
   });
 }
 
-/** Collapses whitespace, strips control characters and any tags, and clamps length. */
+/**
+ * Collapses whitespace, strips control characters and any tags, and clamps length.
+ * Invisible zero-width and direction marks go too: they make titles look indented
+ * and a right-to-left override can make a title read backwards.
+ */
 function clean(s: string | undefined, max: number): string | undefined {
   if (!s) return undefined;
   const out = decodeEntities(s)
     .replace(/<[^>]*>/g, '')
     .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/[​-‏‪-‮⁦-⁩﻿]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, max);

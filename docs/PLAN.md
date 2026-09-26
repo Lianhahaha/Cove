@@ -145,7 +145,7 @@ Fetching arbitrary URLs from a server is a classic SSRF risk, so:
 - Only `http` and `https`, default ports only, no credentials in the URL.
 - The hostname is resolved and every address is checked. Private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges are refused (IPv4 and IPv6, including IPv4-mapped IPv6). The check runs inside the connection's DNS lookup, so a rebinding DNS answer can't slip past it.
 - At most 3 redirects, each one checked again.
-- 6-second timeout, at most 512 KB read, HTML only.
+- 6-second timeout, at most 1 MB read and 64 KB of headers, HTML only.
 - Only metadata tags are parsed, and every value is length-clamped. Image and favicon URLs must be `http(s)`.
 - Responses are cached at the edge for a day.
 

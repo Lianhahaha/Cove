@@ -6,7 +6,10 @@ import { assertFetchableUrl, BlockedUrlError, safeLookup } from './net-guard';
 
 export const FETCH_LIMITS = {
   timeoutMs: 6000,
-  maxBytes: 512 * 1024,
+  // Heavy app pages (Gemini, for one) put their <title> 800 KB in, past a smaller cap.
+  maxBytes: 1024 * 1024,
+  // Google sends ~20 KB of headers, over Node's 16 KB default, which failed the whole request.
+  maxHeaderBytes: 64 * 1024,
   maxRedirects: 3,
 };
 
@@ -88,6 +91,7 @@ function requestOnce(url: URL, signal: AbortSignal): Promise<{ redirect?: URL; p
       {
         method: 'GET',
         lookup: safeLookup as never,
+        maxHeaderSize: FETCH_LIMITS.maxHeaderBytes,
         signal,
         headers: {
           'user-agent': 'Mozilla/5.0 (compatible; CoveLinkPreview/1.0; +https://github.com/Lianhahaha/Cove)',

@@ -37,6 +37,11 @@ describe('parseMeta', () => {
     expect(meta.title).toBe('Hi');
   });
 
+  it('removes invisible direction and zero-width marks', () => {
+    expect(parseMeta('<head><meta property="og:title" content="&#x200E;Google Gemini"></head>', page).title).toBe('Google Gemini');
+    expect(parseMeta('<head><title>‮gnp.exe‬</title></head>', page).title).toBe('gnp.exe');
+  });
+
   it('clamps very long values', () => {
     const html = `<head><meta name="description" content="${'x'.repeat(5000)}"></head>`;
     expect(parseMeta(html, page).description).toHaveLength(500);

@@ -82,6 +82,11 @@ describe('dates', () => {
     expect(p('old 3/1/2025').due).toBe(day(2025, 3, 1));
   });
 
+  it('keeps a date from the last two months in this year', () => {
+    expect(p('overdue lab sep 20').due).toBe(day(2026, 9, 20));
+    expect(p('late thing 8/1').due).toBe(day(2026, 8, 1));
+  });
+
   it('rejects impossible dates', () => {
     expect(p('thing 2/31').due).toBeNull();
   });

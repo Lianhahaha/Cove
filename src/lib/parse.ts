@@ -45,12 +45,19 @@ function makeDate(y: number, m: number, day: number): Date | null {
   return d.getMonth() === m && d.getDate() === day ? d : null;
 }
 
-/** For dates written without a year, a date already past means next year. */
+/** A date this many days back is still read as this year's (someone logging a late task). */
+const RECENT_PAST_DAYS = 60;
+
+/**
+ * For dates written without a year: a date in the last two months stays in
+ * this year, and anything further back means next year.
+ */
 function upcoming(now: Date, m: number, day: number): Date | null {
   const today = startOfDay(now);
   const d = makeDate(today.getFullYear(), m, day);
   if (!d) return null;
-  return d < today ? makeDate(today.getFullYear() + 1, m, day) : d;
+  const daysAgo = (today.getTime() - d.getTime()) / 86_400_000;
+  return daysAgo > RECENT_PAST_DAYS ? makeDate(today.getFullYear() + 1, m, day) : d;
 }
 
 function fullYear(y: string | undefined, now: Date): number | null {

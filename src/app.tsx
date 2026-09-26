@@ -1,6 +1,5 @@
 import { LocationProvider, Router, Route } from 'preact-iso';
 import { Shell } from './components/Shell';
-import { Placeholder } from './pages/Placeholder';
 import { NotFound } from './pages/NotFound';
 import { Home } from './pages/Home';
 import { AllItems, ArchivePage, Favorites, Inbox, TagPage } from './pages/Lists';
@@ -10,8 +9,7 @@ import { Tasks } from './pages/Tasks';
 import { Search } from './pages/Search';
 import { Trash } from './pages/Trash';
 import { Settings } from './pages/Settings';
-
-const page = (title: string) => () => <Placeholder title={title} />;
+import { Stats } from './pages/Stats';
 
 export function App() {
   return (
@@ -29,7 +27,7 @@ export function App() {
           <Route path="/search" component={Search} />
           <Route path="/archive" component={ArchivePage} />
           <Route path="/trash" component={Trash} />
-          <Route path="/stats" component={page('Stats')} />
+          <Route path="/stats" component={Stats} />
           <Route path="/settings" component={Settings} />
           <Route default component={NotFound} />
         </Router>

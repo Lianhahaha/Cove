@@ -19,6 +19,8 @@
   --c-on-accent: #fffffa;
   --c-danger: #a3413a;
   --c-danger-fill: #f8e3df;
+  /* Chart marks: validated for lightness, chroma and contrast on each surface. */
+  --c-chart: #684c96;
   color-scheme: light;
 }
 
@@ -38,6 +40,7 @@
   --c-on-accent: #191816;
   --c-danger: #f0a39b;
   --c-danger-fill: #4a2a27;
+  --c-chart: #9a7ee0;
   color-scheme: dark;
 }
 
@@ -59,6 +62,7 @@
     --c-on-accent: #191816;
     --c-danger: #f0a39b;
     --c-danger-fill: #4a2a27;
+    --c-chart: #9a7ee0;
     color-scheme: dark;
   }
 }
@@ -79,6 +83,7 @@
   --color-on-accent: var(--c-on-accent);
   --color-danger: var(--c-danger);
   --color-danger-fill: var(--c-danger-fill);
+  --color-chart: var(--c-chart);
 }
 
 @theme {

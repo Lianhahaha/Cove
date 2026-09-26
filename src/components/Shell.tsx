@@ -5,10 +5,10 @@ import { House, Plus, Search, SquareCheck, Menu, WifiOff } from 'lucide-preact';
 import { Nav } from './Nav';
 import { Toasts } from './Toasts';
 import { CaptureSheet } from './CaptureSheet';
-import { ItemDetail } from './ItemDetail';
-import { Palette } from './Palette';
+import { useLazyComponent } from './lazy';
+import { useItemNav } from '../lib/nav';
 import { ShortcutsHelp, useShortcuts } from './Shortcuts';
-import { capture, menuOpen, openCapture } from '../state';
+import { capture, menuOpen, openCapture, paletteOpen } from '../state';
 import { filesFromClipboard } from '../lib/files';
 import { online } from '../lib/pwa';
 
@@ -112,6 +112,9 @@ function useGlobalFileCapture() {
 export function Shell({ children }: { children: ComponentChildren }) {
   useGlobalFileCapture();
   useShortcuts();
+  const { openId } = useItemNav();
+  const ItemDetail = useLazyComponent(!!openId, () => import('./ItemDetail').then((m) => m.ItemDetail));
+  const Palette = useLazyComponent(paletteOpen.value, () => import('./Palette').then((m) => m.Palette));
   return (
     <div class="min-h-dvh flex">
       <aside class="hidden md:block w-64 shrink-0 sticky top-0 h-dvh border-r border-border bg-surface">
@@ -127,9 +130,9 @@ export function Shell({ children }: { children: ComponentChildren }) {
       </div>
       <BottomNav />
       <MobileMenu />
-      <ItemDetail />
+      {ItemDetail && <ItemDetail />}
       <CaptureSheet />
-      <Palette />
+      {Palette && <Palette />}
       <ShortcutsHelp />
       <Toasts />
     </div>

@@ -1,15 +1,17 @@
-import { LocationProvider, Router, Route } from 'preact-iso';
+import { LocationProvider, Router, Route, lazy } from 'preact-iso';
 import { Shell } from './components/Shell';
 import { NotFound } from './pages/NotFound';
 import { Home } from './pages/Home';
 import { AllItems, ArchivePage, Favorites, Inbox, TagPage } from './pages/Lists';
-import { Tags } from './pages/Tags';
 import { SpacePage } from './pages/SpacePage';
-import { Tasks } from './pages/Tasks';
-import { Search } from './pages/Search';
-import { Trash } from './pages/Trash';
-import { Settings } from './pages/Settings';
-import { Stats } from './pages/Stats';
+
+// Screens other than the lists load on first visit; every chunk is precached for offline use.
+const Tasks = lazy(() => import('./pages/Tasks').then((m) => m.Tasks));
+const Search = lazy(() => import('./pages/Search').then((m) => m.Search));
+const Tags = lazy(() => import('./pages/Tags').then((m) => m.Tags));
+const Trash = lazy(() => import('./pages/Trash').then((m) => m.Trash));
+const Settings = lazy(() => import('./pages/Settings').then((m) => m.Settings));
+const Stats = lazy(() => import('./pages/Stats').then((m) => m.Stats));
 
 export function App() {
   return (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { markdownSnippet } from './markdown';
+import { markdownSnippet } from './snippet';
 
 describe('markdownSnippet', () => {
   it('drops task-list checkboxes', () => {

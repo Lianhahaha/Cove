@@ -6,7 +6,7 @@ import { addFiles, filesFromClipboard, formatBytes, nameForPasted } from '../lib
 import { toast } from '../lib/toast';
 import { Modal } from './Modal';
 import { QuickAdd } from './QuickAdd';
-import { AiPanel } from './AiPanel';
+import { useLazyComponent } from './lazy';
 import { aiEnabled } from '../lib/ai';
 
 /** The capture dialog opened from the + button, shortcuts, drops, pastes and the share target. */
@@ -23,6 +23,7 @@ function CaptureBody() {
   const [files, setFiles] = useState<File[]>(c.files ?? []);
   const [text, setText] = useState(c.text ?? '');
   const [findTasks, setFindTasks] = useState(false);
+  const AiPanel = useLazyComponent(findTasks, () => import('./AiPanel').then((m) => m.AiPanel));
   const input = useRef<HTMLInputElement>(null);
   // Inside a space, new items land in that space unless the text says otherwise.
   const spaceFromRoute = path.startsWith('/s/') ? path.slice(3) : null;
@@ -94,7 +95,7 @@ function CaptureBody() {
           </ul>
         )}
       </div>
-      {findTasks && (
+      {findTasks && AiPanel && (
         <AiPanel
           task="extract_tasks"
           payload={{ title: '', text }}

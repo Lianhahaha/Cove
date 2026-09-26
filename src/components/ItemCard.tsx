@@ -3,7 +3,7 @@ import { Check, CalendarDays, FileText, Flag, Link as LinkIcon, ListChecks, Lock
 import type { Item, Space } from '../lib/types';
 import { displayTitle, hostOf } from '../lib/queries';
 import { dueBucket, formatDue } from '../lib/dates';
-import { markdownSnippet } from '../lib/markdown';
+import { markdownSnippet } from '../lib/snippet';
 import { setDone } from '../lib/actions';
 import { ITEM_MIME } from '../lib/dnd';
 

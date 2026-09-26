@@ -71,7 +71,7 @@ In the app (`src/lib/ai.ts`):
 - Vercel Functions for `/api/preview` and `/api/ai`, calling [Groq](https://groq.com)'s free tier
 - [Vitest](https://vitest.dev) and fake-indexeddb for tests, GitHub Actions for CI
 
-The first load is about 115 KB of gzipped JavaScript. Backup tooling loads only when used.
+The first load is about 75 KB of gzipped JavaScript. The item editor, AI panel, command palette, search index, backups and less-used screens load the first time they are opened, and the service worker precaches them all for offline use.
 
 ## Getting started
 

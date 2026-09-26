@@ -6,25 +6,27 @@ import type { ChecklistEntry } from '../lib/types';
 
 /** Calls `save` once typing pauses, and flushes on unmount so nothing is lost. */
 export function useDebouncedSave<T>(value: T, save: (v: T) => void, ms = 400) {
-  const first = useRef(true);
-  const latest = useRef({ value, save, pending: false });
-  latest.current.value = value;
-  latest.current.save = save;
+  // The last value written, starting with the one loaded.
+  const saved = useRef(value);
+  const latest = useRef({ value, save });
+  latest.current = { value, save };
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    latest.current.pending = true;
+    if (value === saved.current) return;
     const t = setTimeout(() => {
-      latest.current.pending = false;
+      saved.current = value;
       save(value);
     }, ms);
     return () => clearTimeout(t);
   }, [value]);
+  // Compares against what was saved rather than waiting for the effect above:
+  // effects run after paint, so text typed in the frame before closing would be missed.
   useEffect(
     () => () => {
-      if (latest.current.pending) latest.current.save(latest.current.value);
+      const { value, save } = latest.current;
+      if (value !== saved.current) {
+        saved.current = value;
+        save(value);
+      }
     },
     [],
   );

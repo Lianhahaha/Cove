@@ -5,9 +5,11 @@ import {
   ArchiveRestore,
   ArrowLeft,
   CalendarPlus,
+  Check,
   Copy,
   CopyPlus,
   ExternalLink,
+  Link as LinkIcon,
   Lock,
   LockOpen,
   Pin,
@@ -102,6 +104,11 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
 
   const patch = (p: Partial<Item>) => updateItem(item.id, p);
   const isTask = item.status !== 'none';
+  const [linkOpen, setLinkOpen] = useState(false);
+  const showLink = item.kind === 'link' || !!item.url || linkOpen;
+  const noun = isTask ? 'task' : item.kind === 'link' ? 'link' : item.kind === 'file' ? 'file' : 'note';
+  // Nothing to save yet: closing would discard it anyway.
+  const blank = item.kind === 'note' && !title.trim() && !body.trim();
 
   function saveUrl() {
     const v = url.trim();
@@ -203,7 +210,19 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
           aria-label="Title"
         />
 
-        {(item.kind === 'link' || item.url) && (
+        {!showLink && (
+          <button
+            class="btn btn-ghost -ml-2 -my-2 text-sm text-subtle"
+            onClick={() => {
+              setLinkOpen(true);
+              requestAnimationFrame(() => document.getElementById('item-url')?.focus());
+            }}
+          >
+            <LinkIcon size={16} /> Add a link
+          </button>
+        )}
+
+        {showLink && (
           <div>
             <FieldLabel text="Link" htmlFor="item-url" info="The web address this item saves. When you’re online, Cove fetches its title, picture and icon. Tap Open to visit it." />
             <div class="flex gap-2">
@@ -324,6 +343,24 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
           {item.completedAt ? ` · Done ${timeAgo(item.completedAt)}` : ''}
           {item.focusMins ? ` · Focused ${item.focusMins} min` : ''}
         </p>
+      </div>
+
+      {/* Everything saves as you type; this makes finishing obvious and closes the panel. */}
+      <div class="sticky bottom-0 z-10 bg-surface/95 backdrop-blur border-t border-border px-4 md:px-6 py-3 flex items-center gap-3">
+        <span class="flex-1 min-w-0 flex items-center gap-1.5 text-xs text-subtle">
+          <Check size={14} class="shrink-0" /> Changes save as you type
+        </span>
+        <button
+          class="btn btn-primary"
+          disabled={blank}
+          title={blank ? 'Write a title or some text first' : undefined}
+          onClick={() => {
+            onClose();
+            toast(`${noun[0].toUpperCase()}${noun.slice(1)} saved`);
+          }}
+        >
+          Save {noun}
+        </button>
       </div>
     </div>
   );

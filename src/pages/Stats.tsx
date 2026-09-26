@@ -5,6 +5,7 @@ import { useLive } from '../lib/live';
 import { dueBucket } from '../lib/dates';
 import { isOpenTask } from '../lib/queries';
 import { finishedPerDay, sinceDays, streak } from '../lib/stats';
+import { focusLog } from '../lib/focus';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyState } from '../components/EmptyState';
 
@@ -109,6 +110,9 @@ function FinishedChart({ series }: { series: { date: Date; count: number }[] }) 
 export function Stats() {
   const items = useLive(() => db.items.filter((i) => !i.deletedAt).toArray(), []);
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt).toArray(), []) ?? [];
+  const log = useLive(() => focusLog(), []) ?? [];
+  const weekAgo = Date.now() - 7 * 86_400_000;
+  const focusWeek = log.filter((f) => f.at >= weekAgo).reduce((n, f) => n + f.minutes, 0);
 
   const data = useMemo(() => {
     const all = items ?? [];
@@ -153,6 +157,11 @@ export function Stats() {
               <Tile label="Open tasks" value={data.open} note={data.overdue ? `${data.overdue} overdue` : 'none overdue'} />
               <Tile label="Saved" value={data.total} note={`${data.addedWeek} this week`} />
             </div>
+            {focusWeek > 0 && (
+              <p class="text-sm text-muted">
+                You focused for <span class="font-semibold text-text tabular-nums">{focusWeek >= 60 ? `${Math.floor(focusWeek / 60)}h ${focusWeek % 60}m` : `${focusWeek} min`}</span> this week.
+              </p>
+            )}
 
             <FinishedChart series={data.series} />
 

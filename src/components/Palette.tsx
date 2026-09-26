@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
 import type { ComponentChildren } from 'preact';
-import { Archive, ChartColumn, CornerDownLeft, Hash, House, Inbox, Layers, Moon, Plus, Search, Settings, SquareCheck, Star, Trash } from 'lucide-preact';
+import { Archive, ChartColumn, Timer, CornerDownLeft, Hash, House, Inbox, Layers, Moon, Plus, Search, Settings, SquareCheck, Star, Trash } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { search, searchIndex, startSearchIndex } from '../lib/search';
@@ -10,6 +10,7 @@ import { themePref } from '../lib/theme';
 import { openCapture, paletteOpen } from '../state';
 import type { Item } from '../lib/types';
 import { VIEW_NAMES, VIEW_TITLES } from '../pages/Lists';
+import { startFocus } from '../lib/focus';
 
 interface Command {
   id: string;
@@ -51,6 +52,7 @@ function PaletteBody() {
       { id: 'fav', label: 'Go to Favorites', icon: <Star size={16} />, run: go('/favorites') },
       { id: 'tags', label: 'Go to Tags', icon: <Hash size={16} />, run: go('/tags') },
       { id: 'search', label: 'Search', hint: '/', icon: <Search size={16} />, run: go('/search') },
+      { id: 'focus', label: 'Start a 25-minute focus timer', icon: <Timer size={16} />, run: () => void startFocus(null, 25) },
       { id: 'stats', label: 'Go to Stats', icon: <ChartColumn size={16} />, run: go('/stats') },
       { id: 'archive', label: 'Go to Archive', icon: <Archive size={16} />, run: go('/archive') },
       { id: 'trash', label: 'Go to Trash', icon: <Trash size={16} />, run: go('/trash') },

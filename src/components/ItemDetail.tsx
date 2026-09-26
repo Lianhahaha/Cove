@@ -35,6 +35,7 @@ import { downloadIcs } from '../lib/ics';
 import { REMINDER_PRESETS, remindersEnabled } from '../lib/reminders';
 import { AI_TASK_LABELS, aiBlockedReason, aiEnabled, type AiTask } from '../lib/ai';
 import { AiPanel } from './AiPanel';
+import { FocusStarter } from './FocusTimer';
 import { addFiles, filesFromClipboard } from '../lib/files';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
@@ -148,6 +149,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
         <button class="icon-btn md:hidden" aria-label="Back" onClick={onClose}><ArrowLeft size={20} /></button>
         <div class="flex-1" />
         <AiMenu item={item} />
+        <FocusStarter itemId={item.id} />
         {iconAction(item.pinned ? 'Unpin' : 'Pin', item.pinned ? <PinOff size={18} /> : <Pin size={18} />, () => patch({ pinned: !item.pinned }), item.pinned)}
         {iconAction(item.favorite ? 'Remove from favorites' : 'Add to favorites', <Star size={18} class={item.favorite ? 'fill-current' : ''} />, () => patch({ favorite: !item.favorite }), item.favorite)}
         {iconAction(item.private ? 'Make not private' : 'Make private (never sent to AI)', item.private ? <Lock size={18} /> : <LockOpen size={18} />, () => patch({ private: !item.private }), item.private)}
@@ -298,6 +300,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
         <p class="text-xs text-subtle">
           Added {timeAgo(item.createdAt)} · Edited {timeAgo(item.updatedAt)}
           {item.completedAt ? ` · Done ${timeAgo(item.completedAt)}` : ''}
+          {item.focusMins ? ` · Focused ${item.focusMins} min` : ''}
         </p>
       </div>
     </div>

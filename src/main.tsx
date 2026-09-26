@@ -8,12 +8,14 @@ import { handleLaunchParams } from './lib/share';
 import { loadAiSettings } from './lib/ai';
 import { autoTagEnabled } from './lib/actions';
 import { getSetting } from './lib/repo';
+import { startFocusClock } from './lib/focus';
 import './styles.css';
 
 render(<App />, document.getElementById('app')!);
 startPwa();
 startPreviewQueue();
 startReminders();
+startFocusClock();
 void handleLaunchParams();
 void loadAiSettings();
 void getSetting('autoTag', true).then((v) => (autoTagEnabled.value = v));

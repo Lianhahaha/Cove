@@ -115,6 +115,7 @@ export function toItem(v: unknown): Item | null {
     remindAt: num(r.remindAt),
     estimateMins: num(r.estimateMins),
     completedAt: num(r.completedAt),
+    focusMins: Math.max(0, Math.round(num(r.focusMins) ?? 0)),
     order: num(r.order) ?? now,
     createdAt: num(r.createdAt) ?? now,
     updatedAt: num(r.updatedAt) ?? now,

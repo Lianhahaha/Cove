@@ -6,6 +6,7 @@ import { Nav } from './Nav';
 import { Toasts } from './Toasts';
 import { CaptureSheet } from './CaptureSheet';
 import { useLazyComponent } from './lazy';
+import { FocusPill } from './FocusTimer';
 import { useItemNav } from '../lib/nav';
 import { ShortcutsHelp, useShortcuts } from './Shortcuts';
 import { capture, menuOpen, openCapture, paletteOpen } from '../state';
@@ -134,6 +135,7 @@ export function Shell({ children }: { children: ComponentChildren }) {
       <CaptureSheet />
       {Palette && <Palette />}
       <ShortcutsHelp />
+      <FocusPill />
       <Toasts />
     </div>
   );

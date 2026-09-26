@@ -60,6 +60,7 @@ export default defineConfig(({ mode }) => {
   // Server-side keys (like GROQ_API_KEY) for the dev API; never exposed to the client bundle.
   Object.assign(process.env, loadEnv(mode, process.cwd(), ''));
   return {
+    define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0') },
     plugins: [
       preact(),
       tailwindcss(),

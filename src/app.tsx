@@ -9,6 +9,7 @@ import { SpacePage } from './pages/SpacePage';
 import { Tasks } from './pages/Tasks';
 import { Search } from './pages/Search';
 import { Trash } from './pages/Trash';
+import { Settings } from './pages/Settings';
 
 const page = (title: string) => () => <Placeholder title={title} />;
 
@@ -29,7 +30,7 @@ export function App() {
           <Route path="/archive" component={ArchivePage} />
           <Route path="/trash" component={Trash} />
           <Route path="/stats" component={page('Stats')} />
-          <Route path="/settings" component={page('Settings')} />
+          <Route path="/settings" component={Settings} />
           <Route default component={NotFound} />
         </Router>
       </Shell>

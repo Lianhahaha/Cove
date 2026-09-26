@@ -26,6 +26,8 @@ import { displayTitle, hostOf } from '../lib/queries';
 import { toast } from '../lib/toast';
 import type { Item, Priority, Recurrence, TaskStatus } from '../lib/types';
 import { ChecklistEditor, MarkdownField, TagEditor, useDebouncedSave } from './fields';
+import { Attachments } from './Attachments';
+import { addFiles, filesFromClipboard } from '../lib/files';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
   { value: 'todo', label: 'To do' },
@@ -121,7 +123,17 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   );
 
   return (
-    <div class="flex flex-col min-h-full">
+    <div
+      class="flex flex-col min-h-full"
+      onPaste={(e) => {
+        // A pasted image or file attaches to the item instead of vanishing.
+        const files = filesFromClipboard(e);
+        if (files.length) {
+          e.preventDefault();
+          void addFiles(item.id, files);
+        }
+      }}
+    >
       <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-1 px-2 h-14 border-b border-border">
         <button class="icon-btn md:hidden" aria-label="Back" onClick={onClose}><ArrowLeft size={20} /></button>
         <div class="flex-1" />
@@ -188,6 +200,8 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
         )}
 
         <MarkdownField value={body} onChange={setBody} />
+
+        <Attachments itemId={item.id} />
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

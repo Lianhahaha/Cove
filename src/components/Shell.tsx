@@ -6,7 +6,8 @@ import { Nav } from './Nav';
 import { Toasts } from './Toasts';
 import { CaptureSheet } from './CaptureSheet';
 import { ItemDetail } from './ItemDetail';
-import { menuOpen, openCapture } from '../state';
+import { capture, menuOpen, openCapture } from '../state';
+import { filesFromClipboard } from '../lib/files';
 
 function BottomNav() {
   const { path } = useLocation();
@@ -68,7 +69,45 @@ function MobileMenu() {
   );
 }
 
+const isEditable = (el: EventTarget | null) =>
+  el instanceof HTMLElement && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
+
+/** Files dropped or pasted anywhere outside an open item start a new capture. */
+function useGlobalFileCapture() {
+  useEffect(() => {
+    const busy = () => capture.value.open || new URLSearchParams(location.search).has('item');
+    const onDragOver = (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes('Files')) e.preventDefault();
+    };
+    const onDrop = (e: DragEvent) => {
+      const files = [...(e.dataTransfer?.files ?? [])];
+      if (!files.length) return;
+      // Always stop the browser from navigating away to the dropped file.
+      e.preventDefault();
+      if (!busy()) openCapture({ files });
+    };
+    const onPaste = (e: ClipboardEvent) => {
+      if (busy() || isEditable(e.target)) return;
+      const files = filesFromClipboard(e);
+      const text = e.clipboardData?.getData('text/plain')?.trim();
+      if (files.length) openCapture({ files });
+      else if (text) openCapture({ text });
+      else return;
+      e.preventDefault();
+    };
+    addEventListener('dragover', onDragOver);
+    addEventListener('drop', onDrop);
+    addEventListener('paste', onPaste);
+    return () => {
+      removeEventListener('dragover', onDragOver);
+      removeEventListener('drop', onDrop);
+      removeEventListener('paste', onPaste);
+    };
+  }, []);
+}
+
 export function Shell({ children }: { children: ComponentChildren }) {
+  useGlobalFileCapture();
   return (
     <div class="min-h-dvh flex">
       <aside class="hidden md:block w-64 shrink-0 sticky top-0 h-dvh border-r border-border bg-surface">

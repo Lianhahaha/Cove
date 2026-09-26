@@ -43,9 +43,13 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
   const base = useCardContext(showSpace);
 
   const visible = useMemo(() => {
-    const list = (items ?? []).filter((i) => (kind === 'all' ? true : kind === 'task' ? i.status !== 'none' : i.kind === kind));
+    // "Files" also covers notes and links that have attachments.
+    const hasFiles = (i: Item) => i.kind === 'file' || base.fileCounts.has(i.id);
+    const list = (items ?? []).filter((i) =>
+      kind === 'all' ? true : kind === 'task' ? i.status !== 'none' : kind === 'file' ? hasFiles(i) : i.kind === kind,
+    );
     return sortItems(list, sort);
-  }, [items, kind, sort]);
+  }, [items, kind, sort, base.fileCounts]);
 
   const ctx = useMemo(
     () => ({
@@ -65,9 +69,10 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
     for (const i of items ?? []) {
       s.add(i.kind);
       if (i.status !== 'none') s.add('task');
+      if (base.fileCounts.has(i.id)) s.add('file');
     }
     return (Object.keys(KIND_LABELS) as KindFilter[]).filter((k) => s.has(k));
-  }, [items]);
+  }, [items, base.fileCounts]);
 
   return (
     <>

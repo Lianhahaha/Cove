@@ -23,6 +23,8 @@ interface Props {
   footer?: ComponentChildren;
   /** Lets a parent add files: called with the created item before onCreated. */
   beforeDone?: (items: Item[]) => Promise<void>;
+  /** Files waiting to be attached. With files, the text may be empty. */
+  attachments?: File[];
   compact?: boolean;
 }
 
@@ -40,7 +42,7 @@ function Chip({ icon, label, onRemove }: { icon: ComponentChildren; label: strin
   );
 }
 
-export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, extra, placeholder, onCreated, footer, beforeDone, compact }: Props) {
+export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, extra, placeholder, onCreated, footer, beforeDone, attachments = [], compact }: Props) {
   const [text, setText] = useState(initialText);
   const [ignore, setIgnore] = useState<Set<ParsePart>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -54,7 +56,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
   const skip = (part: ParsePart) => setIgnore(new Set([...ignore, part]));
   // Text that is only a date or tags would make an untitled item, so it can't be saved yet.
   const hasContent = (p: Parsed | null) => !!p && (p.title !== '' || p.url !== null);
-  const canSave = hasContent(parsed) && !saving;
+  const canSave = (hasContent(parsed) || attachments.length > 0) && !saving;
 
   // The autofocus attribute is ignored after page load, so focus by hand and put the caret after any prefilled text.
   useEffect(() => {
@@ -72,11 +74,18 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
     if (!canSave) return;
     setSaving(true);
     try {
-      const sources = split ? lines.map((l) => parseQuickAdd(l, { spaces, ignore })).filter(hasContent) : [parsed!];
+      let sources = split ? lines.map((l) => parseQuickAdd(l, { spaces, ignore })).filter(hasContent) : parsed ? [parsed] : [];
+      // Files with no title become a file item named after the first file.
+      if (attachments.length && !sources.some(hasContent)) {
+        const base = parsed ?? parseQuickAdd('', { spaces, ignore });
+        sources = [{ ...base, kind: 'note', title: attachments[0].name.replace(/\.[^.]+$/, '') }];
+      }
       const created: Item[] = [];
       for (const p of sources) {
-        // A time or a priority on the Tasks page already implies a task; extra.status covers the rest.
-        created.push(await createFromParsed(withDefaults(p), p.isTask ? { ...extra, status: 'todo' } : extra));
+        // Files go on the first item, which counts as a file item unless it's a link.
+        const fileKind: Partial<Item> = attachments.length && !p.url && created.length === 0 ? { kind: 'file' } : {};
+        const task: Partial<Item> = p.isTask ? { status: 'todo' } : {};
+        created.push(await createFromParsed(withDefaults(p), { ...extra, ...task, ...fileKind }));
       }
       await beforeDone?.(created);
       setText('');
@@ -130,7 +139,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
           {parsed.isTask && <span class="chip">Task</span>}
         </div>
       )}
-      {(parsed || footer) && (
+      {(parsed || footer || attachments.length > 0) && (
         <div class="flex items-center gap-2 mt-2">
           {footer}
           <div class="flex-1" />

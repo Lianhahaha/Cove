@@ -3,7 +3,9 @@ import { useLocation } from 'preact-iso';
 import type { ComponentChildren } from 'preact';
 import {
   Archive,
+  CalendarRange,
   ChartColumn,
+  Clock,
   Hash,
   House,
   Inbox,
@@ -17,6 +19,7 @@ import {
   SquareCheck,
   Star,
   Sun,
+  Tags as TagsIcon,
   Trash,
 } from 'lucide-preact';
 import { db } from '../lib/db';
@@ -127,6 +130,13 @@ export function Nav() {
         <NavLink href="/all" icon={<Layers size={18} />} label="All items" />
         <NavLink href="/favorites" icon={<Star size={18} />} label="Favorites" />
         <NavLink href="/tags" icon={<Hash size={18} />} label="Tags" />
+
+        <div class="pt-5 pb-1 px-2.5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-subtle">Views</span>
+        </div>
+        <NavLink href="/view/week" icon={<CalendarRange size={18} />} label="This week" />
+        <NavLink href="/view/untagged" icon={<TagsIcon size={18} />} label="Untagged" />
+        <NavLink href="/view/recent" icon={<Clock size={18} />} label="Recently edited" />
 
         <div class="flex items-center justify-between pt-5 pb-1 px-2.5">
           <span class="text-xs font-semibold uppercase tracking-wider text-subtle">Spaces</span>

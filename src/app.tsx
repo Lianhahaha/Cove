@@ -2,7 +2,7 @@ import { LocationProvider, Router, Route, lazy } from 'preact-iso';
 import { Shell } from './components/Shell';
 import { NotFound } from './pages/NotFound';
 import { Home } from './pages/Home';
-import { AllItems, ArchivePage, Favorites, Inbox, TagPage } from './pages/Lists';
+import { AllItems, ArchivePage, Favorites, Inbox, SmartView, TagPage } from './pages/Lists';
 import { SpacePage } from './pages/SpacePage';
 
 // Screens other than the lists load on first visit; every chunk is precached for offline use.
@@ -24,6 +24,7 @@ export function App() {
           <Route path="/tasks" component={Tasks} />
           <Route path="/favorites" component={Favorites} />
           <Route path="/tags" component={Tags} />
+          <Route path="/view/:name" component={SmartView} />
           <Route path="/tags/:tag" component={TagPage} />
           <Route path="/s/:id" component={SpacePage} />
           <Route path="/search" component={Search} />

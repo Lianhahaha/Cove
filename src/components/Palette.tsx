@@ -9,6 +9,7 @@ import { displayTitle } from '../lib/queries';
 import { themePref } from '../lib/theme';
 import { openCapture, paletteOpen } from '../state';
 import type { Item } from '../lib/types';
+import { VIEW_NAMES, VIEW_TITLES } from '../pages/Lists';
 
 interface Command {
   id: string;
@@ -60,6 +61,7 @@ function PaletteBody() {
         icon: <Moon size={16} />,
         run: () => (themePref.value = themePref.value === 'system' ? 'light' : themePref.value === 'light' ? 'dark' : 'system'),
       },
+      ...VIEW_NAMES.map((v) => ({ id: `view-${v}`, label: `Go to ${VIEW_TITLES[v]}`, icon: <Layers size={16} />, run: go(`/view/${v}`) })),
       ...spaces.map((s) => ({ id: `space-${s.id}`, label: `Go to ${s.name}`, icon: <span>{s.emoji}</span>, run: go(`/s/${s.id}`) })),
     ],
     [spaces],

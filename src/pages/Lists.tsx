@@ -1,7 +1,9 @@
-import { Archive, Hash, Inbox as InboxIcon, Layers, Star } from 'lucide-preact';
+import { Archive, CalendarRange, Clock, Hash, Inbox as InboxIcon, Layers, Star, Tags as TagsIcon } from 'lucide-preact';
+import { dueBucket } from '../lib/dates';
+import { NotFound } from './NotFound';
 import { ItemsView } from '../components/ItemsView';
 import { EmptyState } from '../components/EmptyState';
-import { isActive } from '../lib/queries';
+import { isActive, isOpenTask } from '../lib/queries';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 
@@ -84,4 +86,38 @@ export function TagPage({ tag }: { tag: string }) {
       empty={<EmptyState icon={<Hash size={22} />} title="No items with this tag" />}
     />
   );
+}
+
+const WEEK = 7 * 86_400_000;
+
+/** Saved filters that cut across spaces. */
+const VIEWS = {
+  week: {
+    title: 'This week',
+    subtitle: 'Open tasks that are overdue or due in the next 7 days',
+    filter: (i: Parameters<typeof isActive>[0]) => isOpenTask(i) && ['overdue', 'today', 'tomorrow', 'week'].includes(dueBucket(i.due, i.dueHasTime)),
+    empty: <EmptyState icon={<CalendarRange size={22} />} title="Nothing due this week">Enjoy it.</EmptyState>,
+  },
+  untagged: {
+    title: 'Untagged',
+    subtitle: 'Items without any tags, to sort when you have a minute',
+    filter: (i: Parameters<typeof isActive>[0]) => isActive(i) && i.tags.length === 0,
+    empty: <EmptyState icon={<TagsIcon size={22} />} title="Everything is tagged" />,
+  },
+  recent: {
+    title: 'Recently edited',
+    subtitle: 'Changed in the last 7 days',
+    filter: (i: Parameters<typeof isActive>[0]) => isActive(i) && i.updatedAt > Date.now() - WEEK,
+    empty: <EmptyState icon={<Clock size={22} />} title="Nothing edited this week" />,
+  },
+} as const;
+
+export type ViewName = keyof typeof VIEWS;
+export const VIEW_NAMES = Object.keys(VIEWS) as ViewName[];
+export const VIEW_TITLES = Object.fromEntries(VIEW_NAMES.map((v) => [v, VIEWS[v].title])) as Record<ViewName, string>;
+
+export function SmartView({ name }: { name: string }) {
+  if (!(VIEW_NAMES as string[]).includes(name)) return <NotFound />;
+  const v = VIEWS[name as ViewName];
+  return <ItemsView title={v.title} subtitle={v.subtitle} prefKey={`view-${name}`} deps={[name]} showQuickAdd={false} filter={v.filter} empty={v.empty} />;
 }

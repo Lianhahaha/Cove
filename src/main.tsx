@@ -11,6 +11,7 @@ import { getSetting } from './lib/repo';
 import { startFocusClock } from './lib/focus';
 import { startPdfQueue } from './lib/pdf-text';
 import { loadQuickLinks } from './lib/links';
+import { refreshDefaultSpaceIcons } from './lib/spaceIcons';
 // Self-hosted variable fonts, so text looks the same offline and nothing loads from a font CDN.
 import '@fontsource-variable/dm-sans/wght.css';
 import '@fontsource-variable/fraunces/wght.css';
@@ -28,6 +29,7 @@ startPdfQueue();
 void handleLaunchParams();
 void loadAiSettings();
 void loadQuickLinks();
+void refreshDefaultSpaceIcons();
 void getSetting('autoTag', true).then((v) => (autoTagEnabled.value = v));
 // Housekeeping: items older than the trash window are deleted for good.
 void purgeExpiredTrash().catch((e) => console.error('Trash cleanup failed', e));

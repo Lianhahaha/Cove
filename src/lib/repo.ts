@@ -1,5 +1,6 @@
 import { db } from './db';
 import type { Item, Space, StoredFile } from './types';
+import { suggestEmoji } from './spaceIcons';
 
 export const LIMITS = {
   titleChars: 300,
@@ -140,11 +141,14 @@ export const SPACE_COLORS = ['#684c96', '#3f6fb5', '#2f8a6a', '#b0752a', '#b5485
 export async function addSpace(partial: Partial<Space> = {}): Promise<Space> {
   const now = Date.now();
   const count = await db.spaces.count();
+  // New spaces take an emoji that fits the name and a color no other space has, so they're easy to tell apart.
+  const others = (await db.spaces.toArray()).filter((s) => !s.deletedAt);
+  const usedColors = new Set(others.map((s) => s.color));
   const space: Space = {
     id: uid(),
     name: 'Untitled',
-    emoji: '📘',
-    color: SPACE_COLORS[count % SPACE_COLORS.length],
+    emoji: suggestEmoji(partial.name ?? '', others.map((s) => s.emoji)),
+    color: SPACE_COLORS.find((c) => !usedColors.has(c)) ?? SPACE_COLORS[count % SPACE_COLORS.length],
     order: count,
     archived: false,
     aiExcluded: false,

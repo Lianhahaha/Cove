@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import { Check, CalendarDays, FileText, Flag, Link as LinkIcon, ListChecks, Lock, Paperclip, Pin, Repeat, Star, StickyNote } from 'lucide-preact';
 import type { Item, Space } from '../lib/types';
 import { displayTitle, hostOf } from '../lib/queries';
@@ -52,19 +53,27 @@ export function TaskCheck({ item, size = 20 }: { item: Item; size?: number }) {
   );
 }
 
+/** Favicons that failed this session, so rows fall back to the link icon without retrying. */
+const brokenFavicons = new Set<string>();
+
 function KindIcon({ item }: { item: Item }) {
+  const [, rerender] = useState(0);
   if (item.kind === 'link') {
-    if (item.preview?.favicon) {
+    const favicon = item.preview?.favicon;
+    if (favicon && !brokenFavicons.has(favicon)) {
       return (
         <img
-          src={item.preview.favicon}
+          src={favicon}
           alt=""
           width={18}
           height={18}
           loading="lazy"
           referrerpolicy="no-referrer"
           class="rounded-sm"
-          onError={(e) => (e.currentTarget.style.visibility = 'hidden')}
+          onError={() => {
+            brokenFavicons.add(favicon);
+            rerender((n) => n + 1);
+          }}
         />
       );
     }

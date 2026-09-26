@@ -21,7 +21,9 @@ import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { isActive, isOpenTask } from '../lib/queries';
 import { dueBucket } from '../lib/dates';
-import { addSpace } from '../lib/repo';
+import { addSpace, reorderSpaces, updateItem } from '../lib/repo';
+import { toast } from '../lib/toast';
+import { ITEM_MIME, SPACE_MIME } from '../lib/dnd';
 import { themePref, type ThemePref } from '../lib/theme';
 import { menuOpen } from '../state';
 
@@ -58,6 +60,28 @@ export function Nav() {
   }, []);
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt && !s.archived).toArray(), []);
   const [adding, setAdding] = useState(false);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  /** Dropping a space reorders the list; dropping an item moves it into the space. */
+  async function onDropOnSpace(e: DragEvent, targetId: string) {
+    e.preventDefault();
+    setDropTarget(null);
+    const dt = e.dataTransfer;
+    if (!dt || !spaces) return;
+    const draggedSpace = dt.getData(SPACE_MIME);
+    if (draggedSpace && draggedSpace !== targetId) {
+      const ids = spaces.map((s) => s.id).filter((id) => id !== draggedSpace);
+      ids.splice(ids.indexOf(targetId), 0, draggedSpace);
+      await reorderSpaces(ids);
+      return;
+    }
+    const itemIds = dt.getData(ITEM_MIME);
+    if (itemIds) {
+      const ids = itemIds.split(',');
+      await Promise.all(ids.map((id) => updateItem(id, { spaceId: targetId })));
+      toast(`Moved to ${spaces.find((s) => s.id === targetId)?.name ?? 'space'}`);
+    }
+  }
   const [name, setName] = useState('');
   const busy = useRef(false);
   const { route } = useLocation();
@@ -107,7 +131,23 @@ export function Nav() {
           </button>
         </div>
         {spaces?.map((s) => (
-          <NavLink key={s.id} href={`/s/${s.id}`} icon={<span class="text-base leading-none">{s.emoji}</span>} label={s.name} />
+          <div
+            key={s.id}
+            draggable
+            class={`rounded-lg ${dropTarget === s.id ? 'ring-2 ring-accent' : ''}`}
+            onDragStart={(e) => e.dataTransfer?.setData(SPACE_MIME, s.id)}
+            onDragOver={(e) => {
+              const types = e.dataTransfer?.types ?? [];
+              if (types.includes(SPACE_MIME) || types.includes(ITEM_MIME)) {
+                e.preventDefault();
+                setDropTarget(s.id);
+              }
+            }}
+            onDragLeave={() => setDropTarget(null)}
+            onDrop={(e) => onDropOnSpace(e, s.id)}
+          >
+            <NavLink href={`/s/${s.id}`} icon={<span class="text-base leading-none">{s.emoji}</span>} label={s.name} />
+          </div>
         ))}
         {adding && (
           <form onSubmit={createSpace} class="px-1 py-1">

@@ -2,6 +2,8 @@ import { Archive, Hash, Inbox as InboxIcon, Layers, Star } from 'lucide-preact';
 import { ItemsView } from '../components/ItemsView';
 import { EmptyState } from '../components/EmptyState';
 import { isActive } from '../lib/queries';
+import { db } from '../lib/db';
+import { useLive } from '../lib/live';
 
 export function Inbox() {
   return (
@@ -44,8 +46,23 @@ export function Favorites() {
 }
 
 export function ArchivePage() {
+  const spaces = useLive(() => db.spaces.filter((s) => s.archived && !s.deletedAt).toArray(), []);
   return (
     <ItemsView
+      intro={
+        spaces && spaces.length > 0 ? (
+          <section>
+            <h2 class="label">Archived spaces</h2>
+            <div class="flex flex-wrap gap-2">
+              {spaces.map((s) => (
+                <a key={s.id} href={`/s/${s.id}`} class="chip text-sm py-1 px-3 hover:border-accent">
+                  {s.emoji} {s.name}
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : undefined
+      }
       title="Archive"
       subtitle="Out of the way, still searchable"
       prefKey="archive"

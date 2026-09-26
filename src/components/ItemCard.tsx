@@ -4,6 +4,19 @@ import { displayTitle, hostOf } from '../lib/queries';
 import { dueBucket, formatDue } from '../lib/dates';
 import { markdownSnippet } from '../lib/markdown';
 import { setDone } from '../lib/actions';
+import { ITEM_MIME } from '../lib/dnd';
+
+/** Dragging an item carries the whole selection when the item is part of it. */
+function dragProps(item: Item, ctx: CardContext) {
+  return {
+    draggable: true,
+    onDragStart: (e: DragEvent) => {
+      const ids = ctx.selected?.has(item.id) ? [...ctx.selected] : [item.id];
+      e.dataTransfer?.setData(ITEM_MIME, ids.join(','));
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+    },
+  };
+}
 
 export interface CardContext {
   spaces: Map<string, Space>;
@@ -140,6 +153,7 @@ export function ItemRow({ item, ctx }: { item: Item; ctx: CardContext }) {
     <div
       role="button"
       tabIndex={0}
+      {...dragProps(item, ctx)}
       onClick={() => (ctx.selected ? ctx.onToggleSelect?.(item.id) : ctx.onOpen(item.id))}
       onKeyDown={(e) => e.key === 'Enter' && ctx.onOpen(item.id)}
       class={`group flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-surface3/60 focus-visible:bg-surface3/60 ${
@@ -172,6 +186,7 @@ export function ItemTile({ item, ctx }: { item: Item; ctx: CardContext }) {
     <div
       role="button"
       tabIndex={0}
+      {...dragProps(item, ctx)}
       onClick={() => (ctx.selected ? ctx.onToggleSelect?.(item.id) : ctx.onOpen(item.id))}
       onKeyDown={(e) => e.key === 'Enter' && ctx.onOpen(item.id)}
       class={`card overflow-hidden flex flex-col hover:border-border2 transition-colors ${ctx.selected?.has(item.id) ? 'ring-2 ring-accent' : ''}`}

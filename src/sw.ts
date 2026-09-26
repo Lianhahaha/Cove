@@ -40,3 +40,21 @@ registerRoute(
 sw.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') void sw.skipWaiting();
 });
+
+// Clicking a reminder focuses Cove (or opens it) on that task.
+sw.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data?.url as string) || '/', sw.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const client = clients.find((c) => new URL(c.url).origin === sw.location.origin);
+      if (client) {
+        await client.focus();
+        await (client as WindowClient).navigate(url).catch(() => client.postMessage({ type: 'NAVIGATE', url }));
+      } else {
+        await sw.clients.openWindow(url);
+      }
+    })(),
+  );
+});

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
-import { CalendarDays, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
+import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { usePref } from '../lib/prefs';
@@ -10,6 +10,8 @@ import { setDone } from '../lib/actions';
 import { updateItem } from '../lib/repo';
 import { ITEM_MIME } from '../lib/dnd';
 import { openCapture } from '../state';
+import { downloadIcs } from '../lib/ics';
+import { toast } from '../lib/toast';
 import type { Item, TaskStatus } from '../lib/types';
 import { ItemRow, type CardContext } from '../components/ItemCard';
 import { PageHeader } from '../components/PageHeader';
@@ -43,6 +45,19 @@ export function Tasks() {
       <PageHeader
         title="Tasks"
         actions={
+          <>
+          <button
+            class="icon-btn"
+            title="Export deadlines to your calendar (.ics)"
+            aria-label="Export deadlines to your calendar"
+            onClick={() => {
+              const upcoming = filtered.filter((t) => t.status !== 'done' && t.due !== null);
+              if (!upcoming.length) return toast('No open tasks with due dates to export');
+              downloadIcs(upcoming, 'Cove deadlines');
+            }}
+          >
+            <CalendarPlus size={18} />
+          </button>
           <div class="flex gap-0.5 p-0.5 rounded-lg bg-surface3" role="tablist" aria-label="View">
             {VIEWS.map(({ id, label, icon: Icon }) => (
               <button
@@ -58,6 +73,7 @@ export function Tasks() {
               </button>
             ))}
           </div>
+          </>
         }
       />
       <div class={`px-4 md:px-6 py-4 mx-auto w-full space-y-4 ${view === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}>

@@ -11,6 +11,7 @@ import { exportBackup, exportMarkdown, importBackup, importBookmarks } from '../
 import { toast, toastError } from '../lib/toast';
 import { db } from '../lib/db';
 import { shortcutsOpen } from '../state';
+import { enableReminders, remindersEnabled } from '../lib/reminders';
 
 export function Section({ title, description, children }: { title: string; description?: string; children: ComponentChildren }) {
   return (
@@ -171,6 +172,18 @@ export function Settings() {
           ) : (
             <p class="text-sm text-muted">Use your browser’s menu and choose “Install app” or “Add to Home screen”.</p>
           )}
+        </Section>
+
+        <Section
+          title="Reminders"
+          description="Browsers only run web apps while they’re open, so notifications arrive while Cove is open or running in the background. For alerts that always arrive, use “Add to my calendar” on a task or export all deadlines from the Tasks page."
+        >
+          <Toggle
+            label="Show reminder notifications"
+            description="Asks for notification permission. When it’s off, reminders appear inside the app."
+            checked={remindersEnabled.value}
+            onChange={(v) => void enableReminders(v)}
+          />
         </Section>
 
         <Section title="Links">

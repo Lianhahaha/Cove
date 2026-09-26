@@ -9,3 +9,9 @@ export function useItemNav() {
     close: () => route(path, true),
   };
 }
+
+/** Navigates from code that lives outside components (toasts, notifications). */
+export function navigate(url: string) {
+  history.pushState(null, '', url);
+  dispatchEvent(new PopStateEvent('popstate'));
+}

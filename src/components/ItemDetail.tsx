@@ -4,6 +4,7 @@ import {
   Archive,
   ArchiveRestore,
   ArrowLeft,
+  CalendarPlus,
   Copy,
   CopyPlus,
   ExternalLink,
@@ -29,6 +30,8 @@ import type { Item, Priority, Recurrence, TaskStatus } from '../lib/types';
 import { ChecklistEditor, MarkdownField, TagEditor, useDebouncedSave } from './fields';
 import { Attachments } from './Attachments';
 import { refreshPreview } from '../lib/previews';
+import { downloadIcs } from '../lib/ics';
+import { REMINDER_PRESETS, remindersEnabled } from '../lib/reminders';
 import { addFiles, filesFromClipboard } from '../lib/files';
 
 const STATUS: { value: TaskStatus; label: string }[] = [
@@ -105,7 +108,9 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   const dueTime = item.due !== null && item.dueHasTime ? toTimeInput(item.due) : '';
   function setDue(date: string, time: string) {
     const due = date ? fromInputs(date, time) : null;
-    patch({ due, dueHasTime: !!(date && time) });
+    // A reminder keeps its distance from the due date when the date moves.
+    const remindAt = due !== null && item.remindAt !== null && item.due !== null ? due - (item.due - item.remindAt) : due === null ? null : item.remindAt;
+    patch({ due, dueHasTime: !!(date && time), remindAt });
   }
 
   async function copyLink() {
@@ -268,7 +273,15 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
                 </div>
               </div>
 
-              <RecurrenceField value={item.recurrence} disabled={item.due === null} onChange={(recurrence) => patch({ recurrence })} />
+              <div class="grid sm:grid-cols-2 gap-3">
+                <RecurrenceField value={item.recurrence} disabled={item.due === null} onChange={(recurrence) => patch({ recurrence })} />
+                <ReminderField item={item} onChange={(remindAt) => patch({ remindAt })} />
+              </div>
+              {item.due !== null && (
+                <button class="btn btn-ghost -ml-2 text-sm" onClick={() => downloadIcs([item], displayTitle(item))}>
+                  <CalendarPlus size={16} /> Add to my calendar
+                </button>
+              )}
 
               <div>
                 <span class="label">Checklist</span>
@@ -323,6 +336,59 @@ function RecurrenceField({ value, disabled, onChange }: { value: Recurrence | nu
         )}
       </div>
       {disabled && <p class="text-xs text-subtle mt-1">Set a due date to repeat.</p>}
+    </div>
+  );
+}
+
+function ReminderField({ item, onChange }: { item: Item; onChange: (remindAt: number | null) => void }) {
+  const due = item.due;
+  // Date-only tasks count from 9am on the day, which is when a reminder "at the due time" makes sense.
+  const anchor = due === null ? null : item.dueHasTime ? due : due + 9 * 3_600_000;
+  const current =
+    item.remindAt === null || anchor === null
+      ? 'none'
+      : (REMINDER_PRESETS.find((p) => anchor - p.minutesBefore * 60_000 === item.remindAt)?.minutesBefore.toString() ?? 'custom');
+  const toLocal = (ts: number) => `${toDateInput(ts)}T${toTimeInput(ts)}`;
+
+  return (
+    <div>
+      <label class="label" for="remind">Remind me</label>
+      <select
+        id="remind"
+        class="input"
+        disabled={anchor === null}
+        value={current}
+        onChange={(e) => {
+          const v = e.currentTarget.value;
+          if (v === 'none' || anchor === null) onChange(null);
+          else if (v === 'custom') onChange(anchor - 3_600_000);
+          else onChange(anchor - Number(v) * 60_000);
+        }}
+      >
+        <option value="none">No reminder</option>
+        {REMINDER_PRESETS.map((p) => (
+          <option key={p.minutesBefore} value={p.minutesBefore}>{p.label}</option>
+        ))}
+        <option value="custom">Custom time…</option>
+      </select>
+      {current === 'custom' && item.remindAt !== null && (
+        <input
+          type="datetime-local"
+          class="input mt-2"
+          value={toLocal(item.remindAt)}
+          onChange={(e) => {
+            const [d, t] = e.currentTarget.value.split('T');
+            const ts = fromInputs(d, t ?? '');
+            if (ts !== null) onChange(ts);
+          }}
+          aria-label="Reminder time"
+        />
+      )}
+      {item.remindAt !== null && !remindersEnabled.value && (
+        <p class="text-xs text-subtle mt-1">
+          Shows inside Cove while it’s open. Turn on notifications in <a class="underline" href="/settings">Settings</a>, or add it to your calendar.
+        </p>
+      )}
     </div>
   );
 }

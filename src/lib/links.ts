@@ -35,8 +35,11 @@ export const LINK_PRESETS: (Omit<QuickLink, 'id'> & { full: string })[] = [
   { name: 'Docs', full: 'Google Docs', url: 'https://docs.google.com/' },
 ];
 
-/** New installs start with Classroom; removing it sticks, because the saved list then exists. */
-const DEFAULT_LINKS: QuickLink[] = [{ id: 'classroom', name: LINK_PRESETS[0].name, url: LINK_PRESETS[0].url }];
+/** New installs start with Classroom and Gmail; removing one sticks, because the saved list then exists. */
+const DEFAULT_LINKS: QuickLink[] = [
+  { id: 'classroom', name: LINK_PRESETS[0].name, url: LINK_PRESETS[0].url },
+  { id: 'gmail', name: LINK_PRESETS[2].name, url: LINK_PRESETS[2].url },
+];
 
 /**
  * Turns a typed address into a clean http(s) URL, or null. "classroom.google.com"

@@ -34,8 +34,8 @@ describe('friendlyName', () => {
 });
 
 describe('quick links', () => {
-  it('starts with Google Classroom', () => {
-    expect(quickLinks.value.map((l) => l.name)).toEqual(['Classroom']);
+  it('starts with Google Classroom and Gmail', () => {
+    expect(quickLinks.value.map((l) => l.name)).toEqual(['Classroom', 'Gmail']);
     expect(isClassroom(quickLinks.value[0].url)).toBe(true);
   });
 
@@ -43,11 +43,11 @@ describe('quick links', () => {
     expect(await addQuickLink('Drive', 'drive.google.com')).toBeNull();
     expect(await addQuickLink('Drive again', 'https://drive.google.com/')).toMatch(/already/);
     expect(await addQuickLink('Bad', 'javascript:alert(1)')).toMatch(/web address/);
-    expect(quickLinks.value.map((l) => l.name)).toEqual(['Classroom', 'Drive']);
+    expect(quickLinks.value.map((l) => l.name)).toEqual(['Classroom', 'Gmail', 'Drive']);
 
     await removeQuickLink('classroom');
     await loadQuickLinks();
-    expect(quickLinks.value.map((l) => l.name)).toEqual(['Drive']);
+    expect(quickLinks.value.map((l) => l.name)).toEqual(['Gmail', 'Drive']);
   });
 
   it('drops malformed saved entries', async () => {

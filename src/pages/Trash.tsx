@@ -43,7 +43,7 @@ export function Trash() {
           ))
         }
       />
-      <div class="px-4 md:px-6 py-4 max-w-3xl mx-auto w-full space-y-6">
+      <div class="px-3 md:px-6 py-3 md:py-4 max-w-3xl mx-auto w-full space-y-6">
         {items !== undefined && sorted.length === 0 && spaces.length === 0 && (
           <EmptyState icon={<TrashIcon size={22} />} title="Trash is empty">
             Deleted items stay here for {TRASH_DAYS} days in case you change your mind.

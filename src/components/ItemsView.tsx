@@ -103,7 +103,7 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
         }
       />
 
-      <div class="px-4 md:px-6 py-4 max-w-5xl mx-auto w-full space-y-4">
+      <div class="px-3 md:px-6 py-3 md:py-4 max-w-5xl mx-auto w-full space-y-4">
         {intro}
         {showQuickAdd && <QuickAdd defaultSpaceId={defaultSpaceId} />}
 
@@ -115,7 +115,7 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
                   key={k}
                   role="tab"
                   aria-selected={kind === k}
-                  class={`px-3 h-8 rounded-full text-sm whitespace-nowrap ${kind === k ? 'bg-accent-fill text-accent font-medium' : 'text-muted hover:bg-surface3'}`}
+                  class={`px-2.5 h-7 rounded-full text-[0.8125rem] whitespace-nowrap ${kind === k ? 'bg-accent-fill text-accent font-medium' : 'text-muted hover:bg-surface3'}`}
                   onClick={() => setKind(k)}
                 >
                   {KIND_LABELS[k]}
@@ -145,7 +145,8 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
             {visible.map((i) => <ItemRow key={i.id} item={i} ctx={ctx} />)}
           </div>
         ) : (
-          <div class="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3">
+          // Columns instead of a grid, so each card keeps its own height, like a pinboard.
+          <div class="columns-2 lg:columns-3 gap-2 md:gap-3 [&>*]:mb-2 md:[&>*]:mb-3 [&>*]:break-inside-avoid">
             {visible.map((i) => <ItemTile key={i.id} item={i} ctx={ctx} />)}
           </div>
         )}

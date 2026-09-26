@@ -11,7 +11,7 @@ interface Props {
 export function PageHeader({ title, subtitle, actions }: Props) {
   return (
     <header class="sticky top-0 z-20 bg-bg/90 backdrop-blur border-b border-border pt-[env(safe-area-inset-top)]">
-      <div class="flex items-center gap-2 px-4 md:px-6 h-14">
+      <div class="flex items-center gap-2 px-3 md:px-6 h-12 md:h-14">
         <button class="icon-btn md:hidden -ml-2" aria-label="Open menu" onClick={() => (menuOpen.value = true)}>
           <Menu size={20} />
         </button>

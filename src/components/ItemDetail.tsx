@@ -145,7 +145,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
         }
       }}
     >
-      <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-1 px-2 h-14 border-b border-border">
+      <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-1 px-2 h-12 md:h-14 border-b border-border">
         <button class="icon-btn md:hidden" aria-label="Back" onClick={onClose}><ArrowLeft size={20} /></button>
         <div class="flex-1" />
         <AiMenu item={item} />

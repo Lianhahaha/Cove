@@ -144,7 +144,7 @@ export function Settings() {
   return (
     <>
       <PageHeader title="Settings" />
-      <div class="px-4 md:px-6 py-4 max-w-2xl mx-auto w-full space-y-4">
+      <div class="px-3 md:px-6 py-3 md:py-4 max-w-2xl mx-auto w-full space-y-4">
         <Section title="Appearance">
           <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Theme">
             {themes.map((t) => (

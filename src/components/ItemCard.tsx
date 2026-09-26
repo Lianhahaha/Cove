@@ -165,7 +165,7 @@ export function ItemRow({ item, ctx }: { item: Item; ctx: CardContext }) {
       {...dragProps(item, ctx)}
       onClick={() => (ctx.selected ? ctx.onToggleSelect?.(item.id) : ctx.onOpen(item.id))}
       onKeyDown={(e) => e.key === 'Enter' && ctx.onOpen(item.id)}
-      class={`group flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-surface3/60 focus-visible:bg-surface3/60 ${
+      class={`group flex items-start gap-2.5 md:gap-3 px-3 py-2 md:py-2.5 rounded-xl hover:bg-surface3/60 focus-visible:bg-surface3/60 ${
         ctx.selected?.has(item.id) ? 'bg-accent-fill' : ''
       }`}
     >
@@ -175,12 +175,12 @@ export function ItemRow({ item, ctx }: { item: Item; ctx: CardContext }) {
       </div>
       <div class="min-w-0 flex-1">
         <div class="flex items-start gap-2">
-          <p class={`flex-1 min-w-0 font-medium leading-snug break-words ${done ? 'line-through text-subtle' : ''} ${item.private ? 'blur-[3px] group-hover:blur-none' : ''}`}>
+          <p class={`flex-1 min-w-0 font-[450] leading-snug break-words ${done ? 'line-through text-subtle' : ''} ${item.private ? 'blur-[3px] group-hover:blur-none' : ''}`}>
             {title}
           </p>
           <Flags item={item} />
         </div>
-        {snippet && <p class="text-sm text-muted line-clamp-1 mt-0.5">{snippet}</p>}
+        {snippet && <p class="text-[0.8125rem] text-muted line-clamp-1 mt-0.5">{snippet}</p>}
         <Meta item={item} ctx={ctx} />
       </div>
     </div>
@@ -212,16 +212,16 @@ export function ItemTile({ item, ctx }: { item: Item; ctx: CardContext }) {
           />
         </div>
       ) : null}
-      <div class="p-3 flex flex-col gap-1 flex-1">
+      <div class="p-2.5 md:p-3 flex flex-col gap-1 flex-1">
         <div class="flex items-start gap-2">
           <SelectBox item={item} ctx={ctx} />
           {item.status !== 'none' ? <TaskCheck item={item} size={18} /> : <span class="pt-0.5"><KindIcon item={item} /></span>}
-          <p class={`flex-1 min-w-0 font-medium leading-snug line-clamp-2 ${item.status === 'done' ? 'line-through text-subtle' : ''} ${item.private ? 'blur-[3px]' : ''}`}>
+          <p class={`flex-1 min-w-0 font-[450] leading-snug line-clamp-2 ${item.status === 'done' ? 'line-through text-subtle' : ''} ${item.private ? 'blur-[3px]' : ''}`}>
             {title}
           </p>
           <Flags item={item} />
         </div>
-        {snippet && <p class="text-sm text-muted line-clamp-3">{snippet}</p>}
+        {snippet && <p class="text-[0.8125rem] text-muted line-clamp-3">{snippet}</p>}
         <div class="mt-auto">
           <Meta item={item} ctx={ctx} />
         </div>

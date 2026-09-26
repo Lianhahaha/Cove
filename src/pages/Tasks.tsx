@@ -76,7 +76,7 @@ export function Tasks() {
           </>
         }
       />
-      <div class={`px-4 md:px-6 py-4 mx-auto w-full space-y-4 ${view === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}>
+      <div class={`px-3 md:px-6 py-3 md:py-4 mx-auto w-full space-y-4 ${view === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}>
         <QuickAdd
           extra={{ status: 'todo' }}
           defaultSpaceId={spaceFilter !== 'all' && spaceFilter !== 'inbox' ? spaceFilter : null}

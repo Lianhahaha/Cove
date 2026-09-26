@@ -42,7 +42,7 @@ export function Search() {
   return (
     <>
       <PageHeader title="Search" />
-      <div class="px-4 md:px-6 py-4 max-w-3xl mx-auto w-full space-y-4">
+      <div class="px-3 md:px-6 py-3 md:py-4 max-w-3xl mx-auto w-full space-y-4">
         <div class="relative">
           <SearchIcon size={18} class="absolute left-3 top-1/2 -translate-y-1/2 text-subtle pointer-events-none" />
           <input

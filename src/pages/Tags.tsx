@@ -14,7 +14,7 @@ export function Tags() {
   return (
     <>
       <PageHeader title="Tags" />
-      <div class="px-4 md:px-6 py-4 max-w-5xl mx-auto">
+      <div class="px-3 md:px-6 py-3 md:py-4 max-w-5xl mx-auto">
         {counts?.length === 0 && (
           <EmptyState icon={<Hash size={22} />} title="No tags yet">
             Type <span class="kbd">#tag</span> when capturing, or add tags on any item.

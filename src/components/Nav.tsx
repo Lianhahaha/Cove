@@ -117,7 +117,7 @@ export function Nav() {
 
   return (
     <nav class="flex flex-col h-full" aria-label="Main">
-      <div class="flex items-center gap-2 px-2.5 h-14 shrink-0">
+      <div class="flex items-center gap-2 px-2.5 h-12 md:h-14 shrink-0">
         <img src="/favicon.svg" alt="" width={26} height={26} class="rounded-lg" />
         <span class="font-display font-medium text-xl tracking-tight">Cove</span>
       </div>

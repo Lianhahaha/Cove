@@ -21,7 +21,7 @@ function BottomNav() {
       <a
         href={href}
         aria-current={active ? 'page' : undefined}
-        class={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[11px] ${active ? 'text-accent' : 'text-subtle'}`}
+        class={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] ${active ? 'text-accent' : 'text-subtle'}`}
       >
         {icon}
         {label}
@@ -33,21 +33,21 @@ function BottomNav() {
       class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-border pb-[env(safe-area-inset-bottom)]"
       aria-label="Tabs"
     >
-      <div class="flex h-16 items-stretch">
-        {tab('/', 'Home', <House size={20} />)}
-        {tab('/tasks', 'Tasks', <SquareCheck size={20} />)}
+      <div class="flex h-14 items-stretch">
+        {tab('/', 'Home', <House size={19} />)}
+        {tab('/tasks', 'Tasks', <SquareCheck size={19} />)}
         <div class="flex-1 grid place-items-center">
           <button
-            class="w-12 h-12 rounded-2xl bg-accent text-on-accent grid place-items-center shadow-md active:scale-95 transition-transform"
+            class="w-11 h-11 rounded-xl bg-accent text-on-accent grid place-items-center shadow-md active:scale-95 transition-transform"
             aria-label="Capture something"
             onClick={() => openCapture()}
           >
-            <Plus size={24} />
+            <Plus size={22} />
           </button>
         </div>
-        {tab('/search', 'Search', <Search size={20} />)}
-        <button class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[11px] text-subtle" onClick={() => (menuOpen.value = true)}>
-          <Menu size={20} />
+        {tab('/search', 'Search', <Search size={19} />)}
+        <button class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] text-subtle" onClick={() => (menuOpen.value = true)}>
+          <Menu size={19} />
           More
         </button>
       </div>

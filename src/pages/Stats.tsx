@@ -146,7 +146,7 @@ export function Stats() {
   return (
     <>
       <PageHeader title="Stats" subtitle="Everything here is counted on this device" />
-      <div class="px-4 md:px-6 py-4 max-w-3xl mx-auto w-full space-y-4">
+      <div class="px-3 md:px-6 py-3 md:py-4 max-w-3xl mx-auto w-full space-y-4">
         {items !== undefined && items.length === 0 ? (
           <EmptyState icon={<ChartColumn size={22} />} title="Nothing to count yet">Save a few things and finish a task or two.</EmptyState>
         ) : (

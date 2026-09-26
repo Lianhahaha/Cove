@@ -60,7 +60,7 @@ export function Home() {
   return (
     <>
       <PageHeader title={greeting()} subtitle={today} />
-      <div class="px-4 md:px-6 py-4 max-w-3xl mx-auto w-full space-y-7">
+      <div class="px-3 md:px-6 py-3 md:py-4 max-w-3xl mx-auto w-full space-y-5 md:space-y-7">
         <QuickAdd />
 
         {items !== undefined && items.length === 0 && (
@@ -74,7 +74,7 @@ export function Home() {
         )}
 
         {due.length > 0 && (
-          <Section title="Due today" icon={<CalendarCheck size={15} />} href="/tasks">
+          <Section title="Due today" icon={<CalendarCheck size={13} />} href="/tasks">
             {due.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}
@@ -82,7 +82,7 @@ export function Home() {
         )}
 
         {pinned.length > 0 && (
-          <Section title="Pinned" icon={<Pin size={15} />}>
+          <Section title="Pinned" icon={<Pin size={13} />}>
             {pinned.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}
@@ -94,8 +94,8 @@ export function Home() {
             <h2 class="eyebrow mb-2">Spaces</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {spaces.map((s) => (
-                <a key={s.id} href={`/s/${s.id}`} class="card p-3 flex items-center gap-3 hover:border-border2" style={{ borderLeft: `4px solid ${s.color}` }}>
-                  <span class="text-xl">{s.emoji}</span>
+                <a key={s.id} href={`/s/${s.id}`} class="card p-2.5 flex items-center gap-2.5 hover:border-border2" style={{ borderLeft: `4px solid ${s.color}` }}>
+                  <span class="text-lg">{s.emoji}</span>
                   <span class="min-w-0">
                     <span class="block font-medium truncate">{s.name}</span>
                     <span class="block text-xs text-subtle">{counts.get(s.id) ?? 0} items</span>
@@ -107,7 +107,7 @@ export function Home() {
         )}
 
         {recent.length > 0 && (
-          <Section title="Recent" icon={<Clock size={15} />} href="/all">
+          <Section title="Recent" icon={<Clock size={13} />} href="/all">
             {recent.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}

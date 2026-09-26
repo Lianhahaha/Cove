@@ -6,6 +6,7 @@ import { Home } from './pages/Home';
 import { AllItems, ArchivePage, Favorites, Inbox, TagPage } from './pages/Lists';
 import { Tags } from './pages/Tags';
 import { SpacePage } from './pages/SpacePage';
+import { Tasks } from './pages/Tasks';
 
 const page = (title: string) => () => <Placeholder title={title} />;
 
@@ -17,7 +18,7 @@ export function App() {
           <Route path="/" component={Home} />
           <Route path="/inbox" component={Inbox} />
           <Route path="/all" component={AllItems} />
-          <Route path="/tasks" component={page('Tasks')} />
+          <Route path="/tasks" component={Tasks} />
           <Route path="/favorites" component={Favorites} />
           <Route path="/tags" component={Tags} />
           <Route path="/tags/:tag" component={TagPage} />

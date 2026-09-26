@@ -114,6 +114,7 @@
     overscroll-behavior-y: none;
   }
   ::selection { background: var(--c-accent-fill); }
+  input, textarea { caret-color: var(--c-accent); }
   *:focus-visible {
     outline: 2px solid var(--c-accent);
     outline-offset: 2px;
@@ -247,18 +248,33 @@
   .input:focus { outline: none; border-color: var(--c-accent); background: var(--c-surface); }
   /* Quick add: one box holding the text, the parsed chips and the buttons. */
   .composer {
+    position: relative;
     border: 1px solid var(--c-border);
     border-radius: 0.875rem;
     background: var(--c-surface);
-    transition: border-color 120ms;
+    transition: border-color 150ms, box-shadow 150ms;
   }
-  .composer:focus-within { border-color: var(--c-accent); }
+  .composer:focus-within {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px var(--c-accent-fill);
+  }
+  /* The + marks the box as the place to add things; text, hints and chips start after it. */
+  .composer-icon {
+    position: absolute;
+    top: 0.875rem;
+    left: 0.875rem;
+    color: var(--c-subtle);
+    pointer-events: none;
+    transition: color 150ms;
+  }
+  .composer:focus-within .composer-icon { color: var(--c-accent); }
   .composer-input {
     display: block;
     width: 100%;
     resize: none;
     overflow-y: hidden;
-    padding: 0.625rem 0.875rem;
+    /* At least 44px tall, so it's an easy tap target. */
+    padding: 0.75rem 0.875rem 0.75rem 2.5rem;
     line-height: 1.5;
     background: transparent;
     color: var(--c-text);
@@ -269,7 +285,7 @@
     display: none;
     flex-wrap: wrap;
     gap: 0.25rem 0.75rem;
-    padding: 0 0.875rem 0.5rem;
+    padding: 0 0.875rem 0.625rem 2.5rem;
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     color: var(--c-subtle);

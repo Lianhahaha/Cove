@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { CalendarDays, Flag, Folder, Hash, Link as LinkIcon, X } from 'lucide-preact';
+import { CalendarDays, Flag, Folder, Hash, Link as LinkIcon, Plus, X } from 'lucide-preact';
 import type { ComponentChildren } from 'preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
@@ -118,6 +118,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
 
   return (
     <div class="composer">
+      <Plus size={18} class="composer-icon" aria-hidden="true" />
       <textarea
         ref={ref}
         rows={1}
@@ -141,7 +142,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
         <span>!! priority</span>
       </p>
       {parsed && (
-        <div class="flex flex-wrap items-center gap-1.5 px-3 pb-2">
+        <div class="flex flex-wrap items-center gap-1.5 pl-10 pr-3 pb-2">
           {parsed.url && <span class="chip"><LinkIcon size={12} />{hostOf(parsed.url)}</span>}
           {spaceName && <Chip icon={<Folder size={12} />} label={spaceName} onRemove={() => skip('space')} />}
           {parsed.due !== null && (

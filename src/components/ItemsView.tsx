@@ -157,13 +157,15 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
         )}
       </div>
 
-      {selected && <BulkBar ids={[...selected]} all={visible} onDone={() => setSelected(null)} onSelectAll={() => setSelected(new Set(visible.map((i) => i.id)))} />}
+      {/* Only what's on screen: items hidden by the type filter, or gone since, stay out of bulk actions. */}
+      {selected && <BulkBar items={visible.filter((i) => selected.has(i.id))} all={visible} onDone={() => setSelected(null)} onSelectAll={() => setSelected(new Set(visible.map((i) => i.id)))} />}
     </>
   );
 }
 
-function BulkBar({ ids, all, onDone, onSelectAll }: { ids: string[]; all: Item[]; onDone: () => void; onSelectAll: () => void }) {
+function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item[]; onDone: () => void; onSelectAll: () => void }) {
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt).toArray(), []) ?? [];
+  const ids = items.map((i) => i.id);
   const none = ids.length === 0;
 
   async function move(spaceId: string) {

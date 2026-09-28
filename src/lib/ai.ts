@@ -1,5 +1,6 @@
 import { signal } from '@preact/signals';
 import { getSetting, setSetting } from './repo';
+import { toDateInput } from './dates';
 import type { Item, Space } from './types';
 
 export type AiTask = 'summarize' | 'tags' | 'extract_tasks' | 'quiz';
@@ -98,7 +99,8 @@ export function aiBlockedReason(item: Item, space: Space | null | undefined): st
 }
 
 const USAGE_KEY = 'cove-ai-usage';
-const today = () => new Date().toISOString().slice(0, 10);
+// The local date, so the daily limit resets at midnight here rather than at midnight UTC.
+const today = () => toDateInput(Date.now());
 
 export function usedToday(): number {
   try {
@@ -128,10 +130,8 @@ export function preparePayload(p: AiPayload) {
   const title = redact(p.title.slice(0, 300));
   const body = redact(p.text);
   const truncated = body.text.length > AI_INPUT_CHARS;
-  const d = new Date();
-  const localToday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   return {
-    input: { title: title.text, text: body.text.slice(0, AI_INPUT_CHARS), existingTags: (p.existingTags ?? []).slice(0, 50), today: localToday },
+    input: { title: title.text, text: body.text.slice(0, AI_INPUT_CHARS), existingTags: (p.existingTags ?? []).slice(0, 50), today: today() },
     redactions: title.count + body.count,
     truncated,
   };

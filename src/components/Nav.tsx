@@ -83,8 +83,11 @@ export function Nav() {
     if (!dt || !spaces) return;
     const draggedSpace = dt.getData(SPACE_MIME);
     if (draggedSpace && draggedSpace !== targetId) {
-      const ids = spaces.map((s) => s.id).filter((id) => id !== draggedSpace);
-      ids.splice(ids.indexOf(targetId), 0, draggedSpace);
+      const all = spaces.map((s) => s.id);
+      const movingDown = all.indexOf(draggedSpace) < all.indexOf(targetId);
+      const ids = all.filter((id) => id !== draggedSpace);
+      // Takes the target's place: after it when moving down, before it when moving up.
+      ids.splice(ids.indexOf(targetId) + (movingDown ? 1 : 0), 0, draggedSpace);
       await reorderSpaces(ids);
       return;
     }

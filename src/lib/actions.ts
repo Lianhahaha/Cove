@@ -91,12 +91,16 @@ export async function setDone(item: Item, done: boolean) {
 
 /** The first repeat of `due` that lands after today, so an overdue series doesn't pile up. */
 export function nextOccurrence(due: number, r: NonNullable<Item['recurrence']>, now = Date.now()): number {
+  // The time of day always comes from the original due, so a repeat that lands in a
+  // clock change's missing hour (2:30 becomes 3:30) doesn't stay an hour late after it.
+  const first = new Date(due);
+  const [h, min] = [first.getHours(), first.getMinutes()];
   const step = (d: Date): Date => {
     const n = Math.max(1, r.interval);
-    if (r.freq === 'daily') return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n, d.getHours(), d.getMinutes());
-    if (r.freq === 'weekly') return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7 * n, d.getHours(), d.getMinutes());
+    if (r.freq === 'daily') return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n, h, min);
+    if (r.freq === 'weekly') return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7 * n, h, min);
     // Monthly on the 31st falls back to the month's last day instead of spilling over.
-    const target = new Date(d.getFullYear(), d.getMonth() + n, 1, d.getHours(), d.getMinutes());
+    const target = new Date(d.getFullYear(), d.getMonth() + n, 1, h, min);
     const last = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
     target.setDate(Math.min(new Date(due).getDate(), last));
     return target;

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { nextOccurrence } from './actions';
 import { dueBucket } from './dates';
 import { toIcs } from './ics';
 import { parseQuickAdd } from './parse';
@@ -34,6 +35,14 @@ describe('toIcs across a clock change', () => {
     const ics = toIcs([newItem({ id: 'd', title: 'Essay', due, status: 'todo' })]);
     expect(ics).toContain('DTSTART;VALUE=DATE:20261101');
     expect(ics).toContain('DTEND;VALUE=DATE:20261102');
+  });
+});
+
+describe('nextOccurrence across a clock change', () => {
+  it('goes back to the usual time after a day with no 2:30', () => {
+    // Mar 14, 2027 has no 2:30am, so that day's repeat is at 3:30; the next one is 2:30 again.
+    const due = new Date(2027, 2, 13, 2, 30).getTime();
+    expect(nextOccurrence(due, { freq: 'daily', interval: 1 }, new Date(2027, 2, 14, 10).getTime())).toBe(new Date(2027, 2, 15, 2, 30).getTime());
   });
 });
 

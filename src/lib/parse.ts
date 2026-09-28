@@ -272,7 +272,8 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
       if (time) {
         d = new Date(d.getFullYear(), d.getMonth(), d.getDate(), time.h, time.min);
         // A time with no date that has already passed today means tomorrow.
-        if (!date && d.getTime() <= now.getTime()) d = new Date(d.getTime() + 86_400_000);
+        // Built from the date, not by adding 24 hours, so a clock change overnight keeps the hour typed.
+        if (!date && d.getTime() <= now.getTime()) d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, time.h, time.min);
       }
       due = d.getTime();
       dueHasTime = !!time;

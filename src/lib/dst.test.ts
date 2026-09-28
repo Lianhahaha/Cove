@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { dueBucket } from './dates';
 import { toIcs } from './ics';
+import { parseQuickAdd } from './parse';
 import { newItem } from './repo';
 
 // These run in a time zone with daylight saving, where some days are 23 or 25 hours long.
@@ -33,5 +34,12 @@ describe('toIcs across a clock change', () => {
     const ics = toIcs([newItem({ id: 'd', title: 'Essay', due, status: 'todo' })]);
     expect(ics).toContain('DTSTART;VALUE=DATE:20261101');
     expect(ics).toContain('DTEND;VALUE=DATE:20261102');
+  });
+});
+
+describe('parseQuickAdd across a clock change', () => {
+  it('keeps the typed hour when a passed time rolls over to tomorrow', () => {
+    const p = parseQuickAdd('call the lab 5pm', { now: new Date(2026, 9, 31, 20) });
+    expect(p.due).toBe(new Date(2026, 10, 1, 17).getTime());
   });
 });

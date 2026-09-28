@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { addFile, addItem, addSpace, getSetting, setSetting, updateItem } from './repo';
-import { exportBackup, importBackup, importBookmarks, itemToMarkdown, parseBookmarksHtml, toItem, toSpace } from './backup';
+import { exportBackup, importBackup, importBookmarks, itemMarkdownFile, itemToMarkdown, parseBookmarksHtml, toItem, toSpace } from './backup';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -161,6 +161,15 @@ describe('bookmarks', () => {
     const item = (await db.items.toArray())[0];
     expect(item.createdAt).toBeGreaterThanOrEqual(before);
     expect(Number.isNaN(new Date(item.createdAt).getTime())).toBe(false);
+  });
+});
+
+describe('itemMarkdownFile', () => {
+  it('names the file after the title, safe for any file system', async () => {
+    const item = await addItem({ title: 'Lab 3: circuits/ohm?', body: 'V = IR' });
+    const file = itemMarkdownFile(item, 'Physics');
+    expect(file.name).toBe('Lab 3_ circuits_ohm_.md');
+    expect(await file.text()).toContain('V = IR');
   });
 });
 

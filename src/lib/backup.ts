@@ -268,6 +268,11 @@ export function itemToMarkdown(item: Item, spaceName: string | null): string {
   return lines.join('\n');
 }
 
+/** One item as a Markdown file named after its title, for sharing a single note. */
+export function itemMarkdownFile(item: Item, spaceName: string | null): File {
+  return new File([itemToMarkdown(item, spaceName)], `${safeName(displayTitle(item)).slice(0, 80)}.md`, { type: 'text/markdown;charset=utf-8' });
+}
+
 export async function exportMarkdown(): Promise<Blob> {
   const { zipSync, strToU8 } = await import('fflate');
   const [spaces, items, files] = await Promise.all([db.spaces.toArray(), db.items.filter((i) => !i.deletedAt).toArray(), db.files.toArray()]);

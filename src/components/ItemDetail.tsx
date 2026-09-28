@@ -139,6 +139,18 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
     patch({ due, dueHasTime, remindAt: moveReminder(item.remindAt, item, { due, dueHasTime }) });
   }
 
+  async function downloadMarkdown() {
+    // Loaded on use: the backup code isn't needed to edit an item.
+    const { itemMarkdownFile } = await import('../lib/backup');
+    // Written from what's on screen, so text typed in the last moment is included.
+    const file = itemMarkdownFile({ ...item, title, body }, spaces.find((s) => s.id === item.spaceId)?.name ?? null);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = file.name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+  }
+
   async function copyLink() {
     if (!item.url) return;
     try {
@@ -362,6 +374,10 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
           Added {timeAgo(item.createdAt)} · Edited {timeAgo(item.updatedAt)}
           {item.completedAt ? ` · Done ${timeAgo(item.completedAt)}` : ''}
           {item.focusMins ? ` · Focused ${item.focusMins} min` : ''}
+          {' · '}
+          <button type="button" class="underline hover:text-text" onClick={downloadMarkdown}>
+            Download as Markdown
+          </button>
         </p>
       </div>
 

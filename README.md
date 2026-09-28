@@ -31,6 +31,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 
 **Find**
 - Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.
+- Search filters that work alone or with words: `is:task`, `is:open`, `is:done`, `is:overdue`, `is:pinned`, `is:fav`, `is:private`, `is:archived`, `is:repeating`, `type:link|note|file` and `tag:name`.
 - Smart views: This week, No tags and Recently edited.
 - A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/I/T/A/F/S` to jump, `?` for the list).
 

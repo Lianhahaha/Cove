@@ -4,6 +4,8 @@ import { Search as SearchIcon, X } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { search, searchIndex, startSearchIndex } from '../lib/search';
+import { FILTER_EXAMPLES, hasFilters, matchesFilters, parseSearchQuery } from '../lib/filters';
+import { sortItems } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
 import type { Item } from '../lib/types';
 import { ItemRow } from '../components/ItemCard';
@@ -33,11 +35,22 @@ export function Search() {
     route(`/search${params.size ? '?' + params : ''}`, true);
   };
 
-  const ids = useMemo(() => search(q), [q, searchIndex.value]);
+  const parsed = useMemo(() => parseSearchQuery(q), [q]);
+  const ids = useMemo(() => search(parsed.text), [parsed.text, searchIndex.value]);
   const results = useLive(async () => {
-    const items = (await db.items.bulkGet(ids)).filter((i): i is Item => !!i);
-    return items.filter((i) => (scope === 'all' || !i.archived) && (!spaceId || (spaceId === 'inbox' ? i.spaceId === null : i.spaceId === spaceId)));
-  }, [ids.join(','), scope, spaceId]);
+    const now = new Date();
+    const pass = (i: Item | undefined): i is Item => !!i && matchesFilters(i, parsed, now);
+    // Filters with no words list everything that matches, newest first.
+    const items = parsed.text ? (await db.items.bulkGet(ids)).filter(pass) : hasFilters(parsed) ? sortItems(await db.items.filter(pass).toArray(), 'recent').slice(0, 200) : [];
+    const withArchived = scope === 'all' || parsed.is.includes('archived');
+    return items.filter((i) => (withArchived || !i.archived) && (!spaceId || (spaceId === 'inbox' ? i.spaceId === null : i.spaceId === spaceId)));
+  }, [ids.join(','), q, scope, spaceId]);
+
+  /** Adds an example filter to the query, or starts one for the user to finish. */
+  const addFilter = (f: string) => {
+    setParams({ q: `${q.trim()} ${f}`.trimStart() + (f.endsWith(':') ? '' : ' ') });
+    input.current?.focus();
+  };
 
   return (
     <>
@@ -77,7 +90,15 @@ export function Search() {
 
         {!q.trim() ? (
           <EmptyState icon={<SearchIcon size={22} />} title="Find anything">
-            Search works offline. Try a word from a note, a site name, or a tag.
+            <p>Search works offline. Try a word from a note, a site name, or a tag.</p>
+            <p class="mt-3">Narrow it down with filters:</p>
+            <div class="mt-2 flex flex-wrap justify-center gap-1.5">
+              {FILTER_EXAMPLES.map((f) => (
+                <button key={f} type="button" class="kbd hover:bg-surface3" onClick={() => addFilter(f)}>
+                  {f}
+                </button>
+              ))}
+            </div>
           </EmptyState>
         ) : results && results.length === 0 ? (
           <p class="text-sm text-subtle py-6 text-center">No matches for “{q}”.</p>

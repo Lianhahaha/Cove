@@ -39,7 +39,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Summarize an item, suggest tags, pull tasks and deadlines out of an announcement, or make an interactive practice quiz. See [AI safety](#ai-safety).
 
 **Your data**
-- Backups as a zip with every file, importable on any device without overwriting newer edits.
+- Backups as a zip with every file, your quick links and focus history, importable on any device without overwriting newer edits.
 - Export everything as Markdown, one folder per space. Import browser bookmarks.
 - Storage meter and a request for persistent storage.
 - Start a new semester by archiving every space in one step.

@@ -1,6 +1,8 @@
 import { db } from './db';
 import { LIMITS, newItem, normalizeTags, SPACE_COLORS, uid } from './repo';
 import { displayTitle } from './queries';
+import { mergeQuickLinks } from './links';
+import { mergeFocusLog } from './focus';
 import type { ChecklistEntry, Item, LinkPreview, Recurrence, Space, StoredFile } from './types';
 
 export const BACKUP_FORMAT = 'cove-backup';
@@ -26,13 +28,19 @@ interface BackupJson {
   spaces: Space[];
   items: Item[];
   files: BackupFileMeta[];
+  /** Quick links and focus history. Missing from backups made before they were included. */
+  settings?: { quickLinks?: unknown; focusLog?: unknown };
 }
+
+/** Settings worth moving to another device. AI consent and notifications stay a per-device choice. */
+const BACKED_UP_SETTINGS = ['quickLinks', 'focusLog'] as const;
 
 const safeName = (s: string) => s.replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '_').replace(/^\.+/, '').slice(0, 120) || 'untitled';
 
 export async function exportBackup(): Promise<Blob> {
   const { zipSync, strToU8 } = await import('fflate');
-  const [spaces, items, files] = await Promise.all([db.spaces.toArray(), db.items.toArray(), db.files.toArray()]);
+  const [spaces, items, files, rows] = await Promise.all([db.spaces.toArray(), db.items.toArray(), db.files.toArray(), db.settings.bulkGet([...BACKED_UP_SETTINGS])]);
+  const settings = Object.fromEntries(rows.filter((r) => r !== undefined).map((r) => [r.key, r.value]));
   const entries: Record<string, Uint8Array> = {};
   const fileMeta: BackupFileMeta[] = [];
   for (const f of files) {
@@ -40,7 +48,7 @@ export async function exportBackup(): Promise<Blob> {
     entries[path] = new Uint8Array(await f.blob.arrayBuffer());
     fileMeta.push({ id: f.id, itemId: f.itemId, name: f.name, type: f.type, size: f.size, createdAt: f.createdAt, path });
   }
-  const json: BackupJson = { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: Date.now(), spaces, items, files: fileMeta };
+  const json: BackupJson = { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: Date.now(), spaces, items, files: fileMeta, settings };
   entries['cove-backup.json'] = strToU8(JSON.stringify(json));
   // Files are usually already compressed (PDF, JPG), so store them as-is and only compress the JSON.
   const zipped = zipSync(Object.fromEntries(Object.entries(entries).map(([k, v]) => [k, [v, { level: k.endsWith('.json') ? 6 : 0 }]])));
@@ -232,6 +240,10 @@ export async function importBackup(file: Blob): Promise<ImportResult> {
       result.files++;
     }
   });
+  // Merged, not replaced, so importing never drops a link or session made on this device.
+  const settings = b.settings && typeof b.settings === 'object' ? b.settings : {};
+  await mergeQuickLinks(settings.quickLinks);
+  await mergeFocusLog(settings.focusLog);
   return result;
 }
 

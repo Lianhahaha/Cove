@@ -252,7 +252,7 @@ export function Settings() {
             </button>
           </div>
           <p class="text-xs text-subtle">
-            Backups include files and can be imported on any device; newer edits are never overwritten by older ones. For bookmarks, export them from your
+            Backups include files, quick links and focus history, and can be imported on any device; newer edits are never overwritten by older ones. For bookmarks, export them from your
             browser as an HTML file first.
           </p>
           <input

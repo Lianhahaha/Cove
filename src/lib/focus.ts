@@ -77,6 +77,28 @@ export async function focusLog(): Promise<FocusSession[]> {
   return getSetting<FocusSession[]>('focusLog', []);
 }
 
+/** Adds sessions from a backup to the log, skipping any it already has. */
+export async function mergeFocusLog(incoming: unknown): Promise<void> {
+  if (!Array.isArray(incoming)) return;
+  const log = await focusLog();
+  const key = (s: FocusSession) => `${s.at}:${s.itemId}:${s.minutes}`;
+  const seen = new Set(log.map(key));
+  const latest = Date.now() + 86_400_000;
+  const added = incoming
+    .filter((s): s is FocusSession => {
+      if (!s || typeof s !== 'object') return false;
+      const { itemId, minutes, at } = s as Record<string, unknown>;
+      return (
+        (itemId === null || (typeof itemId === 'string' && itemId.length <= 64)) &&
+        typeof minutes === 'number' && minutes > 0 && minutes <= 600 &&
+        typeof at === 'number' && at > 0 && at <= latest
+      );
+    })
+    .map((s) => ({ itemId: s.itemId, minutes: Math.round(s.minutes), at: s.at }))
+    .filter((s) => !seen.has(key(s)) && (seen.add(key(s)), true));
+  if (added.length) await setSetting('focusLog', [...log, ...added].sort((a, b) => a.at - b.at).slice(-LOG_LIMIT));
+}
+
 async function logSession(itemId: string | null, minutes: number) {
   const log = await focusLog();
   await setSetting('focusLog', [...log, { itemId, minutes, at: Date.now() }].slice(-LOG_LIMIT));

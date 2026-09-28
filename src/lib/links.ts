@@ -135,6 +135,18 @@ export async function addQuickLink(name: string, rawUrl: string): Promise<string
   return null;
 }
 
+/** Adds links from a backup that aren't here yet, up to the limit. */
+export async function mergeQuickLinks(incoming: unknown): Promise<void> {
+  if (!Array.isArray(incoming)) return;
+  const current = sanitize(await getSetting<unknown>('quickLinks', DEFAULT_LINKS));
+  const urls = new Set(current.map((l) => l.url));
+  const ids = new Set(current.map((l) => l.id));
+  const added = sanitize(incoming)
+    .filter((l) => !urls.has(l.url) && (urls.add(l.url), true))
+    .map((l) => (ids.has(l.id) ? { ...l, id: uid() } : l));
+  if (added.length) await save([...current, ...added].slice(0, QUICK_LINK_LIMITS.count));
+}
+
 export async function removeQuickLink(id: string) {
   await save(quickLinks.value.filter((l) => l.id !== id));
 }

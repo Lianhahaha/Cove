@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
-import { addFile, addItem, addSpace, updateItem } from './repo';
+import { addFile, addItem, addSpace, getSetting, setSetting, updateItem } from './repo';
 import { exportBackup, importBackup, importBookmarks, itemToMarkdown, parseBookmarksHtml, toItem, toSpace } from './backup';
 
 beforeEach(async () => {
@@ -25,6 +25,26 @@ describe('backup round trip', () => {
     expect(await file.blob.text()).toBe('hello pdf');
     // Queued so its text is read again and search can look inside it.
     expect(file.textStatus).toBe('pending');
+  });
+
+  it('carries quick links and focus history, merging without duplicates', async () => {
+    const session = { itemId: null, minutes: 25, at: Date.now() - 1000 };
+    await setSetting('quickLinks', [{ id: 'm', name: 'Moodle', url: 'https://moodle.school.edu/' }]);
+    await setSetting('focusLog', [session]);
+    await setSetting('ai', true);
+    const zip = await exportBackup();
+
+    await Promise.all(db.tables.map((t) => t.clear()));
+    await setSetting('focusLog', [{ itemId: null, minutes: 50, at: 1 }]);
+    await importBackup(zip);
+    await importBackup(zip);
+
+    const links = await getSetting<{ url: string }[]>('quickLinks', []);
+    // The defaults on this device stay, with the backup's link added once.
+    expect(links.map((l) => l.url)).toEqual(['https://classroom.google.com/', 'https://mail.google.com/', 'https://moodle.school.edu/']);
+    expect(await getSetting('focusLog', [])).toEqual([{ itemId: null, minutes: 50, at: 1 }, session]);
+    // AI consent is a per-device choice and never comes along.
+    expect(await getSetting('ai', false)).toBe(false);
   });
 
   it('never overwrites newer local edits with an older backup', async () => {

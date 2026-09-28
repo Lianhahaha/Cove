@@ -46,7 +46,10 @@ function event(item: Item, now: number): string[] {
   if (item.dueHasTime) {
     lines.push(`DTSTART:${utcStamp(item.due)}`, `DTEND:${utcStamp(item.due + 30 * 60_000)}`);
   } else {
-    lines.push(`DTSTART;VALUE=DATE:${localDate(item.due)}`, `DTEND;VALUE=DATE:${localDate(item.due + 86_400_000)}`);
+    // The next calendar day, not 24 hours on: across a clock change that lands on the same date.
+    const d = new Date(item.due);
+    const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+    lines.push(`DTSTART;VALUE=DATE:${localDate(item.due)}`, `DTEND;VALUE=DATE:${localDate(end)}`);
   }
   lines.push(`SUMMARY:${icsText(displayTitle(item))}`);
   const desc = [item.url, item.private ? '' : item.body].filter(Boolean).join('\n\n').slice(0, 2000);

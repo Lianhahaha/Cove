@@ -23,12 +23,14 @@ export const BUCKET_LABELS: Record<DueBucket, string> = {
 
 export function dueBucket(due: number | null, hasTime: boolean, now = new Date()): DueBucket {
   if (due === null) return 'none';
-  const today = startOfDay(now).getTime();
+  const today = startOfDay(now);
+  // Day boundaries come from the calendar, not 24-hour steps, which drift an hour across a clock change.
+  const dayStart = (n: number) => addDays(today, n).getTime();
   // A timed task is overdue once its time passes; a dated one only after its day ends.
-  if (hasTime ? due < now.getTime() : due < today) return 'overdue';
-  if (due < today + DAY) return 'today';
-  if (due < today + 2 * DAY) return 'tomorrow';
-  if (due < today + 8 * DAY) return 'week';
+  if (hasTime ? due < now.getTime() : due < today.getTime()) return 'overdue';
+  if (due < dayStart(1)) return 'today';
+  if (due < dayStart(2)) return 'tomorrow';
+  if (due < dayStart(8)) return 'week';
   return 'later';
 }
 

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { GripVertical, Plus, X } from 'lucide-preact';
 import { normalizeTag, uid } from '../lib/repo';
 import { renderMarkdown } from '../lib/markdown';
+import { readingStats } from '../lib/snippet';
 import type { ChecklistEntry } from '../lib/types';
 
 /** Calls `save` once typing pauses, and flushes on unmount so nothing is lost. */
@@ -163,6 +164,7 @@ export function ChecklistEditor({ items, onChange }: { items: ChecklistEntry[]; 
 export function MarkdownField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [mode, setMode] = useState<'write' | 'preview'>(value.trim() ? 'preview' : 'write');
   const ref = useRef<HTMLTextAreaElement>(null);
+  const stats = useMemo(() => readingStats(value), [value]);
 
   useEffect(() => {
     const el = ref.current;
@@ -184,7 +186,10 @@ export function MarkdownField({ value, onChange }: { value: string; onChange: (v
             {m === 'write' ? 'Write' : 'Preview'}
           </button>
         ))}
-        <span class="text-xs text-subtle ml-auto">Markdown</span>
+        <span class="text-xs text-subtle ml-auto tabular-nums">
+          {stats.words > 0 && `${stats.words} word${stats.words === 1 ? '' : 's'}${stats.words >= 200 ? ` · ${stats.minutes} min read` : ''} · `}
+          Markdown
+        </span>
       </div>
       {mode === 'write' ? (
         <textarea

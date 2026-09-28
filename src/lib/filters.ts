@@ -61,11 +61,12 @@ export function parseSearchQuery(query: string): SearchQuery {
     if (m) {
       const key = m[1].toLowerCase();
       const value = m[2].toLowerCase();
-      if (key === 'is' && IS_WORDS[value]) {
+      // Own keys only, so "is:constructor" isn't read off the object's prototype.
+      if (key === 'is' && Object.hasOwn(IS_WORDS, value)) {
         add(out.is, IS_WORDS[value]);
         continue;
       }
-      if ((key === 'type' || key === 'kind') && KIND_WORDS[value]) {
+      if ((key === 'type' || key === 'kind') && Object.hasOwn(KIND_WORDS, value)) {
         add(out.kinds, KIND_WORDS[value]);
         continue;
       }

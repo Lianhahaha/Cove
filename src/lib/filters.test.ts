@@ -17,6 +17,12 @@ describe('parseSearchQuery', () => {
     expect(q.text).toBe('is:blue https://x.com tag:');
     expect(hasFilters(q)).toBe(false);
   });
+
+  it('does not read filter names off the prototype', () => {
+    const q = parseSearchQuery('is:constructor type:toString is:__proto__');
+    expect(hasFilters(q)).toBe(false);
+    expect(() => matchesFilters(newItem(), q)).not.toThrow();
+  });
 });
 
 describe('matchesFilters', () => {

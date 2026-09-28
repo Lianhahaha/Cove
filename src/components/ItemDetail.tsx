@@ -416,10 +416,14 @@ function RecurrenceField({ value, disabled, onChange }: { value: Recurrence | nu
 function ReminderField({ item, onChange }: { item: Item; onChange: (remindAt: number | null) => void }) {
   // Date-only tasks count from 9am on the day, which is when a reminder "at the due time" makes sense.
   const anchor = item.due === null ? null : reminderAnchor(item.due, item.dueHasTime);
+  // Picking "Custom time…" starts from a time that may equal a preset, so remember the choice.
+  const [custom, setCustom] = useState(false);
   const current =
     item.remindAt === null || anchor === null
       ? 'none'
-      : (REMINDER_PRESETS.find((p) => anchor - p.minutesBefore * 60_000 === item.remindAt)?.minutesBefore.toString() ?? 'custom');
+      : custom
+        ? 'custom'
+        : (REMINDER_PRESETS.find((p) => anchor - p.minutesBefore * 60_000 === item.remindAt)?.minutesBefore.toString() ?? 'custom');
   const toLocal = (ts: number) => `${toDateInput(ts)}T${toTimeInput(ts)}`;
 
   return (
@@ -432,8 +436,10 @@ function ReminderField({ item, onChange }: { item: Item; onChange: (remindAt: nu
         value={current}
         onChange={(e) => {
           const v = e.currentTarget.value;
+          setCustom(v === 'custom');
           if (v === 'none' || anchor === null) onChange(null);
-          else if (v === 'custom') onChange(anchor - 3_600_000);
+          // Keep a reminder that's already set, so the picker opens on it.
+          else if (v === 'custom') onChange(item.remindAt ?? anchor - 3_600_000);
           else onChange(anchor - Number(v) * 60_000);
         }}
       >

@@ -13,6 +13,7 @@ import {
   normalizeTag,
   purgeExpiredTrash,
   restoreItems,
+  restoreSpace,
   trashItems,
   trashSpace,
   TRASH_DAYS,
@@ -107,6 +108,21 @@ describe('spaces', () => {
     const stored = await db.items.get(item.id);
     expect(stored?.spaceId).toBeNull();
     expect(stored?.deletedAt).toBeNull();
+  });
+
+  it('restores a space with the items deleted along with it', async () => {
+    const space = await addSpace({ name: 'Chem' });
+    const kept = await addItem({ spaceId: space.id });
+    const trashedBefore = await addItem({ spaceId: space.id });
+    await trashItems([trashedBefore.id]);
+    await new Promise((r) => setTimeout(r, 2));
+    await trashSpace(space.id, 'trash');
+
+    expect(await restoreSpace(space.id)).toBe(1);
+    expect((await db.spaces.get(space.id))?.deletedAt).toBeNull();
+    expect((await db.items.get(kept.id))?.deletedAt).toBeNull();
+    // Deleted on its own earlier, so it stays in the trash.
+    expect((await db.items.get(trashedBefore.id))?.deletedAt).toBeTypeOf('number');
   });
 });
 

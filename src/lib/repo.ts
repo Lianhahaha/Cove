@@ -182,6 +182,26 @@ export async function trashSpace(id: string, items: 'inbox' | 'trash'): Promise<
   });
 }
 
+/**
+ * Brings a space back from the trash, with the items that went to the trash
+ * along with it. Returns how many items came back.
+ */
+export async function restoreSpace(id: string): Promise<number> {
+  const now = Date.now();
+  return db.transaction('rw', db.items, db.spaces, async () => {
+    const space = await db.spaces.get(id);
+    if (!space?.deletedAt) return 0;
+    // Items deleted with the space share its deletedAt; ones trashed on their own before stay in the trash.
+    const restored = await db.items
+      .where('spaceId')
+      .equals(id)
+      .filter((i) => i.deletedAt === space.deletedAt)
+      .modify({ deletedAt: null, updatedAt: now });
+    await db.spaces.update(id, { deletedAt: null, updatedAt: now });
+    return restored;
+  });
+}
+
 export async function reorderSpaces(idsInOrder: string[]): Promise<void> {
   await db.transaction('rw', db.spaces, async () => {
     await Promise.all(idsInOrder.map((id, order) => db.spaces.update(id, { order })));

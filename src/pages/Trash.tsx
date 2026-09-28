@@ -2,7 +2,7 @@ import { useMemo } from 'preact/hooks';
 import { ArchiveRestore, Trash as TrashIcon } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
-import { emptyTrash, purgeItems, restoreItems, TRASH_DAYS, updateSpace } from '../lib/repo';
+import { emptyTrash, purgeItems, restoreItems, restoreSpace, TRASH_DAYS } from '../lib/repo';
 import { displayTitle } from '../lib/queries';
 import { timeAgo } from '../lib/dates';
 import { toast } from '../lib/toast';
@@ -68,8 +68,8 @@ export function Trash() {
                   <button
                     class="btn btn-ghost"
                     onClick={async () => {
-                      await updateSpace(s.id, { deletedAt: null });
-                      toast(`Restored ${s.name}`);
+                      const n = await restoreSpace(s.id);
+                      toast(`Restored ${s.name}${n ? ` and ${n} item${n === 1 ? '' : 's'}` : ''}`);
                     }}
                   >
                     <ArchiveRestore size={16} /> Restore

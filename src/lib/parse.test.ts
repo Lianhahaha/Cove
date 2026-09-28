@@ -125,6 +125,45 @@ describe('dates', () => {
   });
 });
 
+describe('repeats', () => {
+  it('reads every day, week and month, starting today', () => {
+    expect(p('gym every day')).toMatchObject({ title: 'gym', recurrence: { freq: 'daily', interval: 1 }, due: day(2026, 9, 23), isTask: true });
+    expect(p('review every week').recurrence).toEqual({ freq: 'weekly', interval: 1 });
+    expect(p('pay fees every month').recurrence).toEqual({ freq: 'monthly', interval: 1 });
+  });
+
+  it('reads intervals', () => {
+    expect(p('laundry every other week').recurrence).toEqual({ freq: 'weekly', interval: 2 });
+    expect(p('water plants every 3 days')).toMatchObject({ title: 'water plants', recurrence: { freq: 'daily', interval: 3 } });
+  });
+
+  it('starts a weekday repeat on the coming one', () => {
+    const r = p('CPE quiz every fri 9am');
+    expect(r).toMatchObject({ title: 'CPE quiz', recurrence: { freq: 'weekly', interval: 1 }, due: day(2026, 9, 25, 9), dueHasTime: true });
+    // Wednesday 8am has already passed at 10am, so the series starts next week.
+    expect(p('lab every wednesday 8am').due).toBe(day(2026, 9, 30, 8));
+  });
+
+  it('keeps an explicit start date', () => {
+    expect(p('report every week from oct 5').due).toBe(day(2026, 10, 5));
+  });
+
+  it('understands araw-araw', () => {
+    expect(p('duolingo araw-araw').recurrence).toEqual({ freq: 'daily', interval: 1 });
+  });
+
+  it('leaves other uses of every in the title', () => {
+    expect(p('read every chapter')).toMatchObject({ title: 'read every chapter', recurrence: null, due: null });
+  });
+
+  it('can be switched off', () => {
+    const r = parseQuickAdd('meet every fri', { now, ignore: new Set(['repeat']) });
+    expect(r.recurrence).toBeNull();
+    expect(r).toMatchObject({ title: 'meet every', due: day(2026, 9, 25) });
+    expect(parseQuickAdd('meet every fri', { now, ignore: new Set(['due']) })).toMatchObject({ title: 'meet every fri', recurrence: null, due: null });
+  });
+});
+
 describe('ignore', () => {
   it('leaves switched-off parts in the title', () => {
     const r = parseQuickAdd('Friday night lights fri', { now, ignore: new Set(['due']) });

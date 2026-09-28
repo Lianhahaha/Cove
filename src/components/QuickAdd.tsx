@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { CalendarDays, Flag, Folder, Hash, Link as LinkIcon, Plus, X } from 'lucide-preact';
+import { CalendarDays, Flag, Folder, Hash, Link as LinkIcon, Plus, Repeat, X } from 'lucide-preact';
 import type { ComponentChildren } from 'preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
@@ -8,7 +8,7 @@ import { formatDue } from '../lib/dates';
 import { hostOf } from '../lib/queries';
 import { createFromParsed } from '../lib/actions';
 import { toast } from '../lib/toast';
-import type { Item } from '../lib/types';
+import type { Item, Recurrence } from '../lib/types';
 
 interface Props {
   /** Space for new items when the text doesn't name one with @. */
@@ -30,6 +30,11 @@ interface Props {
 }
 
 const PRIORITY_LABEL = ['', 'Low', 'Medium', 'High'];
+
+function repeatLabel({ freq, interval }: Recurrence): string {
+  const unit = freq === 'daily' ? 'day' : freq === 'weekly' ? 'week' : 'month';
+  return interval === 1 ? `Every ${unit}` : interval === 2 ? `Every other ${unit}` : `Every ${interval} ${unit}s`;
+}
 
 function Chip({ icon, label, onRemove }: { icon: ComponentChildren; label: string; onRemove: () => void }) {
   return (
@@ -148,6 +153,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
           {parsed.due !== null && (
             <Chip icon={<CalendarDays size={12} />} label={formatDue(parsed.due, parsed.dueHasTime)} onRemove={() => skip('due')} />
           )}
+          {parsed.recurrence && <Chip icon={<Repeat size={12} />} label={repeatLabel(parsed.recurrence)} onRemove={() => skip('repeat')} />}
           {parsed.priority > 0 && <Chip icon={<Flag size={12} />} label={PRIORITY_LABEL[parsed.priority]} onRemove={() => skip('priority')} />}
           {parsed.tags.length > 0 && <Chip icon={<Hash size={12} />} label={parsed.tags.join(' ')} onRemove={() => skip('tags')} />}
           {parsed.isTask && <span class="chip">Task</span>}

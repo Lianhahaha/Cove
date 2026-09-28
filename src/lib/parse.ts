@@ -1,8 +1,8 @@
-import type { Priority } from './types';
+import type { Priority, Recurrence } from './types';
 import { normalizeTag } from './repo';
 
 /** Parts of the quick-add syntax the user can switch off for one entry. */
-export type ParsePart = 'due' | 'priority' | 'space' | 'tags';
+export type ParsePart = 'due' | 'repeat' | 'priority' | 'space' | 'tags';
 
 export interface ParseContext {
   now?: Date;
@@ -21,6 +21,8 @@ export interface Parsed {
   dueHasTime: boolean;
   /** The text that produced the due date, for showing and undoing. */
   dueText: string | null;
+  /** From "every fri", "every 2 weeks" and the like. Always comes with a due date. */
+  recurrence: Recurrence | null;
   isTask: boolean;
 }
 
@@ -159,6 +161,31 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
   return null;
 }
 
+const REPEAT_RE = new RegExp(
+  String.raw`(?:^|\s)(?:every\s+(?:(other)\s+|(\d{1,2})\s+)?(day|week|month|${Object.keys(DAYS).join('|')})s?|(araw-araw))\b`,
+  'i',
+);
+
+/**
+ * "every day", "every other week", "every 3 months", "every fri" or the Filipino
+ * "araw-araw". A weekday also says when the series starts.
+ */
+function parseRepeat(text: string, now: Date): { recurrence: Recurrence; start: Date | null; span: Match } | null {
+  const found = take(text, REPEAT_RE);
+  if (!found) return null;
+  const { m, span } = found;
+  if (m[4]) return { recurrence: { freq: 'daily', interval: 1 }, start: null, span };
+  const interval = m[1] ? 2 : m[2] ? Number(m[2]) : 1;
+  if (interval < 1) return null;
+  const unit = m[3].toLowerCase();
+  if (unit in DAYS) {
+    const today = startOfDay(now);
+    return { recurrence: { freq: 'weekly', interval }, start: addDays(today, (DAYS[unit] - today.getDay() + 7) % 7), span };
+  }
+  const freq = unit === 'day' ? 'daily' : unit === 'week' ? 'weekly' : 'monthly';
+  return { recurrence: { freq, interval }, start: null, span };
+}
+
 function parseTime(text: string): { h: number; min: number; span: Match } | null {
   const ampm = take(text, /(?:^|\s)(?:at\s+)?(\d{1,2})(?::([0-5]\d))?\s*(am|pm)\b/i);
   if (ampm) {
@@ -261,23 +288,32 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
   let due: number | null = null;
   let dueHasTime = false;
   let dueText: string | null = null;
+  let recurrence: Recurrence | null = null;
+  // A repeat is part of the schedule, so switching off the due date leaves its words in the title too.
   if (!ignore.has('due')) {
+    // Read before dates, so the "fri" in "every fri" isn't taken as a one-off date.
+    const repeat = ignore.has('repeat') ? null : parseRepeat(text, now);
+    if (repeat) text = cut(text, repeat.span);
     const date = parseDate(text, now);
     if (date) text = cut(text, date.span);
     const time = parseTime(text);
     if (time) text = cut(text, time.span);
 
-    if (date || time) {
-      let d = date ? date.date : startOfDay(now);
+    if (date || time || repeat) {
+      // A repeat with no date starts on its weekday, or today.
+      let d = date?.date ?? repeat?.start ?? startOfDay(now);
       if (time) {
         d = new Date(d.getFullYear(), d.getMonth(), d.getDate(), time.h, time.min);
-        // A time with no date that has already passed today means tomorrow.
+        // A time with no date that has already passed today means tomorrow, or next week for "every fri".
         // Built from the date, not by adding 24 hours, so a clock change overnight keeps the hour typed.
-        if (!date && d.getTime() <= now.getTime()) d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, time.h, time.min);
+        if (!date && d.getTime() <= now.getTime()) {
+          d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + (repeat?.start ? 7 : 1), time.h, time.min);
+        }
       }
       due = d.getTime();
       dueHasTime = !!time;
-      dueText = [date?.span.text, time?.span.text].filter(Boolean).join(' ');
+      dueText = [repeat?.span.text, date?.span.text, time?.span.text].filter(Boolean).join(' ');
+      recurrence = repeat?.recurrence ?? null;
     }
   }
 
@@ -292,6 +328,7 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
     due,
     dueHasTime,
     dueText,
+    recurrence,
     isTask: explicitTask || due !== null || priority > 0,
   };
 }

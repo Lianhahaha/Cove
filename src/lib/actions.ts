@@ -22,6 +22,7 @@ export async function createFromParsed(p: Parsed, extra: Partial<Item> = {}): Pr
     spaceId: p.spaceId,
     due: p.due,
     dueHasTime: p.dueHasTime,
+    recurrence: p.recurrence,
     status: p.isTask ? 'todo' : 'none',
     ...extra,
   });

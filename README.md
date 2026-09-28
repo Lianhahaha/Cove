@@ -7,7 +7,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 ## Features
 
 **Capture**
-- One box for everything. A URL, or a bare address like `example.com`, becomes a link, anything else a note, and the same line can carry `#tags`, `!`/`!!`/`!!!` priority, `@space`, and a due date such as `tmr`, `bukas`, `fri 5pm`, `next week`, `in 3 days`, `dec 5` or `12/5`. The parsed parts show as chips you can dismiss.
+- One box for everything. A URL, or a bare address like `example.com`, becomes a link, anything else a note, and the same line can carry `#tags`, `!`/`!!`/`!!!` priority, `@space`, and a due date such as `tmr`, `bukas`, `fri 5pm`, `next week`, `in 3 days`, `dec 5` or `12/5`, and a repeat such as `every fri`, `every other week`, `every 3 days` or `araw-araw`. The parsed parts show as chips you can dismiss.
 - Paste a multi-line announcement and split it into one item per line.
 - Attach PDFs, slides and photos by picking, dropping or pasting them. Files are stored offline, up to 25 MB each.
 - Share links, text and files into Cove from any Android app, or paste and drop anywhere in the app.

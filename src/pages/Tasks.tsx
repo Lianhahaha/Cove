@@ -29,10 +29,14 @@ const VIEWS: { id: View; label: string; icon: typeof List }[] = [
 
 export function Tasks() {
   const [view, setView] = usePref<View>('tasks:view', 'list');
-  const [spaceFilter, setSpaceFilter] = usePref<string>('tasks:space', 'all');
+  const [savedSpace, setSpaceFilter] = usePref<string>('tasks:space', 'all');
   const [showDone, setShowDone] = usePref<boolean>('tasks:showDone', false);
   const tasks = useLive(() => db.items.filter((i) => isActive(i) && i.status !== 'none').toArray(), []);
-  const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt).toArray(), []) ?? [];
+  const liveSpaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt).toArray(), []);
+  const spaces = liveSpaces ?? [];
+  // A saved filter for a space that's since been deleted falls back to all spaces, so new tasks don't land in it.
+  const spaceFilter =
+    !liveSpaces || savedSpace === 'all' || savedSpace === 'inbox' || spaces.some((s) => s.id === savedSpace) ? savedSpace : 'all';
   const ctx = useCardContext(spaceFilter === 'all');
 
   const filtered = useMemo(

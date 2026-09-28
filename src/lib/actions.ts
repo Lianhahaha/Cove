@@ -4,6 +4,7 @@ import { toast } from './toast';
 import type { Item } from './types';
 import type { Parsed } from './parse';
 import { autoTagsFor } from './autotag';
+import { moveReminder } from './reminders';
 import { signal } from '@preact/signals';
 
 /** Mirrors the "Tag links by site" setting. */
@@ -110,6 +111,31 @@ export function nextOccurrence(due: number, r: NonNullable<Item['recurrence']>, 
   let d = step(new Date(due));
   for (let i = 0; i < 1000 && d.getTime() < endOfToday; i++) d = step(d);
   return d.getTime();
+}
+
+type Schedule = Pick<Item, 'id' | 'due' | 'remindAt'>;
+
+/**
+ * Moves overdue tasks to today, keeping their time of day. A timed task whose
+ * hour has already passed goes to tomorrow instead, so it isn't overdue again
+ * straight away. Reminders keep their distance from the due time. Returns the
+ * old schedules so the move can be undone.
+ */
+export async function rescheduleToToday(items: Item[], now = new Date()): Promise<Schedule[]> {
+  const before: Schedule[] = [];
+  for (const item of items) {
+    if (item.due === null) continue;
+    const old = new Date(item.due);
+    let due = new Date(now.getFullYear(), now.getMonth(), now.getDate(), item.dueHasTime ? old.getHours() : 0, item.dueHasTime ? old.getMinutes() : 0);
+    if (item.dueHasTime && due.getTime() <= now.getTime()) due = new Date(due.getFullYear(), due.getMonth(), due.getDate() + 1, due.getHours(), due.getMinutes());
+    before.push({ id: item.id, due: item.due, remindAt: item.remindAt });
+    await updateItem(item.id, { due: due.getTime(), remindAt: moveReminder(item.remindAt, item, { due: due.getTime(), dueHasTime: item.dueHasTime }) });
+  }
+  return before;
+}
+
+export async function restoreSchedules(schedules: Schedule[]): Promise<void> {
+  await Promise.all(schedules.map(({ id, due, remindAt }) => updateItem(id, { due, remindAt })));
 }
 
 export async function duplicateItem(item: Item): Promise<Item> {

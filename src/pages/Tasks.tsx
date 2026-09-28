@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'preact/hooks';
-import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
+import { CalendarClock, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { usePref } from '../lib/prefs';
 import { addDays, BUCKET_LABELS, dueBucket, sameDay, startOfDay, type DueBucket } from '../lib/dates';
 import { displayTitle, isActive, sortItems } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
-import { setDone } from '../lib/actions';
+import { rescheduleToToday, restoreSchedules, setDone } from '../lib/actions';
 import { updateItem } from '../lib/repo';
 import { ITEM_MIME } from '../lib/dnd';
 import { openCapture } from '../state';
@@ -138,9 +138,25 @@ function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; s
     <div class="space-y-6">
       {groups.map(([bucket, items]) => (
         <section key={bucket}>
-          <h2 class={`section-title mb-1 ${bucket === 'overdue' ? 'text-danger' : bucket === 'today' ? 'text-accent' : ''}`}>
-            {BUCKET_LABELS[bucket]} <span class="count">{items.length}</span>
-          </h2>
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <h2 class={`section-title ${bucket === 'overdue' ? 'text-danger' : bucket === 'today' ? 'text-accent' : ''}`}>
+              {BUCKET_LABELS[bucket]} <span class="count">{items.length}</span>
+            </h2>
+            {bucket === 'overdue' && (
+              <button
+                class="btn btn-ghost min-h-7 h-7 px-2 text-sm"
+                title="Move every overdue task to today, keeping its time"
+                onClick={async () => {
+                  const before = await rescheduleToToday(items);
+                  toast(`Moved ${before.length} task${before.length === 1 ? '' : 's'} to today`, {
+                    action: { label: 'Undo', run: () => void restoreSchedules(before) },
+                  });
+                }}
+              >
+                <CalendarClock size={15} /> Move to today
+              </button>
+            )}
+          </div>
           <div class="-mx-3 space-y-0.5">
             {items.map((i) => <ItemRow key={i.id} item={i} ctx={ctx} />)}
           </div>

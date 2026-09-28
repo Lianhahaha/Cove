@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { addItem } from './repo';
-import { duplicateItem, nextOccurrence, setDone } from './actions';
+import { duplicateItem, nextOccurrence, rescheduleToToday, restoreSchedules, setDone } from './actions';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -86,6 +86,26 @@ describe('setDone with repeats', () => {
     await db.items.update(nextId!, { title: 'Weekly quiz (moved room)', updatedAt: Date.now() });
     await setDone(item, false);
     expect(await db.items.get(nextId!)).toBeDefined();
+  });
+});
+
+describe('rescheduleToToday', () => {
+  const now = new Date(2026, 8, 23, 10);
+
+  it('moves overdue tasks to today, keeping times and reminder gaps', async () => {
+    const dated = await addItem({ status: 'todo', due: at(2026, 9, 20) });
+    const evening = await addItem({ status: 'todo', due: at(2026, 9, 21, 17), dueHasTime: true, remindAt: at(2026, 9, 21, 16) });
+    await rescheduleToToday([dated, evening], now);
+    expect((await db.items.get(dated.id))?.due).toBe(at(2026, 9, 23));
+    expect(await db.items.get(evening.id)).toMatchObject({ due: at(2026, 9, 23, 17), remindAt: at(2026, 9, 23, 16) });
+  });
+
+  it('sends a timed task whose hour has passed to tomorrow, and undoes', async () => {
+    const morning = await addItem({ status: 'todo', due: at(2026, 9, 21, 8), dueHasTime: true });
+    const before = await rescheduleToToday([morning], now);
+    expect((await db.items.get(morning.id))?.due).toBe(at(2026, 9, 24, 8));
+    await restoreSchedules(before);
+    expect((await db.items.get(morning.id))?.due).toBe(at(2026, 9, 21, 8));
   });
 });
 

@@ -199,6 +199,16 @@ function parseRepeat(text: string, now: Date): { recurrence: Recurrence; start: 
   return { recurrence: { freq, interval }, start: null, span };
 }
 
+/** "in 2 hours", "in 30 mins", "in an hour" or "in half an hour": a time counted from now. */
+function parseSoon(text: string): { minutes: number; span: Match } | null {
+  const found = take(text, /(?:^|\s)(?:due\s+)?in\s+(\d{1,3}|an?|half\s+an?)\s*(h|hrs?|hours?|mins?|minutes?)\b/i);
+  if (!found) return null;
+  const [, count, unit] = found.m;
+  const n = /^half/i.test(count) ? 0.5 : /^an?$/i.test(count) ? 1 : Number(count);
+  const minutes = Math.round(n * (unit.toLowerCase().startsWith('h') ? 60 : 1));
+  return minutes > 0 ? { minutes, span: found.span } : null;
+}
+
 function parseTime(text: string): { h: number; min: number; span: Match } | null {
   const ampm = take(text, /(?:^|\s)(?:at\s+)?(\d{1,2})(?::([0-5]\d))?\s*(am|pm)\b/i);
   if (ampm) {
@@ -307,14 +317,19 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
     // Read before dates, so the "fri" in "every fri" isn't taken as a one-off date.
     const repeat = ignore.has('repeat') ? null : parseRepeat(text, now);
     if (repeat) text = cut(text, repeat.span);
-    const date = parseDate(text, now);
+    // "in 2 hours" sets the date and time at once, so nothing else is read after it.
+    const soon = parseSoon(text);
+    if (soon) text = cut(text, soon.span);
+    const date = soon ? null : parseDate(text, now);
     if (date) text = cut(text, date.span);
-    const time = parseTime(text);
+    const time = soon ? null : parseTime(text);
     if (time) text = cut(text, time.span);
 
-    if (date || time || repeat) {
+    if (date || time || repeat || soon) {
       // A repeat with no date starts on its weekday, or today.
       let d = date?.date ?? repeat?.start ?? startOfDay(now);
+      // To the minute, so "in 2 hours" typed at 10:00:40 reads 12:00.
+      if (soon) d = new Date(Math.floor((now.getTime() + soon.minutes * 60_000) / 60_000) * 60_000);
       if (time) {
         d = new Date(d.getFullYear(), d.getMonth(), d.getDate(), time.h, time.min);
         // A time with no date that has already passed today means tomorrow, or next week for "every fri".
@@ -324,8 +339,8 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
         }
       }
       due = d.getTime();
-      dueHasTime = !!time;
-      dueText = [repeat?.span.text, date?.span.text, time?.span.text].filter(Boolean).join(' ');
+      dueHasTime = !!(time || soon);
+      dueText = [repeat?.span.text, soon?.span.text, date?.span.text, time?.span.text].filter(Boolean).join(' ');
       recurrence = repeat?.recurrence ?? null;
     }
   }

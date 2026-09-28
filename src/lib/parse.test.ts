@@ -130,6 +130,17 @@ describe('dates', () => {
     expect(r.title).toBe('submit lab');
   });
 
+  it('counts hours and minutes from now', () => {
+    expect(p('call mom in 2 hours')).toMatchObject({ title: 'call mom', due: day(2026, 9, 23, 12), dueHasTime: true, isTask: true });
+    expect(p('stretch in 30 mins').due).toBe(day(2026, 9, 23, 10, 30));
+    expect(p('check oven in an hour').due).toBe(day(2026, 9, 23, 11));
+    expect(p('break in half an hour').due).toBe(day(2026, 9, 23, 10, 30));
+    expect(p('meet in 1h').due).toBe(day(2026, 9, 23, 11));
+    // Across midnight the date moves too.
+    expect(parseQuickAdd('sleep in 3 hours', { now: new Date(2026, 8, 23, 23, 0, 40) }).due).toBe(day(2026, 9, 24, 2));
+    expect(p('talk in the morning')).toMatchObject({ title: 'talk in the morning', due: null });
+  });
+
   it('puts a past time with no date on tomorrow', () => {
     expect(p('call at 9am').due).toBe(day(2026, 9, 24, 9));
     expect(p('call at 3pm').due).toBe(day(2026, 9, 23, 15));

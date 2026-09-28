@@ -37,6 +37,11 @@ const localDate = (ts: number) => {
   const d = new Date(ts);
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
 };
+/** Floating local time: no zone, so the calendar shows the same clock time on every date. */
+const localStamp = (ts: number) => {
+  const d = new Date(ts);
+  return `${localDate(ts)}T${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+};
 
 const RRULE: Record<string, string> = { daily: 'DAILY', weekly: 'WEEKLY', monthly: 'MONTHLY' };
 
@@ -44,7 +49,9 @@ function event(item: Item, now: number): string[] {
   if (item.due === null) return [];
   const lines = ['BEGIN:VEVENT', `UID:${item.id}@cove`, `DTSTAMP:${utcStamp(now)}`];
   if (item.dueHasTime) {
-    lines.push(`DTSTART:${utcStamp(item.due)}`, `DTEND:${utcStamp(item.due + 30 * 60_000)}`);
+    // A repeat in UTC would move an hour when the clocks change; Cove keeps the time of day, so the calendar should too.
+    const time = item.recurrence ? localStamp : utcStamp;
+    lines.push(`DTSTART:${time(item.due)}`, `DTEND:${time(item.due + 30 * 60_000)}`);
   } else {
     // The next calendar day, not 24 hours on: across a clock change that lands on the same date.
     const d = new Date(item.due);

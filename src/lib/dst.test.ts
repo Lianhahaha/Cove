@@ -36,6 +36,13 @@ describe('toIcs across a clock change', () => {
     expect(ics).toContain('DTSTART;VALUE=DATE:20261101');
     expect(ics).toContain('DTEND;VALUE=DATE:20261102');
   });
+
+  it('writes a repeating timed task in local time, so it stays at 9am after the change', () => {
+    const due = new Date(2026, 9, 5, 9).getTime();
+    const ics = toIcs([newItem({ id: 'w', title: 'Lab', due, dueHasTime: true, status: 'todo', recurrence: { freq: 'weekly', interval: 1 } })]);
+    expect(ics).toContain('DTSTART:20261005T090000\r\n');
+    expect(ics).toContain('DTEND:20261005T093000\r\n');
+  });
 });
 
 describe('nextOccurrence across a clock change', () => {

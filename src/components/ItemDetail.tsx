@@ -38,7 +38,7 @@ import { AI_TASK_LABELS, aiBlockedReason, aiEnabled, type AiTask } from '../lib/
 import { AiPanel } from './AiPanel';
 import { FocusStarter } from './FocusTimer';
 import { addFiles, filesFromClipboard } from '../lib/files';
-import { discardIfBlank } from '../lib/notes';
+import { appendMarkdown, discardIfBlank } from '../lib/notes';
 import { confirmAction } from '../lib/confirm';
 import { FieldLabel, InfoTip } from './InfoTip';
 
@@ -169,7 +169,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
       <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-1 px-2 h-12 md:h-14 border-b border-border">
         <button class="icon-btn" aria-label="Back" title="Back" onClick={onClose}><ArrowLeft size={20} /></button>
         <div class="flex-1" />
-        <AiMenu item={item} />
+        <AiMenu item={item} onAppendBody={(md) => setBody((b) => appendMarkdown(b, md))} />
         <FocusStarter itemId={item.id} />
         {iconAction(item.pinned ? 'Unpin' : 'Pin', item.pinned ? <PinOff size={18} /> : <Pin size={18} />, () => patch({ pinned: !item.pinned }), item.pinned)}
         {iconAction(item.favorite ? 'Remove from favorites' : 'Add to favorites', <Star size={18} class={item.favorite ? 'fill-current' : ''} />, () => patch({ favorite: !item.favorite }), item.favorite)}
@@ -466,7 +466,7 @@ function ReminderField({ item, onChange }: { item: Item; onChange: (remindAt: nu
   );
 }
 
-function AiMenu({ item }: { item: Item }) {
+function AiMenu({ item, onAppendBody }: { item: Item; onAppendBody: (markdown: string) => void }) {
   const [open, setOpen] = useState(false);
   const [task, setTask] = useState<AiTask | null>(null);
   const space = useLive(() => (item.spaceId ? db.spaces.get(item.spaceId) : undefined), [item.spaceId]);
@@ -527,7 +527,7 @@ function AiMenu({ item }: { item: Item }) {
         </div>
       )}
       {task && (
-        <AiPanel task={task} item={item} payload={{ title: displayTitle(item), text, existingTags: allTags }} onClose={() => setTask(null)} />
+        <AiPanel task={task} item={item} onAppendBody={onAppendBody} payload={{ title: displayTitle(item), text, existingTags: allTags }} onClose={() => setTask(null)} />
       )}
     </div>
   );

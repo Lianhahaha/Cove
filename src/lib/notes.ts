@@ -11,6 +11,11 @@ export function createNote(spaceId: string | null = null, text = ''): Promise<It
   return addItem({ kind: 'note', spaceId, title: first.trim().slice(0, 300), body: rest.join('\n').trim() });
 }
 
+/** Adds a block of Markdown after a description, with a blank line between. */
+export function appendMarkdown(body: string, markdown: string): string {
+  return `${body.trimEnd()}${body.trim() ? '\n\n' : ''}${markdown}`;
+}
+
 /** A note with nothing in it: no text, link, tags, checklist, task, flags or files. */
 export function isBlankNote(item: Item, fileCount: number): boolean {
   return (

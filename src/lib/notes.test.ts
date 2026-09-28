@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { addFile, updateItem } from './repo';
-import { createNote, discardIfBlank } from './notes';
+import { appendMarkdown, createNote, discardIfBlank } from './notes';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -44,5 +44,12 @@ describe('notes', () => {
     const task = await createNote();
     await updateItem(task.id, { status: 'todo' });
     expect(await discardIfBlank(task.id)).toBe(false);
+  });
+});
+
+describe('appendMarkdown', () => {
+  it('adds a blank line after existing text only', () => {
+    expect(appendMarkdown('Notes\n\n', '## Summary')).toBe('Notes\n\n## Summary');
+    expect(appendMarkdown('  ', '## Summary')).toBe('## Summary');
   });
 });

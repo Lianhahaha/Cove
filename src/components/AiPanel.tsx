@@ -3,15 +3,25 @@ import { Check, LoaderCircle, ShieldCheck, Sparkles, X } from 'lucide-preact';
 import { AI_TASK_LABELS, AiError, aiReview, preparePayload, runAi, type AiPayload, type AiResult, type AiTask } from '../lib/ai';
 import { addItem, updateItem } from '../lib/repo';
 import { fromInputs, formatDue } from '../lib/dates';
+import { appendMarkdown } from '../lib/notes';
 import { toast } from '../lib/toast';
 import type { Item } from '../lib/types';
 import { Modal } from './Modal';
+
+/** Adds text to the end of the item's description. */
+type AppendBody = (markdown: string) => void | Promise<void>;
 
 interface Props {
   task: AiTask;
   payload: AiPayload;
   /** The item the result applies to; absent when working on text from the capture box. */
   item?: Item;
+  /**
+   * Set by an open editor, which keeps its own copy of the description. Writing
+   * to the database behind its back would show stale text and be overwritten
+   * by the editor's next save.
+   */
+  onAppendBody?: AppendBody;
   /** Space for tasks created from the result. */
   spaceId?: string | null;
   onClose: () => void;
@@ -20,9 +30,10 @@ interface Props {
 
 type Step = { name: 'review' } | { name: 'loading' } | { name: 'error'; message: string } | { name: 'result'; result: AiResult };
 
-export function AiPanel({ task, payload, item, spaceId = null, onClose, onTasksCreated }: Props) {
+export function AiPanel({ task, payload, item, onAppendBody, spaceId = null, onClose, onTasksCreated }: Props) {
   const prepared = useMemo(() => preparePayload(payload), [payload]);
   const [step, setStep] = useState<Step>(aiReview.value ? { name: 'review' } : { name: 'loading' });
+  const append: AppendBody | undefined = item && (onAppendBody ?? ((md) => updateItem(item.id, { body: appendMarkdown(item.body, md) })));
 
   async function send() {
     setStep({ name: 'loading' });
@@ -81,27 +92,27 @@ export function AiPanel({ task, payload, item, spaceId = null, onClose, onTasksC
       {step.name === 'result' && (
         <div class="pt-1">
           <p class="text-xs text-subtle mb-3">AI can be wrong. Check before you rely on it.</p>
-          <Result result={step.result} item={item} spaceId={spaceId} onClose={onClose} onTasksCreated={onTasksCreated} />
+          <Result result={step.result} item={item} append={append} spaceId={spaceId} onClose={onClose} onTasksCreated={onTasksCreated} />
         </div>
       )}
     </Modal>
   );
 }
 
-function Result({ result, item, spaceId, onClose, onTasksCreated }: { result: AiResult; item?: Item; spaceId: string | null; onClose: () => void; onTasksCreated?: (n: number) => void }) {
+function Result({ result, item, append, spaceId, onClose, onTasksCreated }: { result: AiResult; item?: Item; append?: AppendBody; spaceId: string | null; onClose: () => void; onTasksCreated?: (n: number) => void }) {
   switch (result.task) {
     case 'summarize':
-      return <SummaryResult result={result} item={item} onClose={onClose} />;
+      return <SummaryResult result={result} append={append} onClose={onClose} />;
     case 'tags':
       return <TagsResult tags={result.tags} item={item} onClose={onClose} />;
     case 'extract_tasks':
       return <TasksResult tasks={result.tasks} spaceId={item?.spaceId ?? spaceId} onClose={onClose} onCreated={onTasksCreated} />;
     case 'quiz':
-      return <QuizResult questions={result.questions} item={item} onClose={onClose} />;
+      return <QuizResult questions={result.questions} append={append} onClose={onClose} />;
   }
 }
 
-function SummaryResult({ result, item, onClose }: { result: Extract<AiResult, { task: 'summarize' }>; item?: Item; onClose: () => void }) {
+function SummaryResult({ result, append, onClose }: { result: Extract<AiResult, { task: 'summarize' }>; append?: AppendBody; onClose: () => void }) {
   const markdown = `## Summary\n\n${result.summary}${result.keyPoints.length ? '\n\n' + result.keyPoints.map((p) => `- ${p}`).join('\n') : ''}`;
   return (
     <div class="space-y-4">
@@ -123,11 +134,11 @@ function SummaryResult({ result, item, onClose }: { result: Extract<AiResult, { 
         >
           Copy
         </button>
-        {item && (
+        {append && (
           <button
             class="btn btn-primary"
             onClick={async () => {
-              await updateItem(item.id, { body: `${item.body.trimEnd()}${item.body.trim() ? '\n\n' : ''}${markdown}` });
+              await append(markdown);
               toast('Added to the description');
               onClose();
             }}
@@ -242,7 +253,7 @@ function TasksResult({ tasks, spaceId, onClose, onCreated }: { tasks: Extract<Ai
   );
 }
 
-function QuizResult({ questions, item, onClose }: { questions: Extract<AiResult, { task: 'quiz' }>['questions']; item?: Item; onClose: () => void }) {
+function QuizResult({ questions, append, onClose }: { questions: Extract<AiResult, { task: 'quiz' }>['questions']; append?: AppendBody; onClose: () => void }) {
   const [index, setIndex] = useState(0);
   const [chosen, setChosen] = useState<(number | null)[]>(questions.map(() => null));
   const done = index >= questions.length;
@@ -263,11 +274,11 @@ function QuizResult({ questions, item, onClose }: { questions: Extract<AiResult,
         <p class="text-muted">{score === questions.length ? 'Perfect. You know this.' : score >= questions.length / 2 ? 'Good work. Review the ones you missed.' : 'Worth another read before the exam.'}</p>
         <div class="flex flex-wrap justify-center gap-2">
           <button class="btn" onClick={() => { setChosen(questions.map(() => null)); setIndex(0); }}>Retake</button>
-          {item && (
+          {append && (
             <button
               class="btn btn-primary"
               onClick={async () => {
-                await updateItem(item.id, { body: `${item.body.trimEnd()}${item.body.trim() ? '\n\n' : ''}${markdown}` });
+                await append(markdown);
                 toast('Quiz saved to the description');
                 onClose();
               }}

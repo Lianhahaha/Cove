@@ -13,22 +13,34 @@ interface Props {
 
 const WIDTH = { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl' };
 
+/**
+ * Open dialogs, innermost last. A dialog can open over another (AI over the
+ * capture sheet, a confirm over settings), and Escape closes only the top one.
+ */
+const open: symbol[] = [];
+
 export function Modal({ title, onClose, children, size = 'md' }: Props) {
   const panel = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
+    const id = Symbol();
+    open.push(id);
     const prev = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => {
       // An open help tip closes first; the dialog stays.
-      if (e.key === 'Escape' && !infoTipOpen()) {
+      if (e.key === 'Escape' && !infoTipOpen() && open[open.length - 1] === id) {
         e.stopPropagation();
-        onClose();
+        close.current();
       }
     };
     addEventListener('keydown', onKey, true);
     document.body.style.overflow = 'hidden';
     return () => {
+      open.splice(open.indexOf(id), 1);
       removeEventListener('keydown', onKey, true);
-      document.body.style.overflow = '';
+      // The page stays locked while a dialog underneath is still open.
+      if (!open.length) document.body.style.overflow = '';
       prev?.focus?.();
     };
   }, []);

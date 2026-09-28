@@ -10,6 +10,7 @@ import { toWebUrl } from '../lib/links';
 import { FieldLabel } from './InfoTip';
 import type { Space } from '../lib/types';
 import { Modal } from './Modal';
+import { useSaveOnClose } from './fields';
 
 const EMOJIS = ['📘', '📗', '📕', '📙', '📓', '📐', '🧮', '🧪', '🔬', '🧬', '💻', '🖥️', '🔌', '⚙️', '🤖', '📊', '📈', '🌏', '🏛️', '⚖️', '🎨', '🎵', '🏀', '🗣️', '✍️', '📝', '📚', '🎓', '💼', '🧠', '💡', '🚀', '🏠', '❤️', '⭐', '🗂️'];
 
@@ -37,6 +38,11 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
     setLink(url);
     if (url !== space.link) void patch({ link: url });
   }
+  const saveName = () => name.trim() && name !== space.name && patch({ name });
+  useSaveOnClose(() => {
+    void saveName();
+    saveLink();
+  });
 
   function move(delta: number) {
     const ids = spaces.map((s) => s.id);
@@ -64,8 +70,8 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
             value={name}
             maxLength={60}
             onInput={(e) => setName(e.currentTarget.value)}
-            onBlur={() => name.trim() && patch({ name })}
-            onKeyDown={(e) => e.key === 'Enter' && name.trim() && patch({ name })}
+            onBlur={saveName}
+            onKeyDown={(e) => e.key === 'Enter' && saveName()}
           />
         </div>
 

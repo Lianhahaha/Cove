@@ -32,6 +32,17 @@ export function useDebouncedSave<T>(value: T, save: (v: T) => void, ms = 400) {
   );
 }
 
+/**
+ * Runs `save` when the component goes away. For fields that save on blur:
+ * closing a panel with Escape or Back removes the field, and browsers don't
+ * reliably send a blur for that, so the last edit would be lost.
+ */
+export function useSaveOnClose(save: () => void) {
+  const latest = useRef(save);
+  latest.current = save;
+  useEffect(() => () => latest.current(), []);
+}
+
 export function TagEditor({ tags, onChange, suggestions }: { tags: string[]; onChange: (t: string[]) => void; suggestions: string[] }) {
   const [draft, setDraft] = useState('');
   function commit(raw = draft) {
@@ -39,6 +50,7 @@ export function TagEditor({ tags, onChange, suggestions }: { tags: string[]; onC
     setDraft('');
     if (t && !tags.includes(t)) onChange([...tags, t]);
   }
+  useSaveOnClose(() => draft && commit());
   return (
     <div class="input flex flex-wrap items-center gap-1.5 py-1.5 min-h-10 cursor-text" onClick={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.focus()}>
       {tags.map((t) => (
@@ -88,6 +100,7 @@ export function ChecklistEditor({ items, onChange }: { items: ChecklistEntry[]; 
     onChange([...items, { id: uid(), text: text.slice(0, 300), done: false }]);
     setDraft('');
   }
+  useSaveOnClose(add);
 
   function move(from: number, to: number) {
     if (from === to) return;

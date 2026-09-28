@@ -29,7 +29,7 @@ import { fromInputs, timeAgo, toDateInput, toTimeInput } from '../lib/dates';
 import { displayTitle, hostOf } from '../lib/queries';
 import { toast } from '../lib/toast';
 import type { Item, Priority, Recurrence, TaskStatus } from '../lib/types';
-import { ChecklistEditor, MarkdownField, TagEditor, useDebouncedSave } from './fields';
+import { ChecklistEditor, MarkdownField, TagEditor, useDebouncedSave, useSaveOnClose } from './fields';
 import { Attachments } from './Attachments';
 import { refreshPreview } from '../lib/previews';
 import { downloadIcs } from '../lib/ics';
@@ -92,14 +92,14 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   useDebouncedSave(body, (v) => updateItem(item.id, { body: v }));
 
   const titleRef = useRef<HTMLTextAreaElement | null>(null);
-  const typed = useRef({ title, body });
-  typed.current = { title, body };
+  const typed = useRef({ title, body, url });
+  typed.current = { title, body, url };
   useEffect(() => {
     // A new, empty item opens ready to type its title.
     if (!item.title && !item.body && !item.url) titleRef.current?.focus();
     // Closing a note you never wrote in deletes it. The saves above flush first, so typed text is never lost.
     return () => {
-      if (!typed.current.title.trim() && !typed.current.body.trim()) void discardIfBlank(item.id);
+      if (!typed.current.title.trim() && !typed.current.body.trim() && !typed.current.url.trim()) void discardIfBlank(item.id);
     };
   }, []);
 
@@ -128,6 +128,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
       setUrl(item.url ?? '');
     }
   }
+  useSaveOnClose(saveUrl);
 
   const dueDate = item.due !== null ? toDateInput(item.due) : '';
   const dueTime = item.due !== null && item.dueHasTime ? toTimeInput(item.due) : '';

@@ -111,7 +111,16 @@ export async function duplicateItem(item: Item): Promise<Item> {
   const now = Date.now();
   const copy = { ...item } as Partial<Item>;
   delete copy.id;
-  const created = await addItem({ ...copy, title: item.title ? `${item.title} (copy)` : '', createdAt: now, updatedAt: now });
+  const created = await addItem({
+    ...copy,
+    title: item.title ? `${item.title} (copy)` : '',
+    // The repeat and the focus time belong to the original. Sharing the repeat's id
+    // would let reopening the copy delete the original's next task.
+    nextId: null,
+    focusMins: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
   const files = await db.files.where('itemId').equals(item.id).toArray();
   await db.files.bulkAdd(files.map((f) => ({ ...f, id: crypto.randomUUID(), itemId: created.id })));
   return created;

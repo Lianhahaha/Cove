@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { addItem } from './repo';
-import { nextOccurrence, setDone } from './actions';
+import { duplicateItem, nextOccurrence, setDone } from './actions';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -86,5 +86,24 @@ describe('setDone with repeats', () => {
     await db.items.update(nextId!, { title: 'Weekly quiz (moved room)', updatedAt: Date.now() });
     await setDone(item, false);
     expect(await db.items.get(nextId!)).toBeDefined();
+  });
+});
+
+describe('duplicateItem', () => {
+  it('does not share the original’s scheduled repeat', async () => {
+    const item = await addItem({ title: 'Weekly quiz', status: 'todo', due: at(2099, 1, 5), recurrence: { freq: 'weekly', interval: 1 } });
+    await setDone(item, true);
+    const done = (await db.items.get(item.id))!;
+    const copy = await duplicateItem(done);
+    expect(copy.nextId).toBeNull();
+    // Reopening the copy must leave the original's next task alone.
+    await setDone(copy, false);
+    expect(await db.items.get(done.nextId!)).toBeDefined();
+  });
+
+  it('starts the copy with no focus time', async () => {
+    const item = await addItem({ title: 'Essay', focusMins: 50 });
+    const copy = await duplicateItem(item);
+    expect(copy.focusMins).toBe(0);
   });
 });

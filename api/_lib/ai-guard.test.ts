@@ -68,6 +68,12 @@ describe('parseOutput', () => {
     });
   });
 
+  it('drops impossible dates instead of rolling them over', () => {
+    const r = parseOutput('extract_tasks', JSON.stringify({ tasks: [{ title: 'A', due: '2026-02-31' }, { title: 'B', due: '2026-09-31' }, { title: 'C', due: '2028-02-29' }] }));
+    if (r.task !== 'extract_tasks') throw new Error('wrong task');
+    expect(r.tasks.map((t) => t.due)).toEqual([null, null, '2028-02-29']);
+  });
+
   it('drops quiz questions that are malformed', () => {
     const good = { question: 'Q?', choices: ['a', 'b', 'c', 'd'], answer: 2, explanation: 'because' };
     const r = parseOutput('quiz', JSON.stringify({ questions: [good, { ...good, choices: ['a', 'b'] }, { ...good, answer: 7 }, { ...good, answer: '1' }] }));

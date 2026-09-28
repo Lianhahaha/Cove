@@ -161,6 +161,16 @@ export type AiResult =
 
 export class AiOutputError extends Error {}
 
+/**
+ * A real YYYY-MM-DD date. Date.parse alone rolls impossible days over
+ * (2026-02-31 becomes March 3), so the date has to survive a round trip.
+ */
+function isCalendarDate(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const t = Date.parse(`${s}T00:00:00Z`);
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s;
+}
+
 export function parseOutput(task: AiTask, content: string): AiResult {
   let data: Record<string, unknown>;
   try {
@@ -187,7 +197,7 @@ export function parseOutput(task: AiTask, content: string): AiResult {
         .filter((t): t is Record<string, unknown> => !!t && typeof t === 'object')
         .map((t) => ({
           title: plain(t.title, 160),
-          due: typeof t.due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(t.due) && !Number.isNaN(Date.parse(t.due)) ? t.due : null,
+          due: typeof t.due === 'string' && isCalendarDate(t.due) ? t.due : null,
           time: typeof t.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t.time) ? t.time : null,
         }))
         .filter((t) => t.title)

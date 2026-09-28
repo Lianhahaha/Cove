@@ -52,8 +52,17 @@ export function Home() {
     const dueIds = new Set(due.map((i) => i.id));
     const pinned = sortItems(all.filter((i) => i.pinned && !dueIds.has(i.id)), 'recent');
     const recent = sortItems(all.filter((i) => !i.pinned && !dueIds.has(i.id)), 'recent').slice(0, 8);
-    const counts = new Map<string, number>();
-    for (const i of all) if (i.spaceId) counts.set(i.spaceId, (counts.get(i.spaceId) ?? 0) + 1);
+    const counts = new Map<string, { items: number; open: number; overdue: number }>();
+    for (const i of all) {
+      if (!i.spaceId) continue;
+      const c = counts.get(i.spaceId) ?? { items: 0, open: 0, overdue: 0 };
+      c.items++;
+      if (isOpenTask(i)) {
+        c.open++;
+        if (dueBucket(i.due, i.dueHasTime, now) === 'overdue') c.overdue++;
+      }
+      counts.set(i.spaceId, c);
+    }
     return { due, pinned, recent, counts };
   }, [items]);
 
@@ -100,7 +109,9 @@ export function Home() {
               <InfoTip label="Spaces">A space holds everything for one subject or project: links, notes, files and tasks. Anything without a space waits in Unsorted.</InfoTip>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {spaces.map((s) => (
+              {spaces.map((s) => {
+                const c = counts.get(s.id) ?? { items: 0, open: 0, overdue: 0 };
+                return (
                 <a key={s.id} href={`/s/${s.id}`} class="card p-2.5 flex items-center gap-2.5 hover:border-border2 transition-colors">
                   {/* The space's color tints the tile behind its emoji. */}
                   <span
@@ -111,10 +122,15 @@ export function Home() {
                   </span>
                   <span class="min-w-0">
                     <span class="block font-[450] truncate">{s.name}</span>
-                    <span class="block text-xs text-subtle tabular-nums">{counts.get(s.id) ?? 0} {counts.get(s.id) === 1 ? 'item' : 'items'}</span>
+                    <span class="block text-xs text-subtle tabular-nums truncate">
+                      {c.items} {c.items === 1 ? 'item' : 'items'}
+                      {/* What's left to do in the subject, with anything late called out. */}
+                      {c.overdue > 0 ? <span class="text-danger"> · {c.overdue} overdue</span> : c.open > 0 ? ` · ${c.open} to do` : ''}
+                    </span>
                   </span>
                 </a>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}

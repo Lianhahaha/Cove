@@ -33,7 +33,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.
 - Search filters that work alone or with words: `is:task`, `is:open`, `is:done`, `is:overdue`, `is:pinned`, `is:fav`, `is:private`, `is:archived`, `is:repeating`, `type:link|note|file` and `tag:name`.
 - Smart views: This week, No tags and Recently edited.
-- A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/I/T/A/F/S` to jump, `?` for the list).
+- A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/U/T/N/W/A/F/S` to jump, `?` for the list).
 
 **AI helpers (optional)**
 - Summarize an item, suggest tags, pull tasks and deadlines out of an announcement, or make an interactive practice quiz. See [AI safety](#ai-safety).

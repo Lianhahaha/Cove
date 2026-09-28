@@ -4,7 +4,7 @@ import { menuOpen, openCapture, paletteOpen, shortcutsOpen, capture } from '../s
 import { Modal } from './Modal';
 
 // I still works for Unsorted, which used to be called Inbox.
-const GO: Record<string, string> = { h: '/', u: '/unsorted', i: '/unsorted', t: '/tasks', a: '/all', f: '/favorites', s: '/settings' };
+const GO: Record<string, string> = { h: '/', u: '/unsorted', i: '/unsorted', t: '/tasks', n: '/notes', w: '/view/week', a: '/all', f: '/favorites', s: '/settings' };
 
 const SHORTCUTS: [string, string][] = [
   ['Ctrl / ⌘ + K', 'Command palette'],
@@ -13,6 +13,8 @@ const SHORTCUTS: [string, string][] = [
   ['G then H', 'Home'],
   ['G then U', 'Unsorted'],
   ['G then T', 'Tasks'],
+  ['G then N', 'Notes'],
+  ['G then W', 'This week'],
   ['G then A', 'All items'],
   ['G then F', 'Favorites'],
   ['G then S', 'Settings'],

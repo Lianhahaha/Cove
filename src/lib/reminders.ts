@@ -22,6 +22,22 @@ export const REMINDER_PRESETS: { label: string; minutesBefore: number }[] = [
   { label: '1 day before', minutesBefore: 24 * 60 },
 ];
 
+/** What reminder presets count back from: the due time, or 9am on the day for date-only tasks. */
+export const reminderAnchor = (due: number, dueHasTime: boolean): number => (dueHasTime ? due : due + 9 * 3_600_000);
+
+type Schedule = { due: number | null; dueHasTime: boolean };
+
+/**
+ * Where a reminder goes when its task's due date or time changes: the same
+ * distance before the new due as before the old one. Counting from the anchor
+ * keeps "at the due time" at the due time when a time is added or removed.
+ */
+export function moveReminder(remindAt: number | null, from: Schedule, to: Schedule): number | null {
+  if (to.due === null) return null;
+  if (remindAt === null || from.due === null) return remindAt;
+  return reminderAnchor(to.due, to.dueHasTime) - (reminderAnchor(from.due, from.dueHasTime) - remindAt);
+}
+
 function notified(): Set<string> {
   try {
     return new Set(JSON.parse(localStorage.getItem(NOTIFIED_KEY) ?? '[]') as string[]);

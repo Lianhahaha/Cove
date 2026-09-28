@@ -33,7 +33,7 @@ import { ChecklistEditor, MarkdownField, TagEditor, useDebouncedSave } from './f
 import { Attachments } from './Attachments';
 import { refreshPreview } from '../lib/previews';
 import { downloadIcs } from '../lib/ics';
-import { REMINDER_PRESETS, remindersEnabled } from '../lib/reminders';
+import { moveReminder, REMINDER_PRESETS, reminderAnchor, remindersEnabled } from '../lib/reminders';
 import { AI_TASK_LABELS, aiBlockedReason, aiEnabled, type AiTask } from '../lib/ai';
 import { AiPanel } from './AiPanel';
 import { FocusStarter } from './FocusTimer';
@@ -133,9 +133,9 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   const dueTime = item.due !== null && item.dueHasTime ? toTimeInput(item.due) : '';
   function setDue(date: string, time: string) {
     const due = date ? fromInputs(date, time) : null;
+    const dueHasTime = !!(date && time);
     // A reminder keeps its distance from the due date when the date moves.
-    const remindAt = due !== null && item.remindAt !== null && item.due !== null ? due - (item.due - item.remindAt) : due === null ? null : item.remindAt;
-    patch({ due, dueHasTime: !!(date && time), remindAt });
+    patch({ due, dueHasTime, remindAt: moveReminder(item.remindAt, item, { due, dueHasTime }) });
   }
 
   async function copyLink() {
@@ -414,9 +414,8 @@ function RecurrenceField({ value, disabled, onChange }: { value: Recurrence | nu
 }
 
 function ReminderField({ item, onChange }: { item: Item; onChange: (remindAt: number | null) => void }) {
-  const due = item.due;
   // Date-only tasks count from 9am on the day, which is when a reminder "at the due time" makes sense.
-  const anchor = due === null ? null : item.dueHasTime ? due : due + 9 * 3_600_000;
+  const anchor = item.due === null ? null : reminderAnchor(item.due, item.dueHasTime);
   const current =
     item.remindAt === null || anchor === null
       ? 'none'

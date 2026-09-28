@@ -2,6 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import { CalendarClock, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
+import { minute } from '../lib/clock';
 import { usePref } from '../lib/prefs';
 import { addDays, BUCKET_LABELS, dueBucket, sameDay, startOfDay, type DueBucket } from '../lib/dates';
 import { displayTitle, isActive, sortItems } from '../lib/queries';
@@ -119,6 +120,8 @@ export function Tasks() {
 }
 
 function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; showDone: boolean }) {
+  // Regroup as time passes: a task moves to Overdue at its due time, and to Today at midnight.
+  const tick = minute.value;
   const groups = useMemo(() => {
     const now = new Date();
     const map = new Map<DueBucket, Item[]>();
@@ -128,7 +131,7 @@ function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; s
       map.set(b, [...(map.get(b) ?? []), t]);
     }
     return BUCKETS.filter((b) => map.has(b)).map((b) => [b, sortItems(map.get(b)!, 'due')] as const);
-  }, [tasks]);
+  }, [tasks, tick]);
   const done = useMemo(() => tasks.filter((t) => t.status === 'done').sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0)), [tasks]);
 
   if (!groups.length && !(showDone && done.length)) {

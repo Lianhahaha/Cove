@@ -25,6 +25,7 @@ import {
 } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
+import { minute } from '../lib/clock';
 import { isActive, isOpenTask } from '../lib/queries';
 import { dueBucket } from '../lib/dates';
 import { addSpace, reorderSpaces, updateItem } from '../lib/repo';
@@ -58,6 +59,8 @@ const THEME_NEXT: Record<ThemePref, ThemePref> = { system: 'light', light: 'dark
 const THEME_LABEL: Record<ThemePref, string> = { system: 'System theme', light: 'Light theme', dark: 'Dark theme' };
 
 export function Nav() {
+  // Recounted each minute too, since tasks come due with no edit to rerun the query.
+  const tick = minute.value;
   const counts = useLive(async () => {
     const items = await db.items.filter((i) => isActive(i)).toArray();
     const now = new Date();
@@ -65,7 +68,7 @@ export function Nav() {
       inbox: items.filter((i) => i.spaceId === null && i.status !== 'done').length,
       due: items.filter((i) => isOpenTask(i) && ['overdue', 'today'].includes(dueBucket(i.due, i.dueHasTime, now))).length,
     };
-  }, []);
+  }, [tick]);
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt && !s.archived).toArray(), []);
   const [adding, setAdding] = useState(false);
   // autoFocus is ignored after the page has loaded, so focus the new-space box by hand.

@@ -3,6 +3,7 @@ import { CalendarCheck, Clock, Pin, Sparkles } from 'lucide-preact';
 import type { ComponentChildren } from 'preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
+import { minute } from '../lib/clock';
 import { dueBucket } from '../lib/dates';
 import { isActive, isOpenTask, sortItems } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
@@ -41,6 +42,8 @@ export function Home() {
   const items = useLive(() => db.items.filter(isActive).toArray(), []);
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt && !s.archived).toArray(), []);
   const ctx = useCardContext(true);
+  // Regroup as time passes, so Due today stays right past a due time or midnight.
+  const tick = minute.value;
 
   const { due, pinned, recent, counts } = useMemo(() => {
     const all = items ?? [];
@@ -64,7 +67,7 @@ export function Home() {
       counts.set(i.spaceId, c);
     }
     return { due, pinned, recent, counts };
-  }, [items]);
+  }, [items, tick]);
 
   const today = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
 

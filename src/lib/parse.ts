@@ -136,7 +136,7 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
       },
     ],
     [
-      new RegExp(String.raw`(?:^|\s)${PREFIX}(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?\b`),
+      new RegExp(String.raw`(?:^|\s)${PREFIX}(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?\b`, 'i'),
       (m) => {
         const month = Number(m[1]) - 1;
         const y = fullYear(m[3], now);

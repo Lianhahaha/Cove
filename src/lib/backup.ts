@@ -335,7 +335,8 @@ export async function importBookmarks(html: string): Promise<number> {
         // No automatic previews for a bulk import; they'd hit the rate limit. Refresh any item to fetch one.
         preview: null,
         tags: normalizeTags(['bookmarks', ...(m.folder && !/^(bookmarks bar|bookmarks toolbar|other bookmarks|favorites bar)$/i.test(m.folder) ? [m.folder] : [])]),
-        createdAt: m.addedAt ?? now,
+        // Checked like a backup's dates: some browsers write ADD_DATE in microseconds, far past any real date.
+        createdAt: stamp(m.addedAt, now) ?? now,
         updatedAt: now,
         order: now + n,
       }),

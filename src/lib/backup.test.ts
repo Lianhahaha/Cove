@@ -134,6 +134,14 @@ describe('bookmarks', () => {
     const classroom = (await db.items.toArray()).find((i) => i.url === 'https://classroom.google.com/');
     expect(classroom?.tags).toEqual(['bookmarks', 'school']);
   });
+
+  it('ignores an add date no real date could have', async () => {
+    const before = Date.now();
+    await importBookmarks('<DL><DT><A HREF="https://example.com/" ADD_DATE="1700000000000000">Ex</A></DL>');
+    const item = (await db.items.toArray())[0];
+    expect(item.createdAt).toBeGreaterThanOrEqual(before);
+    expect(Number.isNaN(new Date(item.createdAt).getTime())).toBe(false);
+  });
 });
 
 describe('itemToMarkdown', () => {

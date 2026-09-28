@@ -216,14 +216,17 @@ export async function importBackup(file: Blob): Promise<ImportResult> {
       const data = Object.hasOwn(archive, m.path) ? archive[m.path] : undefined;
       if (!data || data.length > LIMITS.fileBytes || (await db.files.get(m.id))) continue;
       const type = str(m.type, 100, 'application/octet-stream');
+      const name = str(m.name, 200, 'file');
       const rec: StoredFile = {
         id: m.id,
         itemId: m.itemId,
-        name: str(m.name, 200, 'file'),
+        name,
         type,
         size: data.length,
         blob: new Blob([data as BlobPart], { type }),
         createdAt: stamp(m.createdAt) ?? Date.now(),
+        // The backup holds no PDF text, so read it again here or search can't look inside.
+        ...(type === 'application/pdf' || name.toLowerCase().endsWith('.pdf') ? { textStatus: 'pending' as const } : {}),
       };
       await db.files.add(rec);
       result.files++;

@@ -23,6 +23,8 @@ describe('backup round trip', () => {
     const file = (await db.files.toArray())[0];
     expect(file.name).toBe('lab2.pdf');
     expect(await file.blob.text()).toBe('hello pdf');
+    // Queued so its text is read again and search can look inside it.
+    expect(file.textStatus).toBe('pending');
   });
 
   it('never overwrites newer local edits with an older backup', async () => {

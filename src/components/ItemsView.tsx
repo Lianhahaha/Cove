@@ -6,7 +6,7 @@ import { useLive } from '../lib/live';
 import { usePref } from '../lib/prefs';
 import { SORT_LABELS, sortItems, type SortMode } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
-import { archiveWithUndo, trashWithUndo } from '../lib/actions';
+import { archiveWithUndo, setDone, trashWithUndo } from '../lib/actions';
 import { normalizeTag, TRASH_DAYS, updateItem } from '../lib/repo';
 import { toast } from '../lib/toast';
 import { confirmAction } from '../lib/confirm';
@@ -182,9 +182,12 @@ function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item
     toast(`Tagged ${ids.length} with #${tag}`);
     onDone();
   }
+  // Notes and links aren't tasks, so Done leaves them alone rather than turning them into finished tasks.
+  const openTasks = items.filter((i) => i.status === 'todo' || i.status === 'doing');
   async function markDone() {
-    const now = Date.now();
-    await Promise.all(ids.map((id) => updateItem(id, { status: 'done', completedAt: now })));
+    // One at a time through setDone, so each repeating task schedules its next one.
+    for (const item of openTasks) await setDone(item, true);
+    toast(`Marked ${openTasks.length} task${openTasks.length === 1 ? '' : 's'} done`);
     onDone();
   }
 
@@ -207,7 +210,7 @@ function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item
           </select>
         </label>
         <button class="btn btn-ghost" disabled={none} onClick={addTag} title="Add tag"><Hash size={16} /><span class="hidden sm:inline">Tag</span></button>
-        <button class="btn btn-ghost" disabled={none} onClick={markDone} title="Mark done"><CheckCheck size={16} /><span class="hidden sm:inline">Done</span></button>
+        <button class="btn btn-ghost" disabled={!openTasks.length} onClick={markDone} title={openTasks.length ? 'Mark tasks done' : 'No open tasks selected'}><CheckCheck size={16} /><span class="hidden sm:inline">Done</span></button>
         <button class="btn btn-ghost" disabled={none} onClick={() => archiveWithUndo(ids).then(onDone)} title="Archive"><Archive size={16} /></button>
         <button class="btn btn-ghost text-danger" disabled={none} onClick={async () => {
             const ok = await confirmAction({

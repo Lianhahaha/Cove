@@ -107,6 +107,13 @@ describe('dates', () => {
     expect(p('late thing 8/1').due).toBe(day(2026, 8, 1));
   });
 
+  it('prefers a written-out date over the weekday in front of it', () => {
+    expect(p('Exam Mon, Dec 7')).toMatchObject({ title: 'Exam', due: day(2026, 12, 7) });
+    expect(p('Quiz fri 10/9')).toMatchObject({ title: 'Quiz', due: day(2026, 10, 9) });
+    expect(p('Defense due Thu 8 Oct')).toMatchObject({ title: 'Defense', due: day(2026, 10, 8) });
+    expect(p('I sat down dec 5').title).toBe('I sat down');
+  });
+
   it('takes a capitalised lead-in with the date', () => {
     expect(p('Submit essay Due 12/5')).toMatchObject({ title: 'Submit essay', due: day(2026, 12, 5) });
     expect(p('Essay By Dec 5').title).toBe('Essay');

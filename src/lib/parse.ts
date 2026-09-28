@@ -38,6 +38,9 @@ const AMBIGUOUS_DAYS = new Set(['sun', 'sat', 'wed']);
 const PREFIX = String.raw`(?:(?:due|by|on|this)\s+)?`;
 const MONTH_RE = String.raw`(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?`;
 
+/** A weekday name, with an optional lead-in, right before a written-out date: "due Mon, " in "due Mon, Dec 7". */
+const WEEKDAY_BEFORE = new RegExp(String.raw`(?:^|\s)(?:(?:due|by|on)\s+)?(?:${Object.keys(DAYS).join('|')})\.?,?\s*$`, 'i');
+
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
@@ -89,7 +92,8 @@ function cut(text: string, span: Match): string {
 
 function parseDate(text: string, now: Date): { date: Date; span: Match } | null {
   const today = startOfDay(now);
-  const rules: [RegExp, (m: RegExpExecArray) => Date | null][] = [
+  // The last flag marks a written-out date, which may have its weekday in front ("Mon, Dec 7").
+  const rules: [RegExp, (m: RegExpExecArray) => Date | null, boolean?][] = [
     [new RegExp(String.raw`(?:^|\s)${PREFIX}(today|ngayon|mamaya|tonight)\b`, 'i'), () => today],
     [new RegExp(String.raw`(?:^|\s)${PREFIX}(tomorrow|tmrw?|bukas)\b`, 'i'), () => addDays(today, 1)],
     [new RegExp(String.raw`(?:^|\s)${PREFIX}next\s+week\b`, 'i'), () => addDays(today, ((8 - today.getDay()) % 7) || 7)],
@@ -108,6 +112,34 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
       },
     ],
     [
+      new RegExp(String.raw`(?:^|\s)${PREFIX}${MONTH_RE}\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b`, 'i'),
+      (m) => {
+        const month = MONTHS.indexOf(m[1].slice(0, 3).toLowerCase());
+        const y = fullYear(m[3], now);
+        return y ? makeDate(y, month, Number(m[2])) : upcoming(now, month, Number(m[2]));
+      },
+      true,
+    ],
+    [
+      new RegExp(String.raw`(?:^|\s)${PREFIX}(\d{1,2})(?:st|nd|rd|th)?\s+${MONTH_RE}(?:\s+(\d{4}))?\b`, 'i'),
+      (m) => {
+        const month = MONTHS.indexOf(m[2].slice(0, 3).toLowerCase());
+        const y = fullYear(m[3], now);
+        return y ? makeDate(y, month, Number(m[1])) : upcoming(now, month, Number(m[1]));
+      },
+      true,
+    ],
+    [
+      new RegExp(String.raw`(?:^|\s)${PREFIX}(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?\b`, 'i'),
+      (m) => {
+        const month = Number(m[1]) - 1;
+        const y = fullYear(m[3], now);
+        return y ? makeDate(y, month, Number(m[2])) : upcoming(now, month, Number(m[2]));
+      },
+      true,
+    ],
+    // Weekdays come after written-out dates, so "Exam Mon, Dec 7" is due Dec 7, not this Monday.
+    [
       new RegExp(String.raw`(?:^|\s)((?:due|by|on|this|next)\s+)?(next\s+)?(${Object.keys(DAYS).join('|')})\b`, 'i'),
       (m) => {
         const lead = (m[1] ?? '').trim().toLowerCase();
@@ -119,33 +151,9 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
         return addDays(today, isNext ? (diff === 0 ? 7 : diff + 7) : diff);
       },
     ],
-    [
-      new RegExp(String.raw`(?:^|\s)${PREFIX}${MONTH_RE}\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b`, 'i'),
-      (m) => {
-        const month = MONTHS.indexOf(m[1].slice(0, 3).toLowerCase());
-        const y = fullYear(m[3], now);
-        return y ? makeDate(y, month, Number(m[2])) : upcoming(now, month, Number(m[2]));
-      },
-    ],
-    [
-      new RegExp(String.raw`(?:^|\s)${PREFIX}(\d{1,2})(?:st|nd|rd|th)?\s+${MONTH_RE}(?:\s+(\d{4}))?\b`, 'i'),
-      (m) => {
-        const month = MONTHS.indexOf(m[2].slice(0, 3).toLowerCase());
-        const y = fullYear(m[3], now);
-        return y ? makeDate(y, month, Number(m[1])) : upcoming(now, month, Number(m[1]));
-      },
-    ],
-    [
-      new RegExp(String.raw`(?:^|\s)${PREFIX}(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?\b`, 'i'),
-      (m) => {
-        const month = Number(m[1]) - 1;
-        const y = fullYear(m[3], now);
-        return y ? makeDate(y, month, Number(m[2])) : upcoming(now, month, Number(m[2]));
-      },
-    ],
   ];
 
-  for (const [re, toDate] of rules) {
+  for (const [re, toDate, written] of rules) {
     // A rule can match text it then rejects (like "sat" with no lead-in), so keep looking past it.
     const global = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
     let m: RegExpExecArray | null;
@@ -153,7 +161,12 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
       const date = toDate(m);
       if (date) {
         const lead = m[0].length - m[0].trimStart().length;
-        return { date, span: { start: m.index + lead, end: m.index + m[0].length, text: m[0].trim() } };
+        let start = m.index + lead;
+        const end = m.index + m[0].length;
+        // A weekday written before the date goes with it, so it doesn't stay in the title.
+        const day = written ? WEEKDAY_BEFORE.exec(text.slice(0, start)) : null;
+        if (day) start = day.index + day[0].length - day[0].trimStart().length;
+        return { date, span: { start, end, text: text.slice(start, end).trim() } };
       }
       if (global.lastIndex === m.index) global.lastIndex++;
     }

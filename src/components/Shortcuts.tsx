@@ -38,6 +38,8 @@ export function useShortcuts() {
       }
       if (e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
       if (paletteOpen.value || capture.value.open || shortcutsOpen.value || menuOpen.value) return;
+      // Any other dialog or the item panel: a stray G then H mustn't navigate away under an open confirm.
+      if (document.querySelector('[aria-modal="true"]')) return;
       const key = e.key.toLowerCase();
       if (pendingG && Date.now() - pendingG < 1200 && GO[key]) {
         e.preventDefault();

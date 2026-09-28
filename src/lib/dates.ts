@@ -34,6 +34,13 @@ export function dueBucket(due: number | null, hasTime: boolean, now = new Date()
   return 'later';
 }
 
+/** One-tap due days in the task panel. "Next week" is next Monday, as in quick add. */
+export const DUE_SHORTCUTS: { label: string; day: (now: Date) => Date }[] = [
+  { label: 'Today', day: (now) => startOfDay(now) },
+  { label: 'Tomorrow', day: (now) => addDays(startOfDay(now), 1) },
+  { label: 'Next week', day: (now) => addDays(startOfDay(now), ((8 - now.getDay()) % 7) || 7) },
+];
+
 const timeFmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
 const weekdayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
 const monthDayFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });

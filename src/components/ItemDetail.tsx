@@ -25,7 +25,7 @@ import { useLive } from '../lib/live';
 import { useItemNav } from '../lib/nav';
 import { TRASH_DAYS, updateItem } from '../lib/repo';
 import { archiveWithUndo, duplicateItem, setDone, trashWithUndo } from '../lib/actions';
-import { fromInputs, timeAgo, toDateInput, toTimeInput } from '../lib/dates';
+import { DUE_SHORTCUTS, fromInputs, timeAgo, toDateInput, toTimeInput } from '../lib/dates';
 import { displayTitle, hostOf } from '../lib/queries';
 import { toast } from '../lib/toast';
 import type { Item, Priority, Recurrence, TaskStatus } from '../lib/types';
@@ -326,6 +326,18 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Moves the due day in one tap, keeping its time, e.g. pushing an overdue task to tomorrow. */}
+              <div class="flex flex-wrap items-center gap-1.5 -mt-1" role="group" aria-label="Set the due day">
+                {DUE_SHORTCUTS.map((s) => {
+                  const date = toDateInput(s.day(new Date()).getTime());
+                  return (
+                    <button key={s.label} type="button" class={`chip py-1 px-2.5 ${date === dueDate ? 'chip-accent' : 'hover:bg-surface3'}`} aria-pressed={date === dueDate} onClick={() => setDue(date, dueTime)}>
+                      {s.label}
+                    </button>
+                  );
+                })}
               </div>
 
               <div class="grid sm:grid-cols-2 gap-3">

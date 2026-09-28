@@ -54,7 +54,9 @@ export function useShortcuts() {
         openCapture();
       } else if (key === '/') {
         e.preventDefault();
-        route('/search');
+        // Already searching: keep the query and jump back into the box.
+        if (location.pathname === '/search') document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+        else route('/search');
       } else if (e.key === '?') {
         e.preventDefault();
         shortcutsOpen.value = true;

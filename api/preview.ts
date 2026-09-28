@@ -13,6 +13,8 @@ export async function GET(request: Request): Promise<Response> {
 
   const target = new URL(request.url).searchParams.get('url');
   if (!target || target.length > 2048) return json({ error: 'Missing or overlong url' }, 400);
+  // A malformed address is the link's fault, not the server's: a 5xx would have the app retry it forever.
+  if (!URL.canParse(target)) return json({ error: 'Not a valid web address' }, 400);
 
   try {
     // Known video and music sites answer faster and better through oEmbed.

@@ -8,6 +8,11 @@ describe('GET /api/preview', () => {
     expect(res.status).toBe(400);
   });
 
+  it('turns down a malformed address as the link’s fault, so it isn’t retried', async () => {
+    const res = await GET(new Request(`https://cove.test/api/preview?url=${encodeURIComponent('https://exa mple.com')}`));
+    expect(res.status).toBe(400);
+  });
+
   it('refuses to fetch a server on this machine', async () => {
     const server = createServer((_req, res) => res.end('<title>secret</title>'));
     await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));

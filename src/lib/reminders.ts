@@ -105,7 +105,9 @@ export function startReminders() {
 
   const nav = navigator as Navigator & { setAppBadge?: (n?: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
   if (!nav.setAppBadge) return;
-  liveQuery(() => db.items.filter((i) => isOpenTask(i) && ['overdue', 'today'].includes(dueBucket(i.due, i.dueHasTime))).count()).subscribe({
-    next: (n) => void (n ? nav.setAppBadge!(n) : nav.clearAppBadge?.())?.catch(() => {}),
-  });
+  const dueCount = () => db.items.filter((i) => isOpenTask(i) && ['overdue', 'today'].includes(dueBucket(i.due, i.dueHasTime))).count();
+  const show = (n: number) => void (n ? nav.setAppBadge!(n) : nav.clearAppBadge?.())?.catch(() => {});
+  liveQuery(dueCount).subscribe({ next: show });
+  // What's due also changes with the clock, like tomorrow's tasks at midnight, with no edit to rerun the query.
+  setInterval(() => void dueCount().then(show), 60_000);
 }

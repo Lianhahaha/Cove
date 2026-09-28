@@ -39,10 +39,22 @@ interface Props {
 export function ItemsView({ title, subtitle, prefKey, filter, deps = [], defaultSpaceId = null, showSpace = true, showQuickAdd = true, empty, headerActions, intro, defaultLayout = 'list' }: Props) {
   const [layout, setLayout] = usePref<'list' | 'grid'>(`${prefKey}:layout`, defaultLayout);
   const [sort, setSort] = usePref<SortMode>(`${prefKey}:sort`, 'recent');
-  const [kind, setKind] = useState<KindFilter>('all');
+  const [picked, setKind] = useState<KindFilter>('all');
   const [selected, setSelected] = useState<Set<string> | null>(null);
   const items = useLive(() => db.items.filter(filter).toArray(), [prefKey, ...deps]);
   const base = useCardContext(showSpace);
+
+  const kindsPresent = useMemo(() => {
+    const s = new Set<KindFilter>(['all']);
+    for (const i of items ?? []) {
+      s.add(i.kind);
+      if (i.status !== 'none') s.add('task');
+      if (base.fileCounts.has(i.id)) s.add('file');
+    }
+    return (Object.keys(KIND_LABELS) as KindFilter[]).filter((k) => s.has(k));
+  }, [items, base.fileCounts]);
+  // The tabs hide when there's little to pick from, so a type that's gone (or hidden) falls back to All.
+  const kind = kindsPresent.length > 2 && kindsPresent.includes(picked) ? picked : 'all';
 
   const visible = useMemo(() => {
     // "Files" also covers notes and links that have attachments.
@@ -65,16 +77,6 @@ export function ItemsView({ title, subtitle, prefKey, filter, deps = [], default
     }),
     [base, selected],
   );
-
-  const kindsPresent = useMemo(() => {
-    const s = new Set<KindFilter>(['all']);
-    for (const i of items ?? []) {
-      s.add(i.kind);
-      if (i.status !== 'none') s.add('task');
-      if (base.fileCounts.has(i.id)) s.add('file');
-    }
-    return (Object.keys(KIND_LABELS) as KindFilter[]).filter((k) => s.has(k));
-  }, [items, base.fileCounts]);
 
   return (
     <>

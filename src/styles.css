@@ -366,16 +366,30 @@
   }
   .composer-input::placeholder { color: var(--c-subtle); }
   .composer-hint {
-    display: none;
+    display: flex;
     flex-wrap: wrap;
     gap: 0.25rem 0.75rem;
-    padding: 0 0.875rem 0.625rem 2.5rem;
+    padding: 0 0.875rem 0 2.5rem;
+    max-height: 0;
+    overflow: hidden;
+    visibility: hidden;
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     color: var(--c-subtle);
+    /*
+     * Collapsing waits a moment after the box loses focus. Pressing on something
+     * below blurs the box first; collapsing at once would shift the page up
+     * under the pointer, and the click would land on whatever moved there.
+     */
+    transition: max-height 0s 300ms, padding 0s 300ms, visibility 0s 300ms;
   }
   /* Syntax hints show only while the box is focused and empty. */
-  .composer:has(.composer-input:focus:placeholder-shown) .composer-hint { display: flex; }
+  .composer:has(.composer-input:focus:placeholder-shown) .composer-hint {
+    max-height: 4rem;
+    padding-bottom: 0.625rem;
+    visibility: visible;
+    transition-delay: 0s;
+  }
   /* Headings over a group of items, in the title face at reading size. */
   .section-title {
     font-family: var(--font-display);

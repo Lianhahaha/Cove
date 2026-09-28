@@ -100,7 +100,9 @@ export function ArchivePage() {
 export function TagPage({ tag }: { tag: string }) {
   const t = decodeURIComponent(tag);
   return (
+    // Keyed so a selection or type filter doesn't carry over from the last tag.
     <ItemsView
+      key={t}
       title={`#${t}`}
       prefKey="tag"
       deps={[t]}
@@ -142,5 +144,5 @@ export const VIEW_TITLES = Object.fromEntries(VIEW_NAMES.map((v) => [v, VIEWS[v]
 export function SmartView({ name }: { name: string }) {
   if (!(VIEW_NAMES as string[]).includes(name)) return <NotFound />;
   const v = VIEWS[name as ViewName];
-  return <ItemsView title={v.title} subtitle={v.subtitle} prefKey={`view-${name}`} deps={[name]} showQuickAdd={false} filter={v.filter} empty={v.empty} />;
+  return <ItemsView key={name} title={v.title} subtitle={v.subtitle} prefKey={`view-${name}`} deps={[name]} showQuickAdd={false} filter={v.filter} empty={v.empty} />;
 }

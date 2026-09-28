@@ -13,7 +13,15 @@ import { DeleteSpaceDialog } from '../components/DeleteSpace';
 import { updateSpace } from '../lib/repo';
 import { NotFound } from './NotFound';
 
+/**
+ * The router keeps this page mounted when going from one space to another, so
+ * the key starts each space fresh: no selection, filter or open dialog carries over.
+ */
 export function SpacePage({ id }: { id: string }) {
+  return <SpaceView key={id} id={id} />;
+}
+
+function SpaceView({ id }: { id: string }) {
   const space = useLive(() => db.spaces.get(id), [id]);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);

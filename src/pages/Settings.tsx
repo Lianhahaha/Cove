@@ -102,14 +102,15 @@ function StorageMeter() {
 function DangerZone() {
   const [text, setText] = useState('');
   return (
-    <Section title="Delete everything" description="Removes every item, space and file from this device. This can’t be undone, so export a backup first.">
+    <Section title="Delete everything" description="Removes every item, space and file from this device, and the focus history in Stats. This can’t be undone, so export a backup first.">
       <div class="flex flex-col sm:flex-row gap-2">
         <input class="input" placeholder='Type "DELETE" to confirm' value={text} onInput={(e) => setText(e.currentTarget.value)} aria-label="Confirm deletion" />
         <button
           class="btn btn-danger"
           disabled={text !== 'DELETE'}
           onClick={async () => {
-            await Promise.all([db.items.clear(), db.spaces.clear(), db.files.clear()]);
+            // The focus log points at the deleted items, so Stats would keep counting their time.
+            await Promise.all([db.items.clear(), db.spaces.clear(), db.files.clear(), db.settings.delete('focusLog')]);
             setText('');
             toast('Everything was deleted');
           }}

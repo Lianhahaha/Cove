@@ -215,6 +215,15 @@ function parseSoon(text: string): { minutes: number; span: Match } | null {
   return minutes > 0 ? { minutes, span: found.span } : null;
 }
 
+/** One step of a repeat from `d`: days, weeks, or months kept on the same day where the month allows. */
+function stepRepeat(d: Date, r: Recurrence, onWeekday: boolean): Date {
+  if (onWeekday) return addDays(d, 7);
+  if (r.freq === 'daily') return addDays(d, r.interval);
+  if (r.freq === 'weekly') return addDays(d, 7 * r.interval);
+  const last = new Date(d.getFullYear(), d.getMonth() + r.interval + 1, 0).getDate();
+  return new Date(d.getFullYear(), d.getMonth() + r.interval, Math.min(d.getDate(), last));
+}
+
 function parseTime(text: string): { h: number; min: number; span: Match } | null {
   const ampm = take(text, /(?:^|\s)(?:at\s+)?(\d{1,2})(?::([0-5]\d))?\s*(am|pm)\b/i);
   if (ampm) {
@@ -338,11 +347,11 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
       if (soon) d = new Date(Math.floor((now.getTime() + soon.minutes * 60_000) / 60_000) * 60_000);
       if (time) {
         d = new Date(d.getFullYear(), d.getMonth(), d.getDate(), time.h, time.min);
-        // A time with no date that has already passed today means tomorrow, or next week for "every fri".
+        // A time with no date that has already passed today means tomorrow. A repeat moves on by one
+        // of its own steps instead, so "every week 9am" keeps today's weekday and "every fri" stays on Fridays.
         // Built from the date, not by adding 24 hours, so a clock change overnight keeps the hour typed.
-        if (!date && d.getTime() <= now.getTime()) {
-          d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + (repeat?.start ? 7 : 1), time.h, time.min);
-        }
+        if (!date && d.getTime() <= now.getTime()) d = repeat ? stepRepeat(d, repeat.recurrence, !!repeat.start) : addDays(d, 1);
+        d = new Date(d.getFullYear(), d.getMonth(), d.getDate(), time.h, time.min);
       }
       due = d.getTime();
       dueHasTime = !!(time || soon);

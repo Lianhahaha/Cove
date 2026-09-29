@@ -179,6 +179,15 @@ describe('repeats', () => {
     expect(p('lab every wednesday 8am').due).toBe(day(2026, 9, 30, 8));
   });
 
+  it('starts one step later when today’s time has passed, keeping the weekday or day of month', () => {
+    // It's Wednesday the 23rd at 10:00.
+    expect(p('review every week 9am').due).toBe(day(2026, 9, 30, 9));
+    expect(p('pay every month 9am').due).toBe(day(2026, 10, 23, 9));
+    expect(p('water every 3 days 9am').due).toBe(day(2026, 9, 26, 9));
+    expect(p('gym every day 9am').due).toBe(day(2026, 9, 24, 9));
+    expect(p('gym every day 11am').due).toBe(day(2026, 9, 23, 11));
+  });
+
   it('keeps an explicit start date', () => {
     expect(p('report every week from oct 5').due).toBe(day(2026, 10, 5));
   });

@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { Pause, Play, Square, Timer } from 'lucide-preact';
 import { FOCUS_PRESETS, focus, formatClock, pauseFocus, remainingMs, resumeFocus, startFocus, stopFocus } from '../lib/focus';
 import { navigate } from '../lib/nav';
@@ -40,6 +40,18 @@ export function FocusPill() {
 export function FocusStarter({ itemId }: { itemId: string }) {
   const [open, setOpen] = useState(false);
   const running = focus.value?.itemId === itemId;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    // Close on the next click anywhere, like the AI menu beside it; the menu's own buttons run first.
+    const t = setTimeout(() => addEventListener('click', close, { once: true }));
+    return () => {
+      clearTimeout(t);
+      removeEventListener('click', close);
+    };
+  }, [open]);
+
   return (
     <div class="relative">
       <button class={`icon-btn ${running ? 'text-accent' : ''}`} title="Focus timer" aria-label="Focus timer" aria-expanded={open} onClick={() => setOpen(!open)}>

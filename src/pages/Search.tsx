@@ -39,11 +39,15 @@ export function Search() {
   const ids = useMemo(() => search(parsed.text), [parsed.text, searchIndex.value]);
   const results = useLive(async () => {
     const now = new Date();
-    const pass = (i: Item | undefined): i is Item => !!i && matchesFilters(i, parsed, now);
-    // Filters with no words list everything that matches, newest first.
-    const items = parsed.text ? (await db.items.bulkGet(ids)).filter(pass) : hasFilters(parsed) ? sortItems(await db.items.filter(pass).toArray(), 'recent').slice(0, 200) : [];
     const withArchived = scope === 'all' || parsed.is.includes('archived');
-    return items.filter((i) => (withArchived || !i.archived) && (!spaceId || (spaceId === 'inbox' ? i.spaceId === null : i.spaceId === spaceId)));
+    // Every check runs before the cap below, so the 200 shown are the newest that match, not the newest overall.
+    const pass = (i: Item | undefined): i is Item =>
+      !!i &&
+      matchesFilters(i, parsed, now) &&
+      (withArchived || !i.archived) &&
+      (!spaceId || (spaceId === 'inbox' ? i.spaceId === null : i.spaceId === spaceId));
+    // Filters with no words list everything that matches, newest first.
+    return parsed.text ? (await db.items.bulkGet(ids)).filter(pass) : hasFilters(parsed) ? sortItems(await db.items.filter(pass).toArray(), 'recent').slice(0, 200) : [];
   }, [ids.join(','), q, scope, spaceId]);
 
   /** Adds an example filter to the query, or starts one for the user to finish. */

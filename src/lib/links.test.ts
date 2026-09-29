@@ -23,6 +23,13 @@ describe('toWebUrl', () => {
     expect(toWebUrl('')).toBeNull();
   });
 
+  it('takes ports, localhost and full addresses of single-name hosts', () => {
+    expect(toWebUrl('localhost:5173')).toBe('https://localhost:5173/');
+    expect(toWebUrl('moodle.school.edu:8443/course')).toBe('https://moodle.school.edu:8443/course');
+    expect(toWebUrl('http://intranet/wiki')).toBe('http://intranet/wiki');
+    expect(toWebUrl('intranet')).toBeNull();
+  });
+
   it('refuses a space in the site name but allows one later in the address', () => {
     expect(toWebUrl('exa mple.com')).toBeNull();
     expect(toWebUrl('https://my school.edu/')).toBeNull();

@@ -50,10 +50,13 @@ export function toWebUrl(raw: string): string | null {
   if (!v || v.length > 2048) return null;
   // Browsers turn a space in a host into %20 instead of refusing it, and "exa mple.com" is no address.
   if (/\s/.test(v.replace(/^[a-z][a-z\d+.-]*:\/\//i, '').split(/[/?#]/)[0])) return null;
+  // "localhost:5173" is a host and port, not a scheme: a scheme's colon is never followed by a digit.
+  const hasScheme = /^[a-z][a-z\d+.-]*:(?!\d)/i.test(v);
   try {
-    const u = new URL(/^[a-z][a-z\d+.-]*:/i.test(v) ? v : `https://${v}`);
+    const u = new URL(hasScheme ? v : `https://${v}`);
     if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
-    if (!u.hostname.includes('.') && u.hostname !== 'localhost') return null;
+    // A bare word like "hello" isn't an address, but "http://intranet/wiki" typed in full is.
+    if (!hasScheme && !u.hostname.includes('.') && u.hostname !== 'localhost') return null;
     return u.href;
   } catch {
     return null;

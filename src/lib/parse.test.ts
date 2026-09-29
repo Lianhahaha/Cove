@@ -114,6 +114,13 @@ describe('dates', () => {
     expect(p('I sat down dec 5').title).toBe('I sat down');
   });
 
+  it('leaves sun, sat and wed in the title unless they clearly name the day', () => {
+    expect(p('Fun in the sun 7/4').title).toBe('Fun in the sun');
+    expect(p('Retake the test I sat Dec 5').title).toBe('Retake the test I sat');
+    expect(p('Exam Sat, Dec 5')).toMatchObject({ title: 'Exam', due: day(2026, 12, 5) });
+    expect(p('Exam due sat Dec 5').title).toBe('Exam');
+  });
+
   it('still reads a weekday when a fraction sits elsewhere in the text', () => {
     expect(p('Do 3/4 of the lab by fri')).toMatchObject({ title: 'Do 3/4 of the lab', due: day(2026, 9, 25) });
     expect(p('Bake 1/2 cake fri').due).toBe(day(2026, 9, 25));

@@ -39,7 +39,7 @@ const PREFIX = String.raw`(?:(?:due|by|on|this)\s+)?`;
 const MONTH_RE = String.raw`(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?`;
 
 /** A weekday name, with an optional lead-in, right before a written-out date: "due Mon, " in "due Mon, Dec 7". */
-const WEEKDAY_BEFORE = new RegExp(String.raw`(?:^|\s)(?:(?:due|by|on)\s+)?(?:${Object.keys(DAYS).join('|')})\.?,?\s*$`, 'i');
+const WEEKDAY_BEFORE = new RegExp(String.raw`(?:^|\s)((?:due|by|on)\s+)?(${Object.keys(DAYS).join('|')})(\.?,?)\s*$`, 'i');
 
 /** A written-out date straight after a weekday name, as in "Mon, Dec 7" or "fri 10/9". */
 const DATE_AFTER = new RegExp(String.raw`^\.?,?\s*(?:${MONTH_RE}\s+\d|\d{1,2}(?:st|nd|rd|th)?\s+${MONTH_RE}|\d{1,2}\/\d)`, 'i');
@@ -169,7 +169,9 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
         const end = m.index + m[0].length;
         // A weekday written before the date goes with it, so it doesn't stay in the title.
         const day = written ? WEEKDAY_BEFORE.exec(text.slice(0, start)) : null;
-        if (day) start = day.index + day[0].length - day[0].trimStart().length;
+        // "sun", "sat" and "wed" are words too ("fun in the sun 7/4"), so they need a lead-in or a comma.
+        const isDay = day && (!AMBIGUOUS_DAYS.has(day[2].toLowerCase()) || day[1] || day[3]);
+        if (day && isDay) start = day.index + day[0].length - day[0].trimStart().length;
         return { date, span: { start, end, text: text.slice(start, end).trim() } };
       }
       if (global.lastIndex === m.index) global.lastIndex++;

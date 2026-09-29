@@ -39,6 +39,7 @@ import { AiPanel } from './AiPanel';
 import { FocusStarter } from './FocusTimer';
 import { addFiles, filesFromClipboard } from '../lib/files';
 import { appendMarkdown, discardIfBlank } from '../lib/notes';
+import { toWebUrl } from '../lib/links';
 import { confirmAction } from '../lib/confirm';
 import { FieldLabel, InfoTip } from './InfoTip';
 
@@ -97,9 +98,11 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   useEffect(() => {
     // A new, empty item opens ready to type its title.
     if (!item.title && !item.body && !item.url) titleRef.current?.focus();
-    // Closing a note you never wrote in deletes it. The saves above flush first, so typed text is never lost.
+    // Closing a note you never wrote in deletes it. It waits a tick, so every field's save on close
+    // (a tag or step half-typed in a child field included) is in before the note is judged blank.
     return () => {
-      if (!typed.current.title.trim() && !typed.current.body.trim() && !typed.current.url.trim()) void discardIfBlank(item.id);
+      const { title, body, url } = typed.current;
+      if (!title.trim() && !body.trim() && !toWebUrl(url)) setTimeout(() => void discardIfBlank(item.id));
     };
   }, []);
 
@@ -111,24 +114,25 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   // Nothing to save yet: closing would discard it anyway.
   const blank = item.kind === 'note' && !title.trim() && !body.trim();
 
-  function saveUrl() {
+  const urlField = useSaveOnClose(() => saveUrl(true));
+  function saveUrl(closing = false) {
+    urlField.saved();
     const v = url.trim();
     if (v === (item.url ?? '')) return;
     if (!v) {
       patch({ url: null, preview: null, kind: item.kind === 'link' ? 'note' : item.kind });
       return;
     }
-    try {
-      const u = new URL(/^https?:\/\//i.test(v) ? v : 'https://' + v);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error();
-      setUrl(u.href);
-      patch({ url: u.href, kind: item.kind === 'file' ? 'file' : 'link', preview: { status: 'pending' } });
-    } catch {
+    const href = toWebUrl(v);
+    if (href) {
+      setUrl(href);
+      patch({ url: href, kind: item.kind === 'file' ? 'file' : 'link', preview: { status: 'pending' } });
+    } else if (!closing) {
+      // Closing drops a bad address quietly; the panel it would explain is gone.
       toast('That doesn’t look like a web address', { tone: 'error' });
       setUrl(item.url ?? '');
     }
   }
-  useSaveOnClose(saveUrl);
 
   const dueDate = item.due !== null ? toDateInput(item.due) : '';
   const dueTime = item.due !== null && item.dueHasTime ? toTimeInput(item.due) : '';
@@ -246,7 +250,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
           <div>
             <FieldLabel text="Link" htmlFor="item-url" info="The web address this item saves. When you’re online, Cove fetches its title, picture and icon. Tap Open to visit it." />
             <div class="flex gap-2">
-              <input id="item-url" class="input" type="url" inputMode="url" value={url} placeholder="https://" onInput={(e) => setUrl(e.currentTarget.value)} onBlur={saveUrl} onKeyDown={(e) => e.key === 'Enter' && saveUrl()} />
+              <input id="item-url" class="input" type="url" inputMode="url" value={url} placeholder="https://" onInput={(e) => { setUrl(e.currentTarget.value); urlField.edited(); }} onBlur={() => saveUrl(urlField.closed())} onKeyDown={(e) => e.key === 'Enter' && saveUrl()} />
               {item.url && (
                 <>
                   <a class="btn shrink-0" href={item.url} target="_blank" rel="noopener noreferrer" title={`Open ${hostOf(item.url)}`}>

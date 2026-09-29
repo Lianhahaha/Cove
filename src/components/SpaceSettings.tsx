@@ -25,24 +25,27 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
   const patch = (p: Partial<Space>) => updateSpace(space.id, p);
 
   const [link, setLink] = useState(space.link ?? '');
-  function saveLink() {
+  const linkField = useSaveOnClose(() => saveLink(true));
+  function saveLink(closing = false) {
+    linkField.saved();
     if (!link.trim()) {
       if (space.link) void patch({ link: null });
       return;
     }
     const url = toWebUrl(link);
     if (!url) {
-      toast('That doesn’t look like a web address', { tone: 'error' });
+      // Closing drops a bad address quietly; the dialog it would explain is gone.
+      if (!closing) toast('That doesn’t look like a web address', { tone: 'error' });
       return;
     }
     setLink(url);
     if (url !== space.link) void patch({ link: url });
   }
-  const saveName = () => name.trim() && name !== space.name && patch({ name });
-  useSaveOnClose(() => {
-    void saveName();
-    saveLink();
-  });
+  const nameField = useSaveOnClose(() => saveName());
+  function saveName() {
+    nameField.saved();
+    if (name.trim() && name !== space.name) void patch({ name });
+  }
 
   function move(delta: number) {
     const ids = spaces.map((s) => s.id);
@@ -69,7 +72,10 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
             class="input"
             value={name}
             maxLength={60}
-            onInput={(e) => setName(e.currentTarget.value)}
+            onInput={(e) => {
+              setName(e.currentTarget.value);
+              nameField.edited();
+            }}
             onBlur={saveName}
             onKeyDown={(e) => e.key === 'Enter' && saveName()}
           />
@@ -87,8 +93,11 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
             spellcheck={false}
             placeholder="classroom.google.com/c/…"
             value={link}
-            onInput={(e) => setLink(e.currentTarget.value)}
-            onBlur={saveLink}
+            onInput={(e) => {
+              setLink(e.currentTarget.value);
+              linkField.edited();
+            }}
+            onBlur={() => saveLink(linkField.closed())}
             onKeyDown={(e) => e.key === 'Enter' && saveLink()}
           />
           <p class="text-xs text-subtle mt-1.5">

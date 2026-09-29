@@ -38,21 +38,39 @@ export function useDebouncedSave<T>(value: T, save: (v: T) => void, ms = 400) {
  * Runs `save` when the component goes away. For fields that save on blur:
  * closing a panel with Escape or Back removes the field, and browsers don't
  * reliably send a blur for that, so the last edit would be lost.
+ *
+ * Only an edit that hasn't been saved yet is saved: call `edited` as the field
+ * changes and `saved` when it saves. Otherwise closing an untouched panel could
+ * write back a value another window has changed since. `closed` tells a late
+ * blur (some browsers send one as the field is removed) that the panel is gone.
  */
 export function useSaveOnClose(save: () => void) {
   const latest = useRef(save);
   latest.current = save;
-  useEffect(() => () => latest.current(), []);
+  const dirty = useRef(false);
+  const gone = useRef(false);
+  useEffect(
+    () => () => {
+      gone.current = true;
+      if (dirty.current) latest.current();
+    },
+    [],
+  );
+  return useMemo(
+    () => ({ edited: () => void (dirty.current = true), saved: () => void (dirty.current = false), closed: () => gone.current }),
+    [],
+  );
 }
 
 export function TagEditor({ tags, onChange, suggestions }: { tags: string[]; onChange: (t: string[]) => void; suggestions: string[] }) {
   const [draft, setDraft] = useState('');
+  const pending = useSaveOnClose(() => commit());
   function commit(raw = draft) {
+    pending.saved();
     const t = normalizeTag(raw);
     setDraft('');
     if (t && !tags.includes(t)) onChange([...tags, t]);
   }
-  useSaveOnClose(() => draft && commit());
   return (
     <div class="input flex flex-wrap items-center gap-1.5 py-1.5 min-h-10 cursor-text" onClick={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.focus()}>
       {tags.map((t) => (
@@ -71,6 +89,7 @@ export function TagEditor({ tags, onChange, suggestions }: { tags: string[]; onC
         aria-label="Add tag"
         onInput={(e) => {
           const v = e.currentTarget.value;
+          pending.edited();
           if (/[,\s]$/.test(v)) commit(v);
           else setDraft(v);
         }}
@@ -96,13 +115,14 @@ export function ChecklistEditor({ items, onChange }: { items: ChecklistEntry[]; 
   const [drag, setDrag] = useState<number | null>(null);
   const update = (id: string, patch: Partial<ChecklistEntry>) => onChange(items.map((c) => (c.id === id ? { ...c, ...patch } : c)));
 
+  const pending = useSaveOnClose(() => add());
   function add() {
+    pending.saved();
     const text = draft.trim();
     if (!text) return;
     onChange([...items, { id: uid(), text: text.slice(0, 300), done: false }]);
     setDraft('');
   }
-  useSaveOnClose(add);
 
   function move(from: number, to: number) {
     if (from === to) return;
@@ -147,7 +167,10 @@ export function ChecklistEditor({ items, onChange }: { items: ChecklistEntry[]; 
           class="flex-1 bg-transparent outline-none text-sm py-1.5"
           placeholder="Add a step"
           value={draft}
-          onInput={(e) => setDraft(e.currentTarget.value)}
+          onInput={(e) => {
+            setDraft(e.currentTarget.value);
+            pending.edited();
+          }}
           onPaste={(e) => {
             // A pasted list, like a rubric or reading list, becomes one step per line.
             const text = e.clipboardData?.getData('text') ?? '';

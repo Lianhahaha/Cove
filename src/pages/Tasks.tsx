@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
-import { CalendarClock, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
+import { Archive, CalendarClock, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { minute } from '../lib/clock';
@@ -7,7 +7,7 @@ import { usePref } from '../lib/prefs';
 import { addDays, BUCKET_LABELS, dueBucket, sameDay, startOfDay, type DueBucket } from '../lib/dates';
 import { displayTitle, isActive, sortItems } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
-import { rescheduleToToday, restoreSchedules, setDone } from '../lib/actions';
+import { archiveWithUndo, rescheduleToToday, restoreSchedules, setDone } from '../lib/actions';
 import { updateItem } from '../lib/repo';
 import { ITEM_MIME } from '../lib/dnd';
 import { openCapture } from '../state';
@@ -167,13 +167,29 @@ function TaskList({ tasks, ctx, showDone }: { tasks: Item[]; ctx: CardContext; s
       ))}
       {showDone && done.length > 0 && (
         <section>
-          <h2 class="section-title mb-1">Done <span class="count">{done.length}</span></h2>
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <h2 class="section-title">Done <span class="count">{done.length}</span></h2>
+            <ArchiveDoneButton items={done} />
+          </div>
           <div class="-mx-3 space-y-0.5">
             {done.slice(0, 100).map((i) => <ItemRow key={i.id} item={i} ctx={ctx} />)}
           </div>
         </section>
       )}
     </div>
+  );
+}
+
+/** Clears finished tasks out of Tasks. They stay searchable in Archive, and the toast can undo it. */
+function ArchiveDoneButton({ items }: { items: Item[] }) {
+  return (
+    <button
+      class="btn btn-ghost min-h-7 h-7 px-2 text-sm font-normal"
+      title="Move these finished tasks to Archive"
+      onClick={() => void archiveWithUndo(items.map((i) => i.id))}
+    >
+      <Archive size={15} /> Archive all
+    </button>
   );
 }
 
@@ -240,8 +256,9 @@ function Board({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
           onDrop={(e) => drop(e, c.status)}
           aria-label={c.label}
         >
-          <h2 class="flex items-center justify-between px-2 py-1.5 text-sm font-semibold">
-            {c.label}
+          <h2 class="flex items-center gap-2 px-2 py-1.5 text-sm font-semibold">
+            <span class="flex-1">{c.label}</span>
+            {c.status === 'done' && c.items.length > 0 && <ArchiveDoneButton items={c.items} />}
             <span class="text-subtle font-normal tabular-nums">{c.items.length}</span>
           </h2>
           <div class="space-y-2 flex-1">

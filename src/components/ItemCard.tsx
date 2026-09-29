@@ -7,6 +7,22 @@ import { markdownSnippet } from '../lib/snippet';
 import { setDone } from '../lib/actions';
 import { ITEM_MIME } from '../lib/dnd';
 
+/**
+ * A row acts like a button: click, Enter or Space opens the item, or selects it
+ * while selecting. Keys pressed on the checkbox or select box inside are theirs alone.
+ */
+function activateProps(item: Item, ctx: CardContext) {
+  const activate = () => (ctx.selected ? ctx.onToggleSelect?.(item.id) : ctx.onOpen(item.id));
+  return {
+    onClick: activate,
+    onKeyDown: (e: KeyboardEvent) => {
+      if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
+      e.preventDefault();
+      activate();
+    },
+  };
+}
+
 /** Dragging an item carries the whole selection when the item is part of it. */
 function dragProps(item: Item, ctx: CardContext) {
   return {
@@ -163,8 +179,7 @@ export function ItemRow({ item, ctx }: { item: Item; ctx: CardContext }) {
       role="button"
       tabIndex={0}
       {...dragProps(item, ctx)}
-      onClick={() => (ctx.selected ? ctx.onToggleSelect?.(item.id) : ctx.onOpen(item.id))}
-      onKeyDown={(e) => e.key === 'Enter' && ctx.onOpen(item.id)}
+      {...activateProps(item, ctx)}
       class={`group flex items-start gap-2.5 md:gap-3 px-3 py-2 md:py-2.5 rounded-xl hover:bg-surface3/60 focus-visible:bg-surface3/60 ${
         ctx.selected?.has(item.id) ? 'bg-accent-fill' : ''
       }`}
@@ -196,8 +211,7 @@ export function ItemTile({ item, ctx }: { item: Item; ctx: CardContext }) {
       role="button"
       tabIndex={0}
       {...dragProps(item, ctx)}
-      onClick={() => (ctx.selected ? ctx.onToggleSelect?.(item.id) : ctx.onOpen(item.id))}
-      onKeyDown={(e) => e.key === 'Enter' && ctx.onOpen(item.id)}
+      {...activateProps(item, ctx)}
       class={`card overflow-hidden flex flex-col hover:border-border2 transition-colors ${ctx.selected?.has(item.id) ? 'ring-2 ring-accent' : ''}`}
     >
       {image ? (

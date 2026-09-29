@@ -338,7 +338,12 @@ function Calendar({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
                 aria-label={`${d.toDateString()}, ${items.length} tasks`}
                 aria-pressed={isSel}
                 onClick={() => setSelected(d)}
-                onKeyDown={(e) => e.key === 'Enter' && setSelected(d)}
+                onKeyDown={(e) => {
+                  // Only the day itself: Enter on a task inside opens that task instead.
+                  if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
+                  e.preventDefault();
+                  setSelected(d);
+                }}
                 onDragOver={(e) => e.dataTransfer?.types.includes(ITEM_MIME) && e.preventDefault()}
                 onDrop={async (e) => {
                   e.preventDefault();

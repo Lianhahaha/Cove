@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
-import { Globe, Plus, X } from 'lucide-preact';
-import { addQuickLink, LINK_PRESETS, logoFor, QUICK_LINK_LIMITS, quickLinks, removeQuickLink } from '../lib/links';
+import { ArrowDown, ArrowUp, Globe, Plus, X } from 'lucide-preact';
+import { addQuickLink, LINK_PRESETS, logoFor, moveQuickLink, QUICK_LINK_LIMITS, quickLinks, removeQuickLink } from '../lib/links';
 import { hostOf } from '../lib/queries';
 import { Modal } from './Modal';
 import { InfoTip } from './InfoTip';
@@ -93,7 +93,7 @@ function ManageLinksDialog({ onClose }: { onClose: () => void }) {
             <p class="text-sm text-subtle">None yet. Pick a suggestion or add your own below.</p>
           ) : (
             <ul class="space-y-1">
-              {links.map((l) => (
+              {links.map((l, i) => (
                 <li key={l.id} class="flex items-center gap-3 rounded-xl bg-surface2 pl-3 pr-1 py-1.5">
                   <span class="w-6 h-6 grid place-items-center shrink-0 text-subtle">
                     <LinkLogo url={l.url} icon={l.icon} size={20} />
@@ -102,6 +102,13 @@ function ManageLinksDialog({ onClose }: { onClose: () => void }) {
                     <span class="block text-sm truncate">{l.name}</span>
                     <span class="block text-xs text-subtle truncate">{hostOf(l.url)}</span>
                   </span>
+                  {/* Order on Home, left to right. */}
+                  <button class="icon-btn w-8" aria-label={`Move ${l.name} earlier`} title="Move earlier" disabled={i === 0} onClick={() => void moveQuickLink(l.id, -1)}>
+                    <ArrowUp size={16} />
+                  </button>
+                  <button class="icon-btn w-8" aria-label={`Move ${l.name} later`} title="Move later" disabled={i === links.length - 1} onClick={() => void moveQuickLink(l.id, 1)}>
+                    <ArrowDown size={16} />
+                  </button>
                   <button class="icon-btn" aria-label={`Remove ${l.name}`} title="Remove" onClick={() => void removeQuickLink(l.id)}>
                     <X size={16} />
                   </button>

@@ -147,6 +147,16 @@ export async function mergeQuickLinks(incoming: unknown): Promise<void> {
   if (added.length) await save([...current, ...added].slice(0, QUICK_LINK_LIMITS.count));
 }
 
+/** Moves a link one place left (-1) or right (1) on Home. */
+export async function moveQuickLink(id: string, delta: -1 | 1) {
+  const list = [...quickLinks.value];
+  const from = list.findIndex((l) => l.id === id);
+  const to = from + delta;
+  if (from < 0 || to < 0 || to >= list.length) return;
+  [list[from], list[to]] = [list[to], list[from]];
+  await save(list);
+}
+
 export async function removeQuickLink(id: string) {
   await save(quickLinks.value.filter((l) => l.id !== id));
 }

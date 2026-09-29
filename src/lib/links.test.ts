@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { setSetting } from './repo';
-import { addQuickLink, friendlyName, isClassroom, loadQuickLinks, logoFor, quickLinks, removeQuickLink, toWebUrl } from './links';
+import { addQuickLink, friendlyName, isClassroom, loadQuickLinks, logoFor, moveQuickLink, quickLinks, removeQuickLink, toWebUrl } from './links';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -48,6 +48,18 @@ describe('quick links', () => {
     await removeQuickLink('classroom');
     await loadQuickLinks();
     expect(quickLinks.value.map((l) => l.name)).toEqual(['Gmail', 'Drive']);
+  });
+
+  it('moves a link left or right, stopping at the ends', async () => {
+    await addQuickLink('Drive', 'drive.google.com');
+    const id = quickLinks.value[2].id;
+    await moveQuickLink(id, -1);
+    await moveQuickLink(id, -1);
+    await moveQuickLink(id, -1);
+    await loadQuickLinks();
+    expect(quickLinks.value.map((l) => l.name)).toEqual(['Drive', 'Classroom', 'Gmail']);
+    await moveQuickLink('gmail', 1);
+    expect(quickLinks.value.map((l) => l.name)).toEqual(['Drive', 'Classroom', 'Gmail']);
   });
 
   it('drops malformed saved entries', async () => {

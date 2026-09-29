@@ -189,7 +189,11 @@ describe('repeats', () => {
   });
 
   it('keeps an explicit start date', () => {
-    expect(p('report every week from oct 5').due).toBe(day(2026, 10, 5));
+    expect(p('report every week from oct 5')).toMatchObject({ title: 'report', due: day(2026, 10, 5) });
+    expect(p('pay rent every month starting 10/1')).toMatchObject({ title: 'pay rent', due: day(2026, 10, 1) });
+    expect(p('club every week from mon').title).toBe('club');
+    // Without a repeat, "from" is just a word.
+    expect(p('notes from dec 5').title).toBe('notes from');
   });
 
   it('understands araw-araw', () => {

@@ -35,7 +35,8 @@ const DAYS: Record<string, number> = {
 /** Short day names that are also English words need a lead-in like "due" or "on". */
 const AMBIGUOUS_DAYS = new Set(['sun', 'sat', 'wed']);
 
-const PREFIX = String.raw`(?:(?:due|by|on|this)\s+)?`;
+/** Words that can lead into a date and are taken with it. A repeat also takes its start: "every week from oct 5". */
+const leadIn = (repeat: boolean) => String.raw`(?:(?:due|by|on|this${repeat ? '|from|starting' : ''})\s+)?`;
 const MONTH_RE = String.raw`(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?`;
 
 /** A weekday name, with an optional lead-in, right before a written-out date: "due Mon, " in "due Mon, Dec 7". */
@@ -93,8 +94,9 @@ function cut(text: string, span: Match): string {
   return text.slice(0, span.start) + ' ' + text.slice(span.end);
 }
 
-function parseDate(text: string, now: Date): { date: Date; span: Match } | null {
+function parseDate(text: string, now: Date, forRepeat = false): { date: Date; span: Match } | null {
   const today = startOfDay(now);
+  const PREFIX = leadIn(forRepeat);
   // The last flag marks a written-out date, which may have its weekday in front ("Mon, Dec 7").
   const rules: [RegExp, (m: RegExpExecArray) => Date | null, boolean?][] = [
     [new RegExp(String.raw`(?:^|\s)${PREFIX}(today|ngayon|mamaya|tonight)\b`, 'i'), () => today],
@@ -115,7 +117,7 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
       },
     ],
     [
-      new RegExp(String.raw`(?:^|\s)((?:due|by|on|this|next)\s+)?(next\s+)?(${Object.keys(DAYS).join('|')})\b`, 'i'),
+      new RegExp(String.raw`(?:^|\s)((?:due|by|on|this|next${forRepeat ? '|from|starting' : ''})\s+)?(next\s+)?(${Object.keys(DAYS).join('|')})\b`, 'i'),
       (m) => {
         const lead = (m[1] ?? '').trim().toLowerCase();
         const word = m[3].toLowerCase();
@@ -335,7 +337,7 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
     // "in 2 hours" sets the date and time at once, so nothing else is read after it.
     const soon = parseSoon(text);
     if (soon) text = cut(text, soon.span);
-    const date = soon ? null : parseDate(text, now);
+    const date = soon ? null : parseDate(text, now, !!repeat);
     if (date) text = cut(text, date.span);
     const time = soon ? null : parseTime(text);
     if (time) text = cut(text, time.span);

@@ -5,7 +5,6 @@ import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { reorderSpaces, SPACE_COLORS, updateSpace } from '../lib/repo';
 import { deleteSpaceWithUndo } from './DeleteSpace';
-import { toast } from '../lib/toast';
 import { toWebUrl } from '../lib/links';
 import { FieldLabel } from './InfoTip';
 import type { Space } from '../lib/types';
@@ -35,7 +34,7 @@ export function SpaceSettings({ space, onClose }: { space: Space; onClose: () =>
     const url = toWebUrl(link);
     if (!url) {
       // Closing drops a bad address quietly; the dialog it would explain is gone.
-      if (!closing) toast('That doesn’t look like a web address', { tone: 'error' });
+      if (!closing) linkField.warn('That doesn’t look like a web address');
       return;
     }
     setLink(url);

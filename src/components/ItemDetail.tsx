@@ -129,7 +129,7 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
       patch({ url: href, kind: item.kind === 'file' ? 'file' : 'link', preview: { status: 'pending' } });
     } else if (!closing) {
       // Closing drops a bad address quietly; the panel it would explain is gone.
-      toast('That doesn’t look like a web address', { tone: 'error' });
+      urlField.warn('That doesn’t look like a web address');
       setUrl(item.url ?? '');
     }
   }

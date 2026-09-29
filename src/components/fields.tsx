@@ -4,6 +4,7 @@ import { normalizeTag, uid } from '../lib/repo';
 import { renderMarkdown } from '../lib/markdown';
 import { readingStats } from '../lib/snippet';
 import { stepsFromText } from '../lib/checklist';
+import { toast } from '../lib/toast';
 import type { ChecklistEntry } from '../lib/types';
 
 /** Calls `save` once typing pauses, and flushes on unmount so nothing is lost. */
@@ -43,6 +44,8 @@ export function useDebouncedSave<T>(value: T, save: (v: T) => void, ms = 400) {
  * changes and `saved` when it saves. Otherwise closing an untouched panel could
  * write back a value another window has changed since. `closed` tells a late
  * blur (some browsers send one as the field is removed) that the panel is gone.
+ * `warn` shows a problem found on blur unless the panel closes right after:
+ * pressing Back or Close blurs the field first, and the warning would outlive it.
  */
 export function useSaveOnClose(save: () => void) {
   const latest = useRef(save);
@@ -57,7 +60,12 @@ export function useSaveOnClose(save: () => void) {
     [],
   );
   return useMemo(
-    () => ({ edited: () => void (dirty.current = true), saved: () => void (dirty.current = false), closed: () => gone.current }),
+    () => ({
+      edited: () => void (dirty.current = true),
+      saved: () => void (dirty.current = false),
+      closed: () => gone.current,
+      warn: (message: string) => setTimeout(() => !gone.current && toast(message, { tone: 'error' }), 300),
+    }),
     [],
   );
 }

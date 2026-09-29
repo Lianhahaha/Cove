@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Globe, Plus, X } from 'lucide-preact';
 import { addQuickLink, LINK_PRESETS, logoFor, moveQuickLink, QUICK_LINK_LIMITS, quickLinks, removeQuickLink } from '../lib/links';
 import { hostOf } from '../lib/queries';
 import { Modal } from './Modal';
+import { toast } from '../lib/toast';
 import { InfoTip } from './InfoTip';
 
 /** Icons that failed to load this session, so tiles fall back to the globe without retrying. */
@@ -109,7 +110,10 @@ function ManageLinksDialog({ onClose }: { onClose: () => void }) {
                   <button class="icon-btn w-8" aria-label={`Move ${l.name} later`} title="Move later" disabled={i === links.length - 1} onClick={() => void moveQuickLink(l.id, 1)}>
                     <ArrowDown size={16} />
                   </button>
-                  <button class="icon-btn" aria-label={`Remove ${l.name}`} title="Remove" onClick={() => void removeQuickLink(l.id)}>
+                  <button class="icon-btn" aria-label={`Remove ${l.name}`} title="Remove" onClick={async () => {
+                      const undo = await removeQuickLink(l.id);
+                      toast(`Removed ${l.name}`, { action: { label: 'Undo', run: () => void undo() } });
+                    }}>
                     <X size={16} />
                   </button>
                 </li>

@@ -157,6 +157,15 @@ export async function moveQuickLink(id: string, delta: -1 | 1) {
   await save(list);
 }
 
-export async function removeQuickLink(id: string) {
+/** Removes a link and returns a function that puts it back where it was. */
+export async function removeQuickLink(id: string): Promise<() => Promise<void>> {
+  const index = quickLinks.value.findIndex((l) => l.id === id);
+  const link = quickLinks.value[index];
   await save(quickLinks.value.filter((l) => l.id !== id));
+  return async () => {
+    if (!link || quickLinks.value.some((l) => l.url === link.url)) return;
+    const list = [...quickLinks.value];
+    list.splice(Math.min(index, list.length), 0, link);
+    await save(list.slice(0, QUICK_LINK_LIMITS.count));
+  };
 }

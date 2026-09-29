@@ -45,9 +45,13 @@ describe('quick links', () => {
     expect(await addQuickLink('Bad', 'javascript:alert(1)')).toMatch(/web address/);
     expect(quickLinks.value.map((l) => l.name)).toEqual(['Classroom', 'Gmail', 'Drive']);
 
-    await removeQuickLink('classroom');
+    const undo = await removeQuickLink('classroom');
     await loadQuickLinks();
     expect(quickLinks.value.map((l) => l.name)).toEqual(['Gmail', 'Drive']);
+
+    await undo();
+    await loadQuickLinks();
+    expect(quickLinks.value.map((l) => l.name)).toEqual(['Classroom', 'Gmail', 'Drive']);
   });
 
   it('moves a link left or right, stopping at the ends', async () => {

@@ -153,7 +153,9 @@ export function ChecklistEditor({ items, onChange }: { items: ChecklistEntry[]; 
             const text = e.clipboardData?.getData('text') ?? '';
             if (!text.includes('\n')) return;
             e.preventDefault();
-            const steps = stepsFromText(draft + text);
+            // Pasted where the caret is, replacing any selection, as a normal paste would.
+            const el = e.currentTarget;
+            const steps = stepsFromText(draft.slice(0, el.selectionStart ?? draft.length) + text + draft.slice(el.selectionEnd ?? draft.length));
             if (steps.length) onChange([...items, ...steps.map((s) => ({ id: uid(), ...s }))]);
             setDraft('');
           }}

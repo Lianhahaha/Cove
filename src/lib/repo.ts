@@ -38,6 +38,41 @@ export function normalizeTags(tags: string[]): string[] {
   return out;
 }
 
+/**
+ * Renames a tag on every item that has it, trashed and archived ones too. If
+ * the new name is already a tag, the two merge. Returns the ids changed.
+ */
+export async function renameTag(from: string, to: string): Promise<string[]> {
+  const target = normalizeTag(to);
+  if (!target || target === from) return [];
+  const now = Date.now();
+  const ids = (await db.items.where('tags').equals(from).primaryKeys()) as string[];
+  await db.items.where('id').anyOf(ids).modify((i) => {
+    i.tags = normalizeTags(i.tags.map((t) => (t === from ? target : t)));
+    i.updatedAt = now;
+  });
+  return ids;
+}
+
+/** Takes a tag off every item. Returns the ids changed, so it can be undone with addTag. */
+export async function removeTag(tag: string): Promise<string[]> {
+  const now = Date.now();
+  const ids = (await db.items.where('tags').equals(tag).primaryKeys()) as string[];
+  await db.items.where('id').anyOf(ids).modify((i) => {
+    i.tags = i.tags.filter((t) => t !== tag);
+    i.updatedAt = now;
+  });
+  return ids;
+}
+
+export async function addTag(ids: string[], tag: string): Promise<void> {
+  const now = Date.now();
+  await db.items.where('id').anyOf(ids).modify((i) => {
+    i.tags = normalizeTags([...i.tags, tag]);
+    i.updatedAt = now;
+  });
+}
+
 /** Keeps stored text within limits no matter which screen wrote it. */
 function clampItem<T extends Partial<Item>>(patch: T): T {
   const p = { ...patch };

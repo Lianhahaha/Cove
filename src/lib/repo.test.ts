@@ -5,7 +5,10 @@ import {
   addFile,
   addItem,
   addSpace,
+  addTag,
   archiveSemester,
+  removeTag,
+  renameTag,
   unarchiveSemester,
   emptyTrash,
   FileTooLargeError,
@@ -22,6 +25,27 @@ import {
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
+});
+
+describe('tags', () => {
+  it('renames a tag everywhere and merges into an existing one', async () => {
+    const a = await addItem({ tags: ['lab', 'cpe'] });
+    const b = await addItem({ tags: ['labs', 'lab'] });
+    const c = await addItem({ tags: ['essay'] });
+    expect(await renameTag('labs', 'Lab')).toEqual([b.id]);
+    expect((await db.items.get(b.id))?.tags).toEqual(['lab']);
+    expect((await db.items.get(a.id))?.tags).toEqual(['lab', 'cpe']);
+    expect((await db.items.get(c.id))?.tags).toEqual(['essay']);
+    expect(await renameTag('lab', '  ')).toEqual([]);
+  });
+
+  it('removes a tag and puts it back', async () => {
+    const a = await addItem({ tags: ['lab', 'cpe'] });
+    const ids = await removeTag('lab');
+    expect((await db.items.get(a.id))?.tags).toEqual(['cpe']);
+    await addTag(ids, 'lab');
+    expect((await db.items.get(a.id))?.tags).toEqual(['cpe', 'lab']);
+  });
 });
 
 describe('normalizeTag', () => {

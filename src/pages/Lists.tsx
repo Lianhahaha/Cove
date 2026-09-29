@@ -1,4 +1,5 @@
-import { Archive, CalendarRange, Clock, FolderInput, Hash, Layers, NotebookPen, Star, Tags as TagsIcon } from 'lucide-preact';
+import { Archive, CalendarRange, Clock, FolderInput, Hash, Layers, NotebookPen, Pencil, Star, Tags as TagsIcon, Trash } from 'lucide-preact';
+import { useLocation } from 'preact-iso';
 import { dueBucket } from '../lib/dates';
 import { NotFound } from './NotFound';
 import { ItemsView } from '../components/ItemsView';
@@ -7,6 +8,9 @@ import { NewNoteButton } from '../components/NewNote';
 import { isActive, isOpenTask } from '../lib/queries';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
+import { addTag, normalizeTag, removeTag, renameTag } from '../lib/repo';
+import { confirmAction } from '../lib/confirm';
+import { toast } from '../lib/toast';
 
 /** Items not in any space yet. It was called Inbox, which read like email. */
 export function Unsorted() {
@@ -99,6 +103,29 @@ export function ArchivePage() {
 
 export function TagPage({ tag }: { tag: string }) {
   const t = decodeURIComponent(tag);
+  const { route } = useLocation();
+
+  async function rename() {
+    const raw = prompt(`Rename #${t} to`, t);
+    const next = raw ? normalizeTag(raw) : '';
+    if (!next || next === t) return;
+    const ids = await renameTag(t, next);
+    route(`/tags/${encodeURIComponent(next)}`, true);
+    toast(`Renamed #${t} to #${next} on ${ids.length} item${ids.length === 1 ? '' : 's'}`);
+  }
+
+  async function remove() {
+    const ok = await confirmAction({
+      title: `Remove #${t}?`,
+      body: 'The tag comes off every item that has it. The items themselves stay.',
+      confirmLabel: 'Remove tag',
+    });
+    if (!ok) return;
+    const ids = await removeTag(t);
+    route('/tags', true);
+    toast(`Removed #${t} from ${ids.length} item${ids.length === 1 ? '' : 's'}`, { action: { label: 'Undo', run: () => void addTag(ids, t) } });
+  }
+
   return (
     // Keyed so a selection or type filter doesn't carry over from the last tag.
     <ItemsView
@@ -106,6 +133,16 @@ export function TagPage({ tag }: { tag: string }) {
       title={`#${t}`}
       prefKey="tag"
       deps={[t]}
+      headerActions={
+        <>
+          <button class="icon-btn" title="Rename tag" aria-label="Rename tag" onClick={() => void rename()}>
+            <Pencil size={18} />
+          </button>
+          <button class="icon-btn hover:text-danger" title="Remove tag from every item" aria-label="Remove tag" onClick={() => void remove()}>
+            <Trash size={18} />
+          </button>
+        </>
+      }
       filter={(i) => isActive(i) && i.tags.includes(t)}
       empty={<EmptyState icon={<Hash size={22} />} title="No items with this tag" />}
     />

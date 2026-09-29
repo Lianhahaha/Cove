@@ -22,6 +22,12 @@ describe('toWebUrl', () => {
     expect(toWebUrl('hello')).toBeNull();
     expect(toWebUrl('')).toBeNull();
   });
+
+  it('refuses a space in the site name but allows one later in the address', () => {
+    expect(toWebUrl('exa mple.com')).toBeNull();
+    expect(toWebUrl('https://my school.edu/')).toBeNull();
+    expect(toWebUrl('example.com/my notes.pdf')).toBe('https://example.com/my%20notes.pdf');
+  });
 });
 
 describe('friendlyName', () => {

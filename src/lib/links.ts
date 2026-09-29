@@ -48,6 +48,8 @@ const DEFAULT_LINKS: QuickLink[] = [
 export function toWebUrl(raw: string): string | null {
   const v = raw.trim();
   if (!v || v.length > 2048) return null;
+  // Browsers turn a space in a host into %20 instead of refusing it, and "exa mple.com" is no address.
+  if (/\s/.test(v.replace(/^[a-z][a-z\d+.-]*:\/\//i, '').split(/[/?#]/)[0])) return null;
   try {
     const u = new URL(/^[a-z][a-z\d+.-]*:/i.test(v) ? v : `https://${v}`);
     if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;

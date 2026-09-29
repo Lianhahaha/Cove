@@ -118,7 +118,8 @@ type Schedule = Pick<Item, 'id' | 'due' | 'remindAt'>;
 /**
  * Moves overdue tasks to today, keeping their time of day. A timed task whose
  * hour has already passed goes to tomorrow instead, so it isn't overdue again
- * straight away. Reminders keep their distance from the due time. Returns the
+ * straight away. Reminders keep their distance from the due time, unless that
+ * time has already passed today, when they're dropped. Returns the
  * old schedules so the move can be undone.
  */
 export async function rescheduleToToday(items: Item[], now = new Date()): Promise<Schedule[]> {
@@ -129,7 +130,9 @@ export async function rescheduleToToday(items: Item[], now = new Date()): Promis
     let due = new Date(now.getFullYear(), now.getMonth(), now.getDate(), item.dueHasTime ? old.getHours() : 0, item.dueHasTime ? old.getMinutes() : 0);
     if (item.dueHasTime && due.getTime() <= now.getTime()) due = new Date(due.getFullYear(), due.getMonth(), due.getDate() + 1, due.getHours(), due.getMinutes());
     before.push({ id: item.id, due: item.due, remindAt: item.remindAt });
-    await updateItem(item.id, { due: due.getTime(), remindAt: moveReminder(item.remindAt, item, { due: due.getTime(), dueHasTime: item.dueHasTime }) });
+    const remindAt = moveReminder(item.remindAt, item, { due: due.getTime(), dueHasTime: item.dueHasTime });
+    // A reminder that would now be earlier today has missed its moment; kept, it would fire at once.
+    await updateItem(item.id, { due: due.getTime(), remindAt: remindAt !== null && remindAt <= now.getTime() ? null : remindAt });
   }
   return before;
 }

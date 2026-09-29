@@ -100,6 +100,12 @@ describe('rescheduleToToday', () => {
     expect(await db.items.get(evening.id)).toMatchObject({ due: at(2026, 9, 23, 17), remindAt: at(2026, 9, 23, 16) });
   });
 
+  it('drops a reminder that would land earlier today, so it doesn’t fire at once', async () => {
+    const task = await addItem({ status: 'todo', due: at(2026, 9, 21), remindAt: at(2026, 9, 21, 9) });
+    await rescheduleToToday([task], now);
+    expect(await db.items.get(task.id)).toMatchObject({ due: at(2026, 9, 23), remindAt: null });
+  });
+
   it('sends a timed task whose hour has passed to tomorrow, and undoes', async () => {
     const morning = await addItem({ status: 'todo', due: at(2026, 9, 21, 8), dueHasTime: true });
     const before = await rescheduleToToday([morning], now);

@@ -9,6 +9,7 @@ import { archiveSemester, setSetting, unarchiveSemester } from '../lib/repo';
 import { formatBytes, requestPersistence } from '../lib/files';
 import { exportBackup, exportMarkdown, importBackup, importBookmarks } from '../lib/backup';
 import { toDateInput } from '../lib/dates';
+import { clearFocus } from '../lib/focus';
 import { toast, toastError } from '../lib/toast';
 import { db } from '../lib/db';
 import { shortcutsOpen } from '../state';
@@ -111,6 +112,8 @@ function DangerZone() {
           onClick={async () => {
             // The focus log points at the deleted items, so Stats would keep counting their time.
             await Promise.all([db.items.clear(), db.spaces.clear(), db.files.clear(), db.settings.delete('focusLog')]);
+            // A running timer would log its time again when it ends.
+            clearFocus();
             setText('');
             toast('Everything was deleted');
           }}

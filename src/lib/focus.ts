@@ -87,6 +87,11 @@ function keepMinutes(s: FocusState | null) {
   }
 }
 
+/** Ends any timer without logging it, for when its task and history are gone. */
+export function clearFocus() {
+  save(null);
+}
+
 export function stopFocus() {
   const s = focus.value;
   save(null);

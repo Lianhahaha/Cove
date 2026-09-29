@@ -13,6 +13,8 @@ export interface FocusState {
   endsAt: number | null;
   /** Milliseconds left, kept while paused. */
   remaining: number;
+  /** During a break, how long the focus run before it was, so "Focus again" repeats that length. */
+  focusMinutes?: number;
 }
 
 export interface FocusSession {
@@ -171,13 +173,13 @@ async function finishOnce(s: FocusState) {
   if (s.mode === 'focus') {
     await logSession(s.itemId, s.minutes);
     const ms = BREAK_MINUTES * 60_000;
-    save({ ...s, mode: 'break', minutes: BREAK_MINUTES, endsAt: Date.now() + ms, remaining: ms });
+    save({ ...s, mode: 'break', minutes: BREAK_MINUTES, endsAt: Date.now() + ms, remaining: ms, focusMinutes: s.minutes });
     toast(`Nice. ${s.minutes} minutes of focus logged. Take a ${BREAK_MINUTES}-minute break.`, { ms: 10_000 });
     void notify('Focus done', `${s.minutes} minutes on ${s.title}. Break time.`);
   } else {
     save(null);
     toast('Break’s over', {
-      action: { label: 'Focus again', run: () => void startFocus(s.itemId, 25) },
+      action: { label: 'Focus again', run: () => void startFocus(s.itemId, s.focusMinutes ?? 25) },
       ms: 15_000,
     });
     void notify('Break’s over', 'Ready for another round?');

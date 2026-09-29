@@ -3,6 +3,7 @@ import { GripVertical, Plus, X } from 'lucide-preact';
 import { normalizeTag, uid } from '../lib/repo';
 import { renderMarkdown } from '../lib/markdown';
 import { readingStats } from '../lib/snippet';
+import { stepsFromText } from '../lib/checklist';
 import type { ChecklistEntry } from '../lib/types';
 
 /** Calls `save` once typing pauses, and flushes on unmount so nothing is lost. */
@@ -147,6 +148,15 @@ export function ChecklistEditor({ items, onChange }: { items: ChecklistEntry[]; 
           placeholder="Add a step"
           value={draft}
           onInput={(e) => setDraft(e.currentTarget.value)}
+          onPaste={(e) => {
+            // A pasted list, like a rubric or reading list, becomes one step per line.
+            const text = e.clipboardData?.getData('text') ?? '';
+            if (!text.includes('\n')) return;
+            e.preventDefault();
+            const steps = stepsFromText(draft + text);
+            if (steps.length) onChange([...items, ...steps.map((s) => ({ id: uid(), ...s }))]);
+            setDraft('');
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();

@@ -56,7 +56,10 @@ export const remainingMs = (s: FocusState, at = now.value) => (s.endsAt === null
 export async function startFocus(itemId: string | null, minutes: number) {
   const item = itemId ? await db.items.get(itemId) : null;
   const ms = minutes * 60_000;
+  const previous = focus.value;
   save({ itemId, title: item ? displayTitle(item) : 'Focus', mode: 'focus', minutes, endsAt: Date.now() + ms, remaining: ms });
+  // Starting another session ends the running one, and its time still counts.
+  keepMinutes(previous);
 }
 
 export function pauseFocus() {
@@ -75,15 +78,19 @@ export function resumeFocus() {
 export const focusedMinutes = (s: FocusState, at = Date.now()) =>
   s.mode === 'focus' ? Math.floor((s.minutes * 60_000 - remainingMs(s, at)) / 60_000) : 0;
 
-export function stopFocus() {
-  const s = focus.value;
-  save(null);
-  // Stopping early still counts the time put in, so it shows on the task and in Stats.
+/** Logs the whole minutes of a focus run ended early, so they show on the task and in Stats. */
+function keepMinutes(s: FocusState | null) {
   const minutes = s ? focusedMinutes(s) : 0;
   if (s && minutes >= 1) {
     void logSession(s.itemId, minutes);
     toast(`Logged ${minutes} minute${minutes === 1 ? '' : 's'} of focus`);
   }
+}
+
+export function stopFocus() {
+  const s = focus.value;
+  save(null);
+  keepMinutes(s);
 }
 
 export async function focusLog(): Promise<FocusSession[]> {

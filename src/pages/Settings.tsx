@@ -8,6 +8,7 @@ import { previewsEnabled } from '../lib/previews';
 import { archiveSemester, setSetting, unarchiveSemester } from '../lib/repo';
 import { formatBytes, requestPersistence } from '../lib/files';
 import { exportBackup, exportMarkdown, importBackup, importBookmarks } from '../lib/backup';
+import { toDateInput } from '../lib/dates';
 import { toast, toastError } from '../lib/toast';
 import { db } from '../lib/db';
 import { shortcutsOpen } from '../state';
@@ -53,7 +54,8 @@ function download(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-const stamp = () => new Date().toISOString().slice(0, 10);
+// Today's local date, so a backup made at 7am in Manila isn't named after yesterday (the UTC date).
+const stamp = () => toDateInput(Date.now());
 
 function StorageMeter() {
   const [est, setEst] = useState<{ usage: number; quota: number; persisted: boolean } | null>(null);

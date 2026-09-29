@@ -67,6 +67,15 @@ describe('quick links', () => {
     expect(quickLinks.value.map((l) => l.name)).toEqual(['Classroom', 'Gmail', 'Drive']);
   });
 
+  it('won’t undo a removal into a full list', async () => {
+    for (let n = 0; n < 10; n++) await addQuickLink('', `site${n}.example.com`);
+    const undo = await removeQuickLink('classroom');
+    await addQuickLink('Drive', 'drive.google.com');
+    expect(await undo()).toBe(false);
+    expect(quickLinks.value.some((l) => l.name === 'Drive')).toBe(true);
+    expect(quickLinks.value).toHaveLength(12);
+  });
+
   it('moves a link left or right, stopping at the ends', async () => {
     await addQuickLink('Drive', 'drive.google.com');
     const id = quickLinks.value[2].id;

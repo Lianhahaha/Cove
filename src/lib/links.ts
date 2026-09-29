@@ -162,15 +162,21 @@ export async function moveQuickLink(id: string, delta: -1 | 1) {
   await save(list);
 }
 
-/** Removes a link and returns a function that puts it back where it was. */
-export async function removeQuickLink(id: string): Promise<() => Promise<void>> {
+/**
+ * Removes a link and returns a function that puts it back where it was. That
+ * returns false when there's no room any more, rather than pushing out a link
+ * added since.
+ */
+export async function removeQuickLink(id: string): Promise<() => Promise<boolean>> {
   const index = quickLinks.value.findIndex((l) => l.id === id);
   const link = quickLinks.value[index];
   await save(quickLinks.value.filter((l) => l.id !== id));
   return async () => {
-    if (!link || quickLinks.value.some((l) => l.url === link.url)) return;
+    if (!link || quickLinks.value.some((l) => l.url === link.url)) return true;
+    if (quickLinks.value.length >= QUICK_LINK_LIMITS.count) return false;
     const list = [...quickLinks.value];
     list.splice(Math.min(index, list.length), 0, link);
-    await save(list.slice(0, QUICK_LINK_LIMITS.count));
+    await save(list);
+    return true;
   };
 }

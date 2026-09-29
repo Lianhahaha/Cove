@@ -112,7 +112,14 @@ function ManageLinksDialog({ onClose }: { onClose: () => void }) {
                   </button>
                   <button class="icon-btn" aria-label={`Remove ${l.name}`} title="Remove" onClick={async () => {
                       const undo = await removeQuickLink(l.id);
-                      toast(`Removed ${l.name}`, { action: { label: 'Undo', run: () => void undo() } });
+                      toast(`Removed ${l.name}`, {
+                        action: {
+                          label: 'Undo',
+                          run: async () => {
+                            if (!(await undo())) toast(`There’s no room to put ${l.name} back. Remove a link first.`, { tone: 'error' });
+                          },
+                        },
+                      });
                     }}>
                     <X size={16} />
                   </button>

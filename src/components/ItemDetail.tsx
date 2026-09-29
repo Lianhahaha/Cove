@@ -139,9 +139,10 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   function setDue(date: string, time: string) {
     const due = date ? fromInputs(date, time) : null;
     const dueHasTime = !!(date && time);
-    // A new time of day becomes the repeat's time too.
+    // A time picked in the time field becomes the repeat's time too. Moving only the date keeps
+    // the series' time, even when this repeat's own time was shifted by a clock change.
     const r = item.recurrence;
-    const recurrence = r?.time && r.time !== time ? { freq: r.freq, interval: r.interval } : r;
+    const recurrence = r && time !== dueTime ? (time ? { ...r, time } : { freq: r.freq, interval: r.interval }) : r;
     // A reminder keeps its distance from the due date when the date moves.
     patch({ due, dueHasTime, recurrence, remindAt: moveReminder(item.remindAt, item, { due, dueHasTime }) });
   }

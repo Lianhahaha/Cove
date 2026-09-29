@@ -66,6 +66,19 @@ describe('nextOccurrence across a clock change', () => {
   });
 });
 
+describe('a repeat typed for the skipped hour', () => {
+  it('goes back to the typed time after the first repeat', async () => {
+    // Typed at 10am on Mar 13, 2027: tomorrow has no 2:30, so the first is at 3:30.
+    const p = parseQuickAdd('meds every day 2:30am', { now: new Date(2027, 2, 13, 10) });
+    expect(p.recurrence).toEqual({ freq: 'daily', interval: 1, time: '02:30' });
+    const first = await addItem({ status: 'todo', due: p.due, dueHasTime: true, recurrence: p.recurrence });
+    expect(new Date(first.due!).getHours()).toBe(3);
+    await setDone(first, true);
+    const next = (await db.items.get((await db.items.get(first.id))!.nextId!))!;
+    expect(next.due).toBe(new Date(2027, 2, 15, 2, 30).getTime());
+  });
+});
+
 describe('parseQuickAdd across a clock change', () => {
   it('keeps the typed hour when a passed time rolls over to tomorrow', () => {
     const p = parseQuickAdd('call the lab 5pm', { now: new Date(2026, 9, 31, 20) });

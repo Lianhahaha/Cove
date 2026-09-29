@@ -368,7 +368,8 @@ export function parseQuickAdd(input: string, ctx: ParseContext = {}): Parsed {
       due = d.getTime();
       dueHasTime = !!(time || soon);
       dueText = [repeat?.span.text, soon?.span.text, date?.span.text, time?.span.text].filter(Boolean).join(' ');
-      recurrence = repeat?.recurrence ?? null;
+      // A repeat keeps the time typed, even if the first one lands in a skipped hour and shifts.
+      recurrence = repeat ? (time ? { ...repeat.recurrence, time: `${String(time.h).padStart(2, '0')}:${String(time.min).padStart(2, '0')}` } : repeat.recurrence) : null;
     }
   }
 

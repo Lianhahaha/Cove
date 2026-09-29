@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { Pause, Play, Square, Timer } from 'lucide-preact';
 import { FOCUS_PRESETS, focus, formatClock, pauseFocus, remainingMs, resumeFocus, startFocus, stopFocus } from '../lib/focus';
-import { navigate } from '../lib/nav';
+import { itemUrl, navigate } from '../lib/nav';
 
 /** Floating timer shown on every page while a focus session or break runs. */
 export function FocusPill() {
@@ -20,7 +20,7 @@ export function FocusPill() {
       <button
         class="flex items-center gap-2 min-w-0 text-left"
         title={s.itemId ? 'Open the task' : undefined}
-        onClick={() => s.itemId && navigate(`${location.pathname}?item=${s.itemId}`)}
+        onClick={() => s.itemId && navigate(itemUrl(location.pathname, Object.fromEntries(new URLSearchParams(location.search)), s.itemId))}
       >
         <Timer size={16} class={s.mode === 'focus' ? 'text-accent' : 'text-subtle'} />
         <span class="font-mono font-medium tabular-nums">{formatClock(left)}</span>

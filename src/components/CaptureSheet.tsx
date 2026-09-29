@@ -9,6 +9,7 @@ import { QuickAdd } from './QuickAdd';
 import { useLazyComponent } from './lazy';
 import { aiEnabled } from '../lib/ai';
 import { createNote } from '../lib/notes';
+import { itemUrl } from '../lib/nav';
 
 /** The capture dialog opened from the + button, shortcuts, drops, pastes and the share target. */
 export function CaptureSheet() {
@@ -19,7 +20,7 @@ export function CaptureSheet() {
 }
 
 function CaptureBody() {
-  const { path, route } = useLocation();
+  const { path, query, route } = useLocation();
   const c = capture.value;
   const [files, setFiles] = useState<File[]>(c.files ?? []);
   const [text, setText] = useState(c.text ?? '');
@@ -54,7 +55,7 @@ function CaptureBody() {
           onCreated={(items) => {
             closeCapture();
             if (items.length === 1) {
-              toast('Saved', { action: { label: 'Add details', run: () => route(`${path}?item=${items[0].id}`) } });
+              toast('Saved', { action: { label: 'Add details', run: () => route(itemUrl(path, query, items[0].id)) } });
             }
           }}
           footer={
@@ -71,7 +72,7 @@ function CaptureBody() {
                   const note = await createNote(defaultSpaceId ?? null, text.trim());
                   if (files.length) await addFiles(note.id, files);
                   closeCapture();
-                  route(`${path}?item=${note.id}`);
+                  route(itemUrl(path, query, note.id));
                 }}
               >
                 <NotebookPen size={16} /> Note

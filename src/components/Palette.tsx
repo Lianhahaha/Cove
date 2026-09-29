@@ -12,6 +12,7 @@ import type { Item } from '../lib/types';
 import { VIEW_NAMES, VIEW_TITLES } from '../pages/Lists';
 import { startFocus } from '../lib/focus';
 import { createNote } from '../lib/notes';
+import { itemUrl } from '../lib/nav';
 
 interface Command {
   id: string;
@@ -33,7 +34,7 @@ function PaletteBody() {
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLDivElement>(null);
-  const { route, path } = useLocation();
+  const { route, path, query: pageQuery } = useLocation();
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt).toArray(), []) ?? [];
   const close = () => (paletteOpen.value = false);
 
@@ -51,7 +52,7 @@ function PaletteBody() {
         label: 'New note',
         icon: <NotebookPen size={16} />,
         // Inside a space, the note lands in that space.
-        run: () => void createNote(path.startsWith('/s/') ? path.slice(3) : null).then((n) => route(`${path}?item=${n.id}`)),
+        run: () => void createNote(path.startsWith('/s/') ? path.slice(3) : null).then((n) => route(itemUrl(path, pageQuery, n.id))),
       },
       { id: 'notes', label: 'Go to Notes', icon: <NotebookPen size={16} />, run: go('/notes') },
       { id: 'home', label: 'Go to Home', icon: <House size={16} />, run: go('/') },
@@ -75,7 +76,7 @@ function PaletteBody() {
       ...VIEW_NAMES.map((v) => ({ id: `view-${v}`, label: `Go to ${VIEW_TITLES[v]}`, icon: <Layers size={16} />, run: go(`/view/${v}`) })),
       ...spaces.map((s) => ({ id: `space-${s.id}`, label: `Go to ${s.name}`, icon: <span>{s.emoji}</span>, run: go(`/s/${s.id}`) })),
     ],
-    [spaces, path],
+    [spaces, path, pageQuery],
   );
 
   const query = q.trim().toLowerCase();
@@ -89,7 +90,7 @@ function PaletteBody() {
       id: `item-${i.id}`,
       label: displayTitle(i),
       icon: <CornerDownLeft size={16} />,
-      run: () => route(`${path}?item=${i.id}`),
+      run: () => route(itemUrl(path, pageQuery, i.id)),
     })),
   ];
 

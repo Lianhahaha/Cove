@@ -12,22 +12,23 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Attach PDFs, slides and photos by picking, dropping or pasting them. Files are stored offline, up to 25 MB each.
 - Share links, text and files into Cove from any Android app, or paste and drop anywhere in the app.
 - Link previews (title, description, image, site icon) fetched through a guarded server function, with oEmbed for YouTube, Vimeo, TikTok and Spotify.
-- A Notes page and a New note button (in each space, the + sheet and the palette) that opens straight into the Markdown editor. Notes left empty are discarded.
+- A Notes page and a New note button (in each space, the + sheet and the palette) that opens straight into the Markdown editor. Notes left empty are discarded. The editor counts words and reading time, and any item can be downloaded as its own Markdown file.
 - Quick links on Home: one tap opens Google Classroom (there by default), Drive, Gmail or any site, or its app when one is installed. Tiles show each app's real logo: bundled for Google apps (`public/brand/`, trademarks of Google LLC, used only to link to those services), and the site's own icon for anything else.
 
 **Organize**
 - Spaces for each subject, with an emoji, color and order; Unsorted holds anything not in a space yet.
-- Tags, pins, favorites, archive, and a 30-day trash with undo.
+- Tags, pins, favorites, archive, and a 30-day trash with undo. A tag can be renamed, merged into another or removed everywhere from its page.
+- Space tiles on Home show how many tasks are left, and how many are overdue.
 - List and grid layouts, type filters, sorting, and bulk actions (move, tag, finish, archive, delete).
 - Drag items onto a space in the sidebar to move them.
 - Light, dark or system theme in four soft palettes: Lavender, Sage, Sky and Rose. All four pass WCAG AA contrast.
 
 **Tasks**
-- Any item can be a task, with status, due date and time, priority, checklist and repeats (daily, weekly, monthly, every N).
-- List grouped by Overdue, Today, Tomorrow, Next 7 days and Later; a Kanban board with drag and drop; a month calendar where tasks can be dragged to another day.
+- Any item can be a task, with status, due date and time, priority, checklist and repeats (daily, weekly, monthly, every N). Today, Tomorrow and Next week buttons set the due day in one tap, and pasting a list into the checklist adds one step per line.
+- List grouped by Overdue, Today, Tomorrow, Next 7 days and Later; a Kanban board with drag and drop; a month calendar where tasks can be dragged to another day. Overdue tasks move to today in one step, and finished ones can all be archived at once.
 - Reminders as notifications while Cove is open, and `.ics` export so the phone's own calendar can alert even when it isn't.
 - The installed app's icon shows how many tasks are due today.
-- A focus timer (15, 25 or 50 minutes) on any task that logs your focused time, with breaks.
+- A focus timer (15, 25 or 50 minutes) on any task that logs your focused time, with breaks. Stopping early still logs the minutes done.
 
 **Find**
 - Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.

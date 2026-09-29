@@ -44,6 +44,13 @@ const WEEKDAY_BEFORE = new RegExp(String.raw`(?:^|\s)((?:due|by|on)\s+)?(${Objec
 
 /** A written-out date straight after a weekday name, as in "Mon, Dec 7" or "fri 10/9". */
 const DATE_AFTER = new RegExp(String.raw`^\.?,?\s*(?:${MONTH_RE}\s+\d|\d{1,2}(?:st|nd|rd|th)?\s+${MONTH_RE}|\d{1,2}\/\d)`, 'i');
+/** A written-out date straight before a weekday name, as in "Dec 7, Mon" or "10/9 fri". */
+const DATE_BEFORE = new RegExp(
+  String.raw`(?:${MONTH_RE}\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?|\d{1,2}(?:st|nd|rd|th)?\s+${MONTH_RE}(?:\s+\d{4})?|\d{1,2}\/\d{1,2}(?:\/\d{2,4})?),?\s*$`,
+  'i',
+);
+/** A weekday name right after a written-out date: ", Monday" in "Dec 7, Monday". */
+const WEEKDAY_AFTER = new RegExp(String.raw`^(,?)\s*(${Object.keys(DAYS).join('|')})\b\.?`, 'i');
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
@@ -122,8 +129,8 @@ function parseDate(text: string, now: Date, forRepeat = false): { date: Date; sp
         const lead = (m[1] ?? '').trim().toLowerCase();
         const word = m[3].toLowerCase();
         if (AMBIGUOUS_DAYS.has(word) && !lead && !m[2]) return null;
-        // "Mon, Dec 7" names the day of a written-out date; leave it to the date rules below.
-        if (DATE_AFTER.test(text.slice(m.index + m[0].length))) return null;
+        // "Mon, Dec 7" and "Dec 7, Mon" name the day of a written-out date; leave them to the date rules below.
+        if (DATE_AFTER.test(text.slice(m.index + m[0].length)) || DATE_BEFORE.test(text.slice(0, m.index))) return null;
         const isNext = lead === 'next' || !!m[2];
         // "fri" is the coming Friday (today counts); "next fri" is the one a week after that.
         const diff = (DAYS[word] - today.getDay() + 7) % 7;
@@ -168,12 +175,15 @@ function parseDate(text: string, now: Date, forRepeat = false): { date: Date; sp
       if (date) {
         const lead = m[0].length - m[0].trimStart().length;
         let start = m.index + lead;
-        const end = m.index + m[0].length;
+        let end = m.index + m[0].length;
         // A weekday written before the date goes with it, so it doesn't stay in the title.
         const day = written ? WEEKDAY_BEFORE.exec(text.slice(0, start)) : null;
         // "sun", "sat" and "wed" are words too ("fun in the sun 7/4"), so they need a lead-in or a comma.
         const isDay = day && (!AMBIGUOUS_DAYS.has(day[2].toLowerCase()) || day[1] || day[3]);
         if (day && isDay) start = day.index + day[0].length - day[0].trimStart().length;
+        // The same for a weekday written after it: "Dec 7, Monday".
+        const after = written ? WEEKDAY_AFTER.exec(text.slice(end)) : null;
+        if (after && (!AMBIGUOUS_DAYS.has(after[2].toLowerCase()) || after[1])) end += after[0].length;
         return { date, span: { start, end, text: text.slice(start, end).trim() } };
       }
       if (global.lastIndex === m.index) global.lastIndex++;

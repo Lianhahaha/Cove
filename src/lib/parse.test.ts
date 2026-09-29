@@ -121,6 +121,14 @@ describe('dates', () => {
     expect(p('Exam due sat Dec 5').title).toBe('Exam');
   });
 
+  it('prefers a written-out date over the weekday after it', () => {
+    expect(p('Quiz 10/9 fri')).toMatchObject({ title: 'Quiz', due: day(2026, 10, 9) });
+    expect(p('Exam Dec 7 Mon')).toMatchObject({ title: 'Exam', due: day(2026, 12, 7) });
+    expect(p('Exam Dec 7, Monday')).toMatchObject({ title: 'Exam', due: day(2026, 12, 7) });
+    expect(p('Quiz on 10/9 fri 8am')).toMatchObject({ title: 'Quiz', due: day(2026, 10, 9, 8) });
+    expect(p('Picnic dec 5 sat').title).toBe('Picnic sat');
+  });
+
   it('still reads a weekday when a fraction sits elsewhere in the text', () => {
     expect(p('Do 3/4 of the lab by fri')).toMatchObject({ title: 'Do 3/4 of the lab', due: day(2026, 9, 25) });
     expect(p('Bake 1/2 cake fri').due).toBe(day(2026, 9, 25));

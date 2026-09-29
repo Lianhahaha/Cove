@@ -41,6 +41,9 @@ const MONTH_RE = String.raw`(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|ma
 /** A weekday name, with an optional lead-in, right before a written-out date: "due Mon, " in "due Mon, Dec 7". */
 const WEEKDAY_BEFORE = new RegExp(String.raw`(?:^|\s)(?:(?:due|by|on)\s+)?(?:${Object.keys(DAYS).join('|')})\.?,?\s*$`, 'i');
 
+/** A written-out date straight after a weekday name, as in "Mon, Dec 7" or "fri 10/9". */
+const DATE_AFTER = new RegExp(String.raw`^\.?,?\s*(?:${MONTH_RE}\s+\d|\d{1,2}(?:st|nd|rd|th)?\s+${MONTH_RE}|\d{1,2}\/\d)`, 'i');
+
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
@@ -112,6 +115,20 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
       },
     ],
     [
+      new RegExp(String.raw`(?:^|\s)((?:due|by|on|this|next)\s+)?(next\s+)?(${Object.keys(DAYS).join('|')})\b`, 'i'),
+      (m) => {
+        const lead = (m[1] ?? '').trim().toLowerCase();
+        const word = m[3].toLowerCase();
+        if (AMBIGUOUS_DAYS.has(word) && !lead && !m[2]) return null;
+        // "Mon, Dec 7" names the day of a written-out date; leave it to the date rules below.
+        if (DATE_AFTER.test(text.slice(m.index + m[0].length))) return null;
+        const isNext = lead === 'next' || !!m[2];
+        // "fri" is the coming Friday (today counts); "next fri" is the one a week after that.
+        const diff = (DAYS[word] - today.getDay() + 7) % 7;
+        return addDays(today, isNext ? (diff === 0 ? 7 : diff + 7) : diff);
+      },
+    ],
+    [
       new RegExp(String.raw`(?:^|\s)${PREFIX}${MONTH_RE}\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b`, 'i'),
       (m) => {
         const month = MONTHS.indexOf(m[1].slice(0, 3).toLowerCase());
@@ -137,19 +154,6 @@ function parseDate(text: string, now: Date): { date: Date; span: Match } | null 
         return y ? makeDate(y, month, Number(m[2])) : upcoming(now, month, Number(m[2]));
       },
       true,
-    ],
-    // Weekdays come after written-out dates, so "Exam Mon, Dec 7" is due Dec 7, not this Monday.
-    [
-      new RegExp(String.raw`(?:^|\s)((?:due|by|on|this|next)\s+)?(next\s+)?(${Object.keys(DAYS).join('|')})\b`, 'i'),
-      (m) => {
-        const lead = (m[1] ?? '').trim().toLowerCase();
-        const word = m[3].toLowerCase();
-        if (AMBIGUOUS_DAYS.has(word) && !lead && !m[2]) return null;
-        const isNext = lead === 'next' || !!m[2];
-        // "fri" is the coming Friday (today counts); "next fri" is the one a week after that.
-        const diff = (DAYS[word] - today.getDay() + 7) % 7;
-        return addDays(today, isNext ? (diff === 0 ? 7 : diff + 7) : diff);
-      },
     ],
   ];
 

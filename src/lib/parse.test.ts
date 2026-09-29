@@ -114,6 +114,11 @@ describe('dates', () => {
     expect(p('I sat down dec 5').title).toBe('I sat down');
   });
 
+  it('still reads a weekday when a fraction sits elsewhere in the text', () => {
+    expect(p('Do 3/4 of the lab by fri')).toMatchObject({ title: 'Do 3/4 of the lab', due: day(2026, 9, 25) });
+    expect(p('Bake 1/2 cake fri').due).toBe(day(2026, 9, 25));
+  });
+
   it('takes a capitalised lead-in with the date', () => {
     expect(p('Submit essay Due 12/5')).toMatchObject({ title: 'Submit essay', due: day(2026, 12, 5) });
     expect(p('Essay By Dec 5').title).toBe('Essay');

@@ -5,6 +5,7 @@ import type { Item } from './types';
 import type { Parsed } from './parse';
 import { autoTagsFor } from './autotag';
 import { moveReminder } from './reminders';
+import { toTimeInput } from './dates';
 import { signal } from '@preact/signals';
 
 /** Mirrors the "Tag links by site" setting. */
@@ -74,6 +75,8 @@ export async function setDone(item: Item, done: boolean) {
     delete copy.id;
     const created = await addItem({
       ...copy,
+      // The series keeps the time it started with, even if this repeat's time was shifted.
+      recurrence: current.dueHasTime ? { ...current.recurrence, time: current.recurrence.time ?? toTimeInput(current.due) } : current.recurrence,
       status: 'todo',
       completedAt: null,
       nextId: null,
@@ -95,7 +98,7 @@ export function nextOccurrence(due: number, r: NonNullable<Item['recurrence']>, 
   // The time of day always comes from the original due, so a repeat that lands in a
   // clock change's missing hour (2:30 becomes 3:30) doesn't stay an hour late after it.
   const first = new Date(due);
-  const [h, min] = [first.getHours(), first.getMinutes()];
+  const [h, min] = r.time ? r.time.split(':').map(Number) : [first.getHours(), first.getMinutes()];
   const step = (d: Date): Date => {
     const n = Math.max(1, r.interval);
     if (r.freq === 'daily') return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n, h, min);

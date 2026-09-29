@@ -139,8 +139,11 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
   function setDue(date: string, time: string) {
     const due = date ? fromInputs(date, time) : null;
     const dueHasTime = !!(date && time);
+    // A new time of day becomes the repeat's time too.
+    const r = item.recurrence;
+    const recurrence = r?.time && r.time !== time ? { freq: r.freq, interval: r.interval } : r;
     // A reminder keeps its distance from the due date when the date moves.
-    patch({ due, dueHasTime, remindAt: moveReminder(item.remindAt, item, { due, dueHasTime }) });
+    patch({ due, dueHasTime, recurrence, remindAt: moveReminder(item.remindAt, item, { due, dueHasTime }) });
   }
 
   async function downloadMarkdown() {

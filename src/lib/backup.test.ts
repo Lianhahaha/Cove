@@ -115,6 +115,11 @@ describe('toItem', () => {
     expect(toItem({ id: '../../etc' })).toBeNull();
     expect(toItem('nope')).toBeNull();
   });
+
+  it('keeps a repeat’s time of day only when it is a real time', () => {
+    expect(toItem({ id: 'r', recurrence: { freq: 'daily', interval: 1, time: '02:30' } })?.recurrence).toEqual({ freq: 'daily', interval: 1, time: '02:30' });
+    expect(toItem({ id: 'r', recurrence: { freq: 'daily', interval: 1, time: '25:00' } })?.recurrence).toEqual({ freq: 'daily', interval: 1 });
+  });
 });
 
 describe('toSpace', () => {

@@ -1,9 +1,11 @@
+import 'fake-indexeddb/auto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { nextOccurrence } from './actions';
+import { db } from './db';
+import { nextOccurrence, setDone } from './actions';
 import { dueBucket } from './dates';
 import { toIcs } from './ics';
 import { parseQuickAdd } from './parse';
-import { newItem } from './repo';
+import { addItem, newItem } from './repo';
 
 // These run in a time zone with daylight saving, where some days are 23 or 25 hours long.
 // In the US, clocks go back on Nov 1, 2026 and forward on Mar 14, 2027.
@@ -50,6 +52,17 @@ describe('nextOccurrence across a clock change', () => {
     // Mar 14, 2027 has no 2:30am, so that day's repeat is at 3:30; the next one is 2:30 again.
     const due = new Date(2027, 2, 13, 2, 30).getTime();
     expect(nextOccurrence(due, { freq: 'daily', interval: 1 }, new Date(2027, 2, 14, 10).getTime())).toBe(new Date(2027, 2, 15, 2, 30).getTime());
+  });
+
+  it('keeps the series at 2:30 when each repeat is finished in turn', async () => {
+    // These dates are still ahead, so each repeat is simply the next day's.
+    const first = await addItem({ status: 'todo', due: new Date(2027, 2, 13, 2, 30).getTime(), dueHasTime: true, recurrence: { freq: 'daily', interval: 1 } });
+    await setDone(first, true);
+    const second = (await db.items.get((await db.items.get(first.id))!.nextId!))!;
+    expect(new Date(second.due!).getHours()).toBe(3); // Mar 14 has no 2:30.
+    await setDone(second, true);
+    const third = (await db.items.get((await db.items.get(second.id))!.nextId!))!;
+    expect(third.due).toBe(new Date(2027, 2, 15, 2, 30).getTime());
   });
 });
 

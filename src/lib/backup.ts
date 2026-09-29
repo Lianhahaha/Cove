@@ -105,7 +105,8 @@ function toRecurrence(v: unknown): Recurrence | null {
   if (!v || typeof v !== 'object') return null;
   const r = v as Record<string, unknown>;
   if (r.freq !== 'daily' && r.freq !== 'weekly' && r.freq !== 'monthly') return null;
-  return { freq: r.freq, interval: Math.min(99, Math.max(1, Math.round(num(r.interval) ?? 1))) };
+  const interval = Math.min(99, Math.max(1, Math.round(num(r.interval) ?? 1)));
+  return typeof r.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(r.time) ? { freq: r.freq, interval, time: r.time } : { freq: r.freq, interval };
 }
 
 export function toItem(v: unknown): Item | null {

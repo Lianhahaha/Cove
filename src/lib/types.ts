@@ -12,6 +12,12 @@ export interface Recurrence {
   freq: 'daily' | 'weekly' | 'monthly';
   /** Repeat every N days, weeks or months. */
   interval: number;
+  /**
+   * The series' time of day as "HH:MM", saved from the first repeat on. One repeat
+   * can land in the hour skipped when clocks go forward and move to 3:30; the
+   * ones after it go back to this time instead of staying an hour late.
+   */
+  time?: string;
 }
 
 export interface LinkPreview {

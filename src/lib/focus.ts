@@ -71,8 +71,19 @@ export function resumeFocus() {
   save({ ...s, endsAt: Date.now() + s.remaining });
 }
 
+/** Whole minutes already spent in a focus run, for logging one that's stopped early. */
+export const focusedMinutes = (s: FocusState, at = Date.now()) =>
+  s.mode === 'focus' ? Math.floor((s.minutes * 60_000 - remainingMs(s, at)) / 60_000) : 0;
+
 export function stopFocus() {
+  const s = focus.value;
   save(null);
+  // Stopping early still counts the time put in, so it shows on the task and in Stats.
+  const minutes = s ? focusedMinutes(s) : 0;
+  if (s && minutes >= 1) {
+    void logSession(s.itemId, minutes);
+    toast(`Logged ${minutes} minute${minutes === 1 ? '' : 's'} of focus`);
+  }
 }
 
 export async function focusLog(): Promise<FocusSession[]> {

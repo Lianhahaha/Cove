@@ -108,6 +108,7 @@ Server-side variables are never prefixed with `VITE_`, so they stay out of the a
 | `npm run preview` | Serve the production build locally |
 | `npm run typecheck` | TypeScript check |
 | `npm test` | Run the test suite |
+| `npm run test:watch` | Re-run the tests on every change |
 
 ## Deploying
 

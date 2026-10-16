@@ -142,6 +142,9 @@
   @media (max-width: 639px) {
     html { font-size: 96.875%; }
   }
+  /* The user's text-size choice beats the phone default; the attribute selector out-weighs the media query above. */
+  html[data-fontsize='compact'] { font-size: 85%; }
+  html[data-fontsize='large'] { font-size: 112.5%; }
   body {
     background-color: var(--c-bg);
     color: var(--c-text);
@@ -170,6 +173,15 @@
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+  }
+  /* The same without waiting on the OS setting, and an override when the OS asks for less motion. */
+  html[data-motion='reduce'] *, html[data-motion='reduce'] *::before, html[data-motion='reduce'] *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html:not([data-motion='full-spin']) { scroll-behavior: auto; }
   }
 }
 

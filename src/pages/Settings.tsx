@@ -17,6 +17,7 @@ import { enableReminders, remindersEnabled } from '../lib/reminders';
 import { AI_DAILY_LIMIT, aiAvailable, aiEnabled, aiReview, checkAiAvailable, setAiEnabled, setAiReview, usedToday } from '../lib/ai';
 import { Modal } from '../components/Modal';
 import { autoTagEnabled } from '../lib/actions';
+import { fontSizePref, reduceMotion, type FontSizePref } from '../lib/display';
 
 export function Section({ title, description, children }: { title: string; description?: string; children: ComponentChildren }) {
   return (
@@ -30,8 +31,7 @@ export function Section({ title, description, children }: { title: string; descr
   );
 }
 
-export function Toggle({ label, description, checked, onChange }: { label: string; description?: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
+export function Toggle({ label, description, checked, onChange }: { label: string; description?: string; checked: boolean; onChange: (v: boolean) => void }) {  return (
     <label class="flex items-start justify-between gap-4 cursor-pointer">
       <span>
         <span class="text-sm font-medium block">{label}</span>
@@ -43,6 +43,33 @@ export function Toggle({ label, description, checked, onChange }: { label: strin
         <span class="absolute top-1 left-1 w-4 h-4 rounded-full bg-surface shadow transition-transform peer-checked:translate-x-4" />
       </span>
     </label>
+  );
+}
+
+const SIZES: { value: FontSizePref; label: string }[] = [
+  { value: 'compact', label: 'Compact' },
+  { value: 'default', label: 'Normal' },
+  { value: 'large', label: 'Large' },
+];
+
+function TextSize() {
+  return (
+    <div>
+      <span class="label" id="textsize-label">Text size</span>
+      <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-labelledby="textsize-label">
+        {SIZES.map((s) => (
+          <button
+            key={s.value}
+            role="radio"
+            aria-checked={fontSizePref.value === s.value}
+            class={`btn h-11 ${fontSizePref.value === s.value ? 'btn-soft ring-1 ring-accent' : ''}`}
+            onClick={() => (fontSizePref.value = s.value)}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -188,6 +215,13 @@ export function Settings() {
               })}
             </div>
           </div>
+          <TextSize />
+          <Toggle
+            label="Reduce motion"
+            description="Calms slide-ins and transitions without changing your system setting."
+            checked={reduceMotion.value}
+            onChange={(v) => (reduceMotion.value = v)}
+          />
         </Section>
 
         <Section title="Install" description="Installed, Cove opens in its own window, works offline and can receive shared links.">

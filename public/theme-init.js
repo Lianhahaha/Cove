@@ -6,6 +6,9 @@ try {
   if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
   var p = localStorage.getItem('cove-palette');
   if (p === 'sage' || p === 'sky' || p === 'rose') document.documentElement.dataset.palette = p;
+  var fs = localStorage.getItem('cove-fontsize');
+  if (fs === 'compact' || fs === 'large') document.documentElement.dataset.fontsize = fs;
+  if (localStorage.getItem('cove-motion') === '1') document.documentElement.dataset.motion = 'reduce';
 } catch (e) {}
 
 // iOS zooms the page into any text box smaller than 16px. maximum-scale stops that

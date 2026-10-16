@@ -25,15 +25,13 @@ import {
 } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
-import { minute } from '../lib/clock';
-import { isActive, isOpenTask } from '../lib/queries';
-import { dueBucket } from '../lib/dates';
 import { addSpace, reorderSpaces, updateItem } from '../lib/repo';
 import { toast } from '../lib/toast';
 import { ITEM_MIME, SPACE_MIME } from '../lib/dnd';
 import { themePref, type ThemePref } from '../lib/theme';
 import { menuOpen } from '../state';
 import { installPrompt, promptInstall } from '../lib/pwa';
+import { useNavCounts } from '../lib/useCounts';
 import { InfoTip } from './InfoTip';
 
 function NavLink({ href, icon, label, count, exact }: { href: string; icon: ComponentChildren; label: string; count?: number; exact?: boolean }) {
@@ -59,16 +57,7 @@ const THEME_NEXT: Record<ThemePref, ThemePref> = { system: 'light', light: 'dark
 const THEME_LABEL: Record<ThemePref, string> = { system: 'System theme', light: 'Light theme', dark: 'Dark theme' };
 
 export function Nav() {
-  // Recounted each minute too, since tasks come due with no edit to rerun the query.
-  const tick = minute.value;
-  const counts = useLive(async () => {
-    const items = await db.items.filter((i) => isActive(i)).toArray();
-    const now = new Date();
-    return {
-      inbox: items.filter((i) => i.spaceId === null && i.status !== 'done').length,
-      due: items.filter((i) => isOpenTask(i) && ['overdue', 'today'].includes(dueBucket(i.due, i.dueHasTime, now))).length,
-    };
-  }, [tick]);
+  const counts = useNavCounts();
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt && !s.archived).toArray(), []);
   const [adding, setAdding] = useState(false);
   // autoFocus is ignored after the page has loaded, so focus the new-space box by hand.

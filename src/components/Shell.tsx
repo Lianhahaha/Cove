@@ -13,12 +13,18 @@ import { ShortcutsHelp, useShortcuts } from './Shortcuts';
 import { capture, menuOpen, openCapture, paletteOpen } from '../state';
 import { filesFromClipboard } from '../lib/files';
 import { online } from '../lib/pwa';
+import { useNavCounts } from '../lib/useCounts';
 
-function TabFace({ active, label, icon: Icon }: { active: boolean; label: string; icon: typeof House }) {
+function TabFace({ active, label, icon: Icon, badge }: { active: boolean; label: string; icon: typeof House; badge?: number }) {
   return (
     <>
-      <span class="tab-pill" data-active={active || undefined}>
+      <span class="tab-pill relative" data-active={active || undefined}>
         <Icon size={20} strokeWidth={active ? 2.25 : 1.75} />
+        {!!badge && (
+          <span class="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-danger text-white text-[0.625rem] font-semibold leading-none grid place-items-center tabular-nums">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
       </span>
       <span class="tab-label" data-active={active || undefined}>{label}</span>
     </>
@@ -27,12 +33,13 @@ function TabFace({ active, label, icon: Icon }: { active: boolean; label: string
 
 function BottomNav() {
   const { path } = useLocation();
+  const counts = useNavCounts();
   const isOn = (href: string) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/'));
   // Pages without their own tab (Unsorted, spaces, Settings…) are reached through More, so More shows as current.
   const inMore = !['/', '/tasks', '/search'].some(isOn);
-  const tab = (href: string, label: string, icon: typeof House) => (
+  const tab = (href: string, label: string, icon: typeof House, badge?: number) => (
     <a href={href} class="tab" aria-current={isOn(href) ? 'page' : undefined}>
-      <TabFace active={isOn(href)} label={label} icon={icon} />
+      <TabFace active={isOn(href)} label={label} icon={icon} badge={badge} />
     </a>
   );
   return (
@@ -42,7 +49,7 @@ function BottomNav() {
     >
       <div class="flex h-[3.75rem] items-stretch px-1">
         {tab('/', 'Home', House)}
-        {tab('/tasks', 'Tasks', SquareCheck)}
+        {tab('/tasks', 'Tasks', SquareCheck, counts?.due)}
         <div class="flex-1 grid place-items-center">
           <button class="create-btn" aria-label="Capture something" onClick={() => openCapture()}>
             <Plus size={22} strokeWidth={2.25} />

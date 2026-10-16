@@ -21,20 +21,20 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Space tiles on Home show how many tasks are left, and how many are overdue.
 - List and grid layouts, type filters, sorting, and bulk actions (move, tag, finish, archive, delete).
 - Drag items onto a space in the sidebar to move them.
-- Light, dark or system theme in four soft palettes: Lavender, Sage, Sky and Rose. All four pass WCAG AA contrast.
+- Light, dark or system theme in four soft palettes: Lavender, Sage, Sky and Rose. All four pass WCAG AA contrast. Text size (Compact, Normal or Large) and a reduce-motion option sit beside them.
 
 **Tasks**
 - Any item can be a task, with status, due date and time, priority, checklist and repeats (daily, weekly, monthly, every N). Today, Tomorrow and Next week buttons set the due day in one tap, and pasting a list into the checklist adds one step per line.
 - List grouped by Overdue, Today, Tomorrow, Next 7 days and Later; a Kanban board with drag and drop; a month calendar where tasks can be dragged to another day. Overdue tasks move to today in one step, and finished ones can all be archived at once.
-- Reminders as notifications while Cove is open, and `.ics` export so the phone's own calendar can alert even when it isn't.
+- Reminders as notifications while Cove is open, snoozable for 10 minutes from the in-app alert, and `.ics` export so the phone's own calendar can alert even when it isn't.
 - The installed app's icon shows how many tasks are due today.
-- A focus timer (15, 25 or 50 minutes) on any task that logs your focused time, with breaks. Stopping early still logs the minutes done.
+- A focus timer (15, 25 or 50 minutes) on any task that logs your focused time, with breaks. Stopping early still logs the minutes done, and the screen stays awake while a session runs so the timer is visible on a phone.
 
 **Find**
 - Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.
 - Search filters that work alone or with words: `is:task`, `is:open`, `is:done`, `is:overdue`, `is:pinned`, `is:fav`, `is:private`, `is:archived`, `is:repeating`, `type:link|note|file` and `tag:name`.
 - Smart views: This week, No tags and Recently edited.
-- A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/U/T/N/W/A/F/S` to jump, `?` for the list).
+- A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/U/T/N/W/A/F/S` to jump, `?` for the list). Recent searches are remembered on the device so a phone doesn't retype them.
 
 **AI helpers (optional)**
 - Summarize an item, suggest tags, pull tasks and deadlines out of an announcement, or make an interactive practice quiz. See [AI safety](#ai-safety).

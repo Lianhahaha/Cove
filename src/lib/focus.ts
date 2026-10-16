@@ -1,8 +1,9 @@
-import { signal } from '@preact/signals';
+import { effect, signal } from '@preact/signals';
 import { db } from './db';
 import { getSetting, setSetting, updateItem } from './repo';
 import { displayTitle } from './queries';
 import { toast } from './toast';
+import { keepScreenAwake } from './wakelock';
 
 export interface FocusState {
   itemId: string | null;
@@ -218,6 +219,8 @@ export function startFocusClock() {
   };
   setInterval(tick, 1000);
   document.addEventListener('visibilitychange', tick);
+  // A running run holds the screen awake; pausing, stopping or ending lets go.
+  effect(() => keepScreenAwake(!!focus.value && focus.value.endsAt !== null));
   // Starting, pausing or stopping in one tab updates the others.
   window.addEventListener('storage', (e) => {
     if (e.key === KEY) focus.value = load();

@@ -61,6 +61,8 @@ export function TaskCheck({ item, size = 20 }: { item: Item; size?: number }) {
       style={{ width: size, height: size }}
       onClick={(e) => {
         e.stopPropagation();
+        // A small tap of feedback on the phone when a task is finished, never when reopening.
+        if (!done) navigator.vibrate?.(10);
         void setDone(item, !done);
       }}
     >

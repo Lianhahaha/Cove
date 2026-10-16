@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useRef } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
-import { Search as SearchIcon, X } from 'lucide-preact';
+import { Clock, Search as SearchIcon, X } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { search, searchIndex, startSearchIndex } from '../lib/search';
 import { FILTER_EXAMPLES, hasFilters, matchesFilters, parseSearchQuery } from '../lib/filters';
 import { sortItems } from '../lib/queries';
+import { addRecent, clearRecent, loadRecent } from '../lib/recent';
 import { useCardContext } from '../lib/useCardContext';
 import type { Item } from '../lib/types';
 import { ItemRow } from '../components/ItemCard';
@@ -22,6 +23,7 @@ export function Search() {
   const input = useRef<HTMLInputElement>(null);
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt).toArray(), []) ?? [];
   const ctx = useCardContext(true);
+  const [recent, setRecent] = useState<string[]>(loadRecent);
 
   useEffect(() => {
     startSearchIndex();
@@ -69,6 +71,7 @@ export function Search() {
             placeholder="Search titles, notes, links, tags and file names"
             value={q}
             onInput={(e) => setParams({ q: e.currentTarget.value })}
+            onKeyDown={(e) => e.key === 'Enter' && q.trim() && setRecent(addRecent(q))}
             aria-label="Search"
             enterKeyHint="search"
           />
@@ -103,6 +106,41 @@ export function Search() {
                 </button>
               ))}
             </div>
+            {recent.length > 0 && (
+              <div class="mt-5 w-full border-t border-border pt-3 text-left">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="flex items-center gap-1.5 text-xs font-medium text-muted">
+                    <Clock size={13} /> Recent
+                  </span>
+                  <button
+                    type="button"
+                    class="text-xs text-subtle hover:text-text"
+                    onClick={() => {
+                      clearRecent();
+                      setRecent([]);
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div class="flex flex-col">
+                  {recent.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      class="flex items-center gap-2 text-left text-sm text-text hover:text-accent py-1.5 min-w-0"
+                      onClick={() => {
+                        setParams({ q: r });
+                        input.current?.focus();
+                      }}
+                    >
+                      <SearchIcon size={14} class="shrink-0 text-subtle" />
+                      <span class="truncate">{r}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </EmptyState>
         ) : results && results.length === 0 ? (
           <p class="text-sm text-subtle py-6 text-center">No matches for “{q}”.</p>

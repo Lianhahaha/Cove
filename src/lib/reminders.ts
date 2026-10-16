@@ -1,7 +1,7 @@
 import { signal } from '@preact/signals';
 import { liveQuery } from 'dexie';
 import { db } from './db';
-import { getSetting, setSetting } from './repo';
+import { getSetting, setSetting, updateItem } from './repo';
 import { dueBucket, formatDue } from './dates';
 import { displayTitle, isOpenTask } from './queries';
 import { toast } from './toast';
@@ -20,6 +20,8 @@ export const REMINDER_PRESETS: { label: string; minutesBefore: number }[] = [
   { label: '10 minutes before', minutesBefore: 10 },
   { label: '1 hour before', minutesBefore: 60 },
   { label: '1 day before', minutesBefore: 24 * 60 },
+  { label: '2 days before', minutesBefore: 48 * 60 },
+  { label: '1 week before', minutesBefore: 7 * 24 * 60 },
 ];
 
 /** What reminder presets count back from: the due time, or 9am on the day for date-only tasks. */
@@ -82,7 +84,21 @@ async function notify(item: Item) {
     new Notification(title, { body, tag: item.id, icon: '/pwa-192x192.png' });
     return;
   }
-  toast(`⏰ ${title}. ${body}`, { action: { label: 'Open', run: () => navigate(url) }, ms: 15_000 });
+  toast(`⏰ ${title}. ${body}`, {
+    actions: [
+      { label: 'Open', run: () => navigate(url) },
+      { label: 'Snooze 10 min', run: () => void snoozeReminder(item.id, 10) },
+    ],
+    ms: 20_000,
+  });
+}
+
+/** Pushes a reminder back by `minutes`; it fires again when the new time arrives. */
+export async function snoozeReminder(itemId: string, minutes: number) {
+  const item = await db.items.get(itemId);
+  if (!item) return;
+  await updateItem(itemId, { remindAt: Date.now() + minutes * 60_000 });
+  toast(`Snoozed ${minutes} minutes`);
 }
 
 export async function checkReminders(now = Date.now()) {

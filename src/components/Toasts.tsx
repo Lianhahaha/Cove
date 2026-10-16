@@ -16,17 +16,18 @@ export function Toasts() {
           }`}
         >
           <span class="flex-1 py-1">{t.message}</span>
-          {t.action && (
+          {t.actions?.map((a) => (
             <button
+              key={a.label}
               class="btn btn-soft min-h-8"
               onClick={() => {
-                t.action!.run();
+                a.run();
                 dismissToast(t.id);
               }}
             >
-              {t.action.label}
+              {a.label}
             </button>
-          )}
+          ))}
           <button class="icon-btn w-8 h-8" aria-label="Dismiss" onClick={() => dismissToast(t.id)}>
             <X size={16} />
           </button>

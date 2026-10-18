@@ -3,9 +3,12 @@ import { useLocation } from 'preact-iso';
 import type { ComponentChildren } from 'preact';
 import {
   Archive,
+  CalendarCheck,
+  CalendarClock,
   CalendarRange,
   ChartColumn,
   Clock,
+  Flag,
   Hash,
   House,
   FolderInput,
@@ -14,6 +17,7 @@ import {
   Moon,
   NotebookPen,
   Download,
+  Pin,
   Plus,
   Search,
   Settings,
@@ -143,10 +147,14 @@ export function Nav() {
         <div class="pt-5 pb-1 px-2.5">
           <span class="flex items-center gap-1">
             <span class="group-label">Views</span>
-            <InfoTip label="Views">Saved filters across all your spaces: tasks due this week, items with no tags yet (a space isn’t a tag), and what you changed lately.</InfoTip>
+            <InfoTip label="Views">Saved filters across all your spaces: what’s due today or this week, pinned items, anything marked high priority, items with no tags yet (a space isn’t a tag), and what you changed lately.</InfoTip>
           </span>
         </div>
+        <NavLink href="/view/today" icon={<CalendarCheck size={18} />} label="Due today" />
+        <NavLink href="/view/upcoming" icon={<CalendarClock size={18} />} label="Upcoming" />
         <NavLink href="/view/week" icon={<CalendarRange size={18} />} label="This week" />
+        <NavLink href="/view/pinned" icon={<Pin size={18} />} label="Pinned" />
+        <NavLink href="/view/high" icon={<Flag size={18} />} label="High priority" />
         <NavLink href="/view/untagged" icon={<TagsIcon size={18} />} label="No tags" />
         <NavLink href="/view/recent" icon={<Clock size={18} />} label="Recently edited" />
 

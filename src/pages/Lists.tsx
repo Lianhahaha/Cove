@@ -1,4 +1,4 @@
-import { Archive, CalendarRange, Clock, FolderInput, Hash, Layers, NotebookPen, Pencil, Star, Tags as TagsIcon, Trash } from 'lucide-preact';
+import { Archive, CalendarCheck, CalendarClock, CalendarRange, Clock, Flag, FolderInput, Hash, Layers, NotebookPen, Pencil, Pin, Star, Tags as TagsIcon, Trash } from 'lucide-preact';
 import { useLocation } from 'preact-iso';
 import { dueBucket } from '../lib/dates';
 import { NotFound } from './NotFound';
@@ -153,11 +153,35 @@ const WEEK = 7 * 86_400_000;
 
 /** Saved filters that cut across spaces. */
 const VIEWS = {
+  today: {
+    title: 'Due today',
+    subtitle: 'Open tasks that are overdue or due today',
+    filter: (i: Parameters<typeof isActive>[0]) => isOpenTask(i) && ['overdue', 'today'].includes(dueBucket(i.due, i.dueHasTime)),
+    empty: <EmptyState icon={<CalendarCheck size={22} />} title="Nothing due today">Nothing overdue, nothing due today.</EmptyState>,
+  },
+  upcoming: {
+    title: 'Upcoming',
+    subtitle: 'Open tasks due tomorrow or in the next 7 days',
+    filter: (i: Parameters<typeof isActive>[0]) => isOpenTask(i) && ['tomorrow', 'week'].includes(dueBucket(i.due, i.dueHasTime)),
+    empty: <EmptyState icon={<CalendarClock size={22} />} title="Nothing coming up">Tasks due tomorrow or later this week show here.</EmptyState>,
+  },
   week: {
     title: 'This week',
     subtitle: 'Open tasks that are overdue or due in the next 7 days',
     filter: (i: Parameters<typeof isActive>[0]) => isOpenTask(i) && ['overdue', 'today', 'tomorrow', 'week'].includes(dueBucket(i.due, i.dueHasTime)),
     empty: <EmptyState icon={<CalendarRange size={22} />} title="Nothing due this week">Enjoy it.</EmptyState>,
+  },
+  pinned: {
+    title: 'Pinned',
+    subtitle: 'Items you pinned to keep near the top',
+    filter: (i: Parameters<typeof isActive>[0]) => isActive(i) && i.pinned,
+    empty: <EmptyState icon={<Pin size={22} />} title="Nothing pinned">Pin an item to keep it close.</EmptyState>,
+  },
+  high: {
+    title: 'High priority',
+    subtitle: 'Items marked with !! or !!!',
+    filter: (i: Parameters<typeof isActive>[0]) => isActive(i) && i.priority >= 2,
+    empty: <EmptyState icon={<Flag size={22} />} title="Nothing urgent">Mark something !! or !!! when it matters.</EmptyState>,
   },
   untagged: {
     title: 'No tags',

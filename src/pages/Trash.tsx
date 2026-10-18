@@ -39,6 +39,14 @@ export function Trash() {
     toast('Deleted for good');
   }
 
+  /** Brings back the spaces first, so items deleted with them land in their space again. */
+  async function restoreAll() {
+    for (const s of spaces) await restoreSpace(s.id);
+    await restoreItems(sorted.map((i) => i.id));
+    const total = spaces.length + sorted.length;
+    toast(`Restored ${total} thing${total === 1 ? '' : 's'}`);
+  }
+
   return (
     <>
       <PageHeader
@@ -46,7 +54,12 @@ export function Trash() {
         subtitle={`Items are deleted for good after ${TRASH_DAYS} days`}
         actions={
           (sorted.length > 0 || spaces.length > 0) && (
-            <button class="btn" onClick={() => void empty()}>Empty trash</button>
+            <>
+              <button class="btn" title="Bring everything back" onClick={() => void restoreAll()}>
+                <ArchiveRestore size={16} /> <span class="hidden sm:inline">Restore all</span>
+              </button>
+              <button class="btn" onClick={() => void empty()}>Empty trash</button>
+            </>
           )
         }
       />

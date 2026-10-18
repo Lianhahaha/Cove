@@ -90,7 +90,8 @@ export function Home() {
         )}
 
         {due.length > 0 && (
-          <Section title="Due today" icon={<CalendarCheck size={15} class="text-subtle" />} href="/tasks">
+          // The dedicated view, not Tasks: it lists exactly what this section shows.
+          <Section title="Due today" icon={<CalendarCheck size={15} class="text-subtle" />} href="/view/today">
             {due.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}
@@ -98,7 +99,7 @@ export function Home() {
         )}
 
         {pinned.length > 0 && (
-          <Section title="Pinned" icon={<Pin size={15} class="text-subtle" />}>
+          <Section title="Pinned" icon={<Pin size={15} class="text-subtle" />} href="/view/pinned">
             {pinned.map((i) => (
               <ItemRow key={i.id} item={i} ctx={ctx} />
             ))}

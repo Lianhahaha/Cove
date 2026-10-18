@@ -126,6 +126,20 @@ export async function updateItem(id: string, patch: Partial<Item>): Promise<void
   await db.items.update(id, { ...clampItem(rest), updatedAt: Date.now() });
 }
 
+/** The same patch on many items in one transaction, for bulk actions. */
+export async function updateItems(ids: string[], patch: Partial<Item>): Promise<void> {
+  const { id: _ignored, createdAt: _c, ...rest } = patch;
+  if (!ids.length) return;
+  const clean = clampItem(rest);
+  const now = Date.now();
+  await db.items
+    .where('id')
+    .anyOf(ids)
+    .modify((i) => {
+      Object.assign(i, clean, { updatedAt: now });
+    });
+}
+
 export async function trashItems(ids: string[]): Promise<void> {
   const now = Date.now();
   await db.items.where('id').anyOf(ids).modify({ deletedAt: now, updatedAt: now });

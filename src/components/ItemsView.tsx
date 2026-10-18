@@ -7,7 +7,7 @@ import { usePref } from '../lib/prefs';
 import { SORT_LABELS, sortItems, type SortMode } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
 import { archiveWithUndo, setDone, trashWithUndo } from '../lib/actions';
-import { normalizeTag, TRASH_DAYS, updateItem } from '../lib/repo';
+import { addTag as addTagTo, normalizeTag, TRASH_DAYS, updateItems } from '../lib/repo';
 import { toast } from '../lib/toast';
 import { confirmAction } from '../lib/confirm';
 import type { Item } from '../lib/types';
@@ -171,7 +171,7 @@ function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item
   const none = ids.length === 0;
 
   async function move(spaceId: string) {
-    await Promise.all(ids.map((id) => updateItem(id, { spaceId: spaceId || null })));
+    await updateItems(ids, { spaceId: spaceId || null });
     toast(`Moved ${ids.length} item${ids.length === 1 ? '' : 's'}`);
     onDone();
   }
@@ -179,8 +179,7 @@ function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item
     const raw = prompt('Tag to add to the selected items');
     const tag = raw ? normalizeTag(raw) : '';
     if (!tag) return;
-    const items = await db.items.bulkGet(ids);
-    await Promise.all(items.map((i) => i && updateItem(i.id, { tags: [...i.tags, tag] })));
+    await addTagTo(ids, tag);
     toast(`Tagged ${ids.length} with #${tag}`);
     onDone();
   }

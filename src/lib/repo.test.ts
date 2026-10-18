@@ -21,6 +21,7 @@ import {
   trashSpace,
   TRASH_DAYS,
   updateItem,
+  updateItems,
 } from './repo';
 
 beforeEach(async () => {
@@ -82,6 +83,30 @@ describe('items', () => {
   it('clamps long titles', async () => {
     const item = await addItem({ title: 'x'.repeat(1000) });
     expect(item.title).toHaveLength(LIMITS.titleChars);
+  });
+});
+
+describe('updateItems', () => {
+  it('patches a whole selection, clamping tags and bumping updatedAt', async () => {
+    const a = await addItem({ title: 'a' });
+    const b = await addItem({ title: 'b' });
+    await new Promise((r) => setTimeout(r, 2));
+    const space = await addSpace({ name: 'Chem' });
+    await updateItems([a.id, b.id], { spaceId: space.id, tags: ['#Lab', 'lab', 'CPE'] });
+    const [ra, rb] = await db.items.bulkGet([a.id, b.id]);
+    expect(ra?.spaceId).toBe(space.id);
+    expect(rb?.spaceId).toBe(space.id);
+    expect(ra?.tags).toEqual(['lab', 'cpe']);
+    expect(ra!.updatedAt).toBeGreaterThan(a.updatedAt);
+  });
+
+  it('never changes id or createdAt, and does nothing for an empty list', async () => {
+    const a = await addItem({ title: 'a' });
+    await updateItems([a.id], { title: 'b', id: 'other', createdAt: 1 } as never);
+    const stored = await db.items.get(a.id);
+    expect(stored?.title).toBe('b');
+    expect(stored?.createdAt).toBe(a.createdAt);
+    await expect(updateItems([], { title: 'nope' })).resolves.toBeUndefined();
   });
 });
 

@@ -2,7 +2,7 @@ import type { Item, ItemKind } from './types';
 import { dueBucket } from './dates';
 import { normalizeTag } from './repo';
 
-export type IsFilter = 'task' | 'open' | 'done' | 'overdue' | 'pinned' | 'favorite' | 'private' | 'archived' | 'repeating';
+export type IsFilter = 'task' | 'open' | 'done' | 'overdue' | 'today' | 'high' | 'pinned' | 'favorite' | 'private' | 'archived' | 'repeating';
 
 /** A search box query split into words for the index and filters like is:done or tag:lab. */
 export interface SearchQuery {
@@ -21,6 +21,9 @@ const IS_WORDS: Record<string, IsFilter> = {
   todo: 'open',
   done: 'done',
   overdue: 'overdue',
+  today: 'today',
+  high: 'high',
+  priority: 'high',
   pinned: 'pinned',
   fav: 'favorite',
   favorite: 'favorite',
@@ -35,7 +38,7 @@ const IS_WORDS: Record<string, IsFilter> = {
 const KIND_WORDS: Record<string, ItemKind> = { link: 'link', links: 'link', note: 'note', notes: 'note', file: 'file', files: 'file' };
 
 /** The filters shown as examples under the search box. */
-export const FILTER_EXAMPLES = ['is:task', 'is:done', 'is:overdue', 'is:pinned', 'type:link', 'type:file', 'tag:'];
+export const FILTER_EXAMPLES = ['is:task', 'is:done', 'is:overdue', 'is:today', 'is:high', 'is:pinned', 'type:link', 'type:file', 'tag:'];
 
 const isOpen = (i: Item) => i.status === 'todo' || i.status === 'doing';
 
@@ -44,6 +47,10 @@ const IS_CHECKS: Record<IsFilter, (i: Item, now: Date) => boolean> = {
   open: isOpen,
   done: (i) => i.status === 'done',
   overdue: (i, now) => isOpen(i) && dueBucket(i.due, i.dueHasTime, now) === 'overdue',
+  // Due today, not counting anything already overdue.
+  today: (i, now) => isOpen(i) && dueBucket(i.due, i.dueHasTime, now) === 'today',
+  // Priority 2 is "!!" and priority 3 is "!!!". A priority is set on any kind of item.
+  high: (i) => i.priority >= 2,
   pinned: (i) => i.pinned,
   favorite: (i) => i.favorite,
   private: (i) => i.private,

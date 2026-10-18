@@ -52,4 +52,22 @@ describe('matchesFilters', () => {
     const trashed = newItem({ title: 'Old', deletedAt: 1 });
     expect(matchesFilters(trashed, parseSearchQuery(''), now)).toBe(false);
   });
+
+  it('finds priority 2 and 3 items with is:high', () => {
+    const urgent = newItem({ title: 'Thesis', status: 'todo', priority: 3 });
+    const medium = newItem({ title: 'Essay', status: 'todo', priority: 1 });
+    expect(matchesFilters(urgent, parseSearchQuery('is:high'), now)).toBe(true);
+    expect(matchesFilters(urgent, parseSearchQuery('is:priority'), now)).toBe(true);
+    expect(matchesFilters(medium, parseSearchQuery('is:high'), now)).toBe(false);
+  });
+
+  it('finds open tasks due today with is:today, without catching overdue ones', () => {
+    const now = new Date(2026, 8, 23, 10);
+    const laterToday = newItem({ title: 'PSet', status: 'todo', due: new Date(2026, 8, 23, 17).getTime(), dueHasTime: true });
+    const overdue = newItem({ title: 'Lab', status: 'todo', due: new Date(2026, 8, 20).getTime() });
+    const finished = newItem({ title: 'Quiz', status: 'done', due: new Date(2026, 8, 23).getTime() });
+    expect(matchesFilters(laterToday, parseSearchQuery('is:today'), now)).toBe(true);
+    expect(matchesFilters(overdue, parseSearchQuery('is:today'), now)).toBe(false);
+    expect(matchesFilters(finished, parseSearchQuery('is:today'), now)).toBe(false);
+  });
 });

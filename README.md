@@ -17,11 +17,11 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 
 **Organize**
 - Spaces for each subject, with an emoji, color and order; Unsorted holds anything not in a space yet.
-- Tags, pins, favorites, archive, and a 30-day trash with undo. A tag can be renamed, merged into another or removed everywhere from its page.
+- Tags, pins, favorites, archive, and a 30-day trash with undo and a one-tap Restore all. A tag can be renamed, merged into another or removed everywhere from its page.
 - Space tiles on Home show how many tasks are left, and how many are overdue.
 - List and grid layouts, type filters, sorting, and bulk actions (move, tag, finish, archive, delete).
 - Drag items onto a space in the sidebar to move them.
-- Light, dark or system theme in four soft palettes: Lavender, Sage, Sky and Rose. All four pass WCAG AA contrast. Text size (Compact, Normal or Large) and a reduce-motion option sit beside them.
+- Light, dark or system theme in four soft palettes: Lavender, Sage, Sky and Rose. All four pass WCAG AA contrast. Text size (Compact, Normal or Large), a reduce-motion option, a 24-hour clock and a Monday (or Sunday) start for the calendar sit beside them.
 
 **Tasks**
 - Any item can be a task, with status, due date and time, priority, checklist and repeats (daily, weekly, monthly, every N). Today, Tomorrow and Next week buttons set the due day in one tap, and pasting a list into the checklist adds one step per line.
@@ -32,9 +32,9 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 
 **Find**
 - Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.
-- Search filters that work alone or with words: `is:task`, `is:open`, `is:done`, `is:overdue`, `is:pinned`, `is:fav`, `is:private`, `is:archived`, `is:repeating`, `type:link|note|file` and `tag:name`.
-- Smart views: This week, No tags and Recently edited.
-- A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/U/T/N/W/A/F/S` to jump, `?` for the list). Recent searches are remembered on the device so a phone doesn't retype them.
+- Search filters that work alone or with words: `is:task`, `is:open`, `is:done`, `is:overdue`, `is:today`, `is:high`, `is:pinned`, `is:fav`, `is:private`, `is:archived`, `is:repeating`, `type:link|note|file` and `tag:name`.
+- Smart views: Due today, Upcoming, This week, Pinned, High priority, No tags and Recently edited.
+- A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/U/T/N/D/C/W/P/A/F/S` to jump, `?` for the list). Recent searches are remembered on the device so a phone doesn't retype them.
 
 **AI helpers (optional)**
 - Summarize an item, suggest tags, pull tasks and deadlines out of an announcement, or make an interactive practice quiz. See [AI safety](#ai-safety).

@@ -19,6 +19,7 @@ import { Modal } from '../components/Modal';
 import { autoTagEnabled } from '../lib/actions';
 import { fontSizePref, reduceMotion, type FontSizePref } from '../lib/display';
 import { weekStart, type WeekStart } from '../lib/week';
+import { hour24 } from '../lib/time';
 
 export function Section({ title, description, children }: { title: string; description?: string; children: ComponentChildren }) {
   return (
@@ -230,7 +231,7 @@ export function Settings() {
           />
         </Section>
 
-        <Section title="Calendar" description="How the Tasks month view lays out its weeks.">
+        <Section title="Date and time" description="How the Tasks month view lays out its weeks, and how clock times are shown.">
           <div>
             <span class="label" id="weekstart-label">Week starts on</span>
             <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="weekstart-label">
@@ -247,6 +248,12 @@ export function Settings() {
               ))}
             </div>
           </div>
+          <Toggle
+            label="24-hour time"
+            description="Show 17:30 instead of 5:30 PM. Off follows your device's format."
+            checked={hour24.value}
+            onChange={(v) => (hour24.value = v)}
+          />
         </Section>
 
         <Section title="Install" description="Installed, Cove opens in its own window, works offline and can receive shared links.">

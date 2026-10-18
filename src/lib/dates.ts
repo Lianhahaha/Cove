@@ -1,3 +1,5 @@
+import { hour24 } from './time';
+
 const DAY = 86_400_000;
 
 export const startOfDay = (d: Date | number) => {
@@ -41,12 +43,16 @@ export const DUE_SHORTCUTS: { label: string; day: (now: Date) => Date }[] = [
   { label: 'Next week', day: (now) => addDays(startOfDay(now), ((8 - now.getDay()) % 7) || 7) },
 ];
 
-const timeFmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+// The default follows the device. h23 is spelled out so midnight is 00:00, not 24:00.
+const timeFmt = {
+  device: new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }),
+  h24: new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+};
 const weekdayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
 const monthDayFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
 const fullFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
-export function formatDue(due: number, hasTime: boolean, now = new Date()): string {
+export function formatDue(due: number, hasTime: boolean, now = new Date(), clock24 = hour24.value): string {
   const d = new Date(due);
   // Intl throws on invalid dates; never let one bad record break a whole list.
   if (Number.isNaN(d.getTime())) return '';
@@ -59,7 +65,7 @@ export function formatDue(due: number, hasTime: boolean, now = new Date()): stri
   else if (dayDiff > 1 && dayDiff < 7) label = weekdayFmt.format(d);
   else if (d.getFullYear() === now.getFullYear()) label = monthDayFmt.format(d);
   else label = fullFmt.format(d);
-  return hasTime ? `${label} ${timeFmt.format(d)}` : label;
+  return hasTime ? `${label} ${(clock24 ? timeFmt.h24 : timeFmt.device).format(d)}` : label;
 }
 
 const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto', style: 'short' });

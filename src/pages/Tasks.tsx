@@ -4,7 +4,8 @@ import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { minute } from '../lib/clock';
 import { usePref } from '../lib/prefs';
-import { addDays, BUCKET_LABELS, dueBucket, sameDay, startOfDay, type DueBucket } from '../lib/dates';
+import { BUCKET_LABELS, dueBucket, sameDay, startOfDay, type DueBucket } from '../lib/dates';
+import { monthGrid, weekStart } from '../lib/week';
 import { displayTitle, isActive, sortItems } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
 import { archiveWithUndo, rescheduleToToday, restoreSchedules, setDone } from '../lib/actions';
@@ -290,11 +291,9 @@ function Calendar({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
   const [selected, setSelected] = useState<Date>(() => startOfDay(new Date()));
   const today = startOfDay(new Date());
 
-  // Six weeks starting on the Sunday on or before the 1st.
-  const days = useMemo(() => {
-    const first = addDays(month, -month.getDay());
-    return Array.from({ length: 42 }, (_, i) => addDays(first, i));
-  }, [month]);
+  // Six weeks starting on the week's first day (Sunday, or Monday by choice) on or before the 1st.
+  const start = weekStart.value;
+  const days = useMemo(() => monthGrid(month, start), [month, start]);
 
   const byDay = useMemo(() => {
     const map = new Map<number, Item[]>();
@@ -308,7 +307,9 @@ function Calendar({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
   }, [tasks]);
 
   const monthLabel = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(month);
-  const weekdays = Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(new Date(2026, 0, 4 + i)));
+  // Weekday headings come from the grid's own first week, so they follow the chosen week start.
+  const weekdayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
+  const weekdays = days.slice(0, 7).map((d) => weekdayFmt.format(d));
   const selectedItems = byDay.get(selected.getTime()) ?? [];
   const selectedLabel = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(selected);
 

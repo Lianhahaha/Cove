@@ -18,6 +18,7 @@ import { AI_DAILY_LIMIT, aiAvailable, aiEnabled, aiReview, checkAiAvailable, set
 import { Modal } from '../components/Modal';
 import { autoTagEnabled } from '../lib/actions';
 import { fontSizePref, reduceMotion, type FontSizePref } from '../lib/display';
+import { weekStart, type WeekStart } from '../lib/week';
 
 export function Section({ title, description, children }: { title: string; description?: string; children: ComponentChildren }) {
   return (
@@ -50,6 +51,11 @@ const SIZES: { value: FontSizePref; label: string }[] = [
   { value: 'compact', label: 'Compact' },
   { value: 'default', label: 'Normal' },
   { value: 'large', label: 'Large' },
+];
+
+const WEEK_STARTS: { value: WeekStart; label: string }[] = [
+  { value: 0, label: 'Sunday' },
+  { value: 1, label: 'Monday' },
 ];
 
 function TextSize() {
@@ -222,6 +228,25 @@ export function Settings() {
             checked={reduceMotion.value}
             onChange={(v) => (reduceMotion.value = v)}
           />
+        </Section>
+
+        <Section title="Calendar" description="How the Tasks month view lays out its weeks.">
+          <div>
+            <span class="label" id="weekstart-label">Week starts on</span>
+            <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="weekstart-label">
+              {WEEK_STARTS.map((w) => (
+                <button
+                  key={w.value}
+                  role="radio"
+                  aria-checked={weekStart.value === w.value}
+                  class={`btn h-11 ${weekStart.value === w.value ? 'btn-soft ring-1 ring-accent' : ''}`}
+                  onClick={() => (weekStart.value = w.value)}
+                >
+                  {w.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </Section>
 
         <Section title="Install" description="Installed, Cove opens in its own window, works offline and can receive shared links.">

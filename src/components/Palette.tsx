@@ -5,12 +5,13 @@ import { Archive, ChartColumn, Timer, CornerDownLeft, FolderInput, Hash, House, 
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { search, searchIndex, startSearchIndex } from '../lib/search';
+import { fuzzyMatch } from '../lib/fuzzy';
 import { displayTitle } from '../lib/queries';
 import { themePref } from '../lib/theme';
 import { openCapture, paletteOpen } from '../state';
 import type { Item } from '../lib/types';
 import { VIEW_NAMES, VIEW_TITLES } from '../pages/Lists';
-import { startFocus } from '../lib/focus';
+import { FOCUS_PRESETS, startFocus } from '../lib/focus';
 import { createNote } from '../lib/notes';
 import { itemUrl } from '../lib/nav';
 
@@ -21,8 +22,6 @@ interface Command {
   icon: ComponentChildren;
   run: () => void;
 }
-
-const matches = (label: string, q: string) => q.split(/\s+/).every((w) => label.toLowerCase().includes(w));
 
 export function Palette() {
   if (!paletteOpen.value) return null;
@@ -62,7 +61,12 @@ function PaletteBody() {
       { id: 'fav', label: 'Go to Favorites', icon: <Star size={16} />, run: go('/favorites') },
       { id: 'tags', label: 'Go to Tags', icon: <Hash size={16} />, run: go('/tags') },
       { id: 'search', label: 'Search', hint: '/', icon: <Search size={16} />, run: go('/search') },
-      { id: 'focus', label: 'Start a 25-minute focus timer', icon: <Timer size={16} />, run: () => void startFocus(null, 25) },
+      ...FOCUS_PRESETS.map((m) => ({
+        id: `focus-${m}`,
+        label: `Start a ${m}-minute focus timer`,
+        icon: <Timer size={16} />,
+        run: () => void startFocus(null, m),
+      })),
       { id: 'stats', label: 'Go to Stats', icon: <ChartColumn size={16} />, run: go('/stats') },
       { id: 'archive', label: 'Go to Archive', icon: <Archive size={16} />, run: go('/archive') },
       { id: 'trash', label: 'Go to Trash', icon: <Trash size={16} />, run: go('/trash') },
@@ -80,7 +84,14 @@ function PaletteBody() {
   );
 
   const query = q.trim().toLowerCase();
-  const shownCommands = query ? commands.filter((c) => matches(c.label, query)) : commands.slice(0, 8);
+  // Fuzzily scored so "gt" finds "Go to Tasks"; ties keep their listed order.
+  const shownCommands = query
+    ? commands
+        .map((c, i) => ({ c, i, score: fuzzyMatch(c.label, query) }))
+        .filter((x) => x.score !== null)
+        .sort((a, b) => b.score! - a.score! || a.i - b.i)
+        .map((x) => x.c)
+    : commands.slice(0, 8);
   const itemIds = useMemo(() => (query ? search(query, 8) : []), [query, searchIndex.value]);
   const items = useLive(async () => (await db.items.bulkGet(itemIds)).filter((i): i is Item => !!i), [itemIds.join(',')]) ?? [];
 

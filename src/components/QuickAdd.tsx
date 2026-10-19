@@ -92,8 +92,9 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
       for (const p of sources) {
         // Files go on the first item, which counts as a file item unless it's a link.
         const fileKind: Partial<Item> = attachments.length && !p.url && created.length === 0 ? { kind: 'file' } : {};
-        const task: Partial<Item> = p.isTask ? { status: 'todo' } : {};
-        created.push(await createFromParsed(withDefaults(p), { ...extra, ...task, ...fileKind }));
+        // createFromParsed already turns parsed tasks into 'todo' tasks, so extra can
+        // override the status — e.g. adding straight into a Doing board column.
+        created.push(await createFromParsed(withDefaults(p), { ...extra, ...fileKind }));
       }
       await beforeDone?.(created);
       setText('');

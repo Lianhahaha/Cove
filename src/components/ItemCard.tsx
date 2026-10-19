@@ -1,10 +1,14 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { Check, CalendarDays, FileText, Flag, Link as LinkIcon, ListChecks, Lock, Paperclip, Pin, Repeat, Star, StickyNote } from 'lucide-preact';
 import type { Item, Space } from '../lib/types';
 import { displayTitle, hostOf } from '../lib/queries';
 import { dueBucket, formatDue } from '../lib/dates';
+import { PRESET_LABELS, presetDue, type DuePreset } from '../lib/reschedule';
+import { moveReminder } from '../lib/reminders';
+import { updateItem } from '../lib/repo';
 import { markdownSnippet } from '../lib/snippet';
 import { setDone } from '../lib/actions';
+import { toast } from '../lib/toast';
 import { ITEM_MIME } from '../lib/dnd';
 
 /**
@@ -101,7 +105,96 @@ function KindIcon({ item }: { item: Item }) {
   return <StickyNote size={17} class="text-subtle" />;
 }
 
-function Meta({ item, ctx }: { item: Item; ctx: CardContext }) {
+/** The due date with a small menu to move it to today, tomorrow, next week — or clear it. */
+function DueChip({ item }: { item: Item }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    // Close on the next click anywhere, like the focus menu; the menu's own buttons run first.
+    const t = setTimeout(() => addEventListener('click', close, { once: true }));
+    return () => {
+      clearTimeout(t);
+      removeEventListener('click', close);
+    };
+  }, [open]);
+
+  const bucket = dueBucket(item.due, item.dueHasTime);
+  const overdue = bucket === 'overdue' && item.status !== 'done';
+
+  /** The Undo target for whatever this chip changes. */
+  const before = () => ({ due: item.due, dueHasTime: item.dueHasTime, remindAt: item.remindAt });
+  const undoTo = (old: ReturnType<typeof before>) => () => void updateItem(item.id, old);
+
+  async function move(preset: DuePreset) {
+    if (item.due === null) return;
+    const old = new Date(item.due);
+    const time = item.dueHasTime ? { hours: old.getHours(), minutes: old.getMinutes() } : null;
+    const due = presetDue(preset, time);
+    const previous = before();
+    await updateItem(item.id, { due, remindAt: moveReminder(item.remindAt, item, { due, dueHasTime: item.dueHasTime }) });
+    toast(`Moved to ${PRESET_LABELS[preset].toLowerCase()}`, { action: { label: 'Undo', run: undoTo(previous) } });
+  }
+  async function clear() {
+    const previous = before();
+    await updateItem(item.id, { due: null, dueHasTime: false, remindAt: null });
+    toast('Due date removed', { action: { label: 'Undo', run: undoTo(previous) } });
+  }
+
+  return (
+    <span class="relative inline-flex">
+      <button
+        type="button"
+        class={`inline-flex items-center gap-1 rounded-md -mx-1 px-1 hover:bg-surface3 ${overdue ? 'text-danger font-medium' : bucket === 'today' ? 'text-accent font-medium' : ''}`}
+        title="Move the due date"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`Due ${formatDue(item.due!, item.dueHasTime)}. Move it`}
+        onClick={(e) => {
+          // The row opens the item on click; the chip keeps its click for the menu.
+          e.stopPropagation();
+          setOpen(!open);
+        }}
+      >
+        <CalendarDays size={12} />
+        {formatDue(item.due!, item.dueHasTime)}
+        {item.recurrence && <Repeat size={11} />}
+      </button>
+      {open && (
+        <span class="absolute left-0 top-6 z-20 card shadow-xl p-1.5 w-44 block" role="menu" onClick={(e) => e.stopPropagation()}>
+          <span class="block text-xs text-subtle px-2 py-1">Move to</span>
+          {(Object.keys(PRESET_LABELS) as DuePreset[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              role="menuitem"
+              class="w-full text-left px-3 h-9 rounded-lg text-sm hover:bg-surface3"
+              onClick={() => {
+                setOpen(false);
+                void move(p);
+              }}
+            >
+              {PRESET_LABELS[p]}
+            </button>
+          ))}
+          <button
+            type="button"
+            role="menuitem"
+            class="w-full text-left px-3 h-9 rounded-lg text-sm text-danger hover:bg-surface3"
+            onClick={() => {
+              setOpen(false);
+              void clear();
+            }}
+          >
+            No date
+          </button>
+        </span>
+      )}
+    </span>
+  );
+}
+
+function Meta({ item, ctx, reschedule = false }: { item: Item; ctx: CardContext; reschedule?: boolean }) {
   const space = item.spaceId ? ctx.spaces.get(item.spaceId) : null;
   const files = ctx.fileCounts.get(item.id) ?? 0;
   const doneCount = item.checklist.filter((c) => c.done).length;
@@ -109,13 +202,15 @@ function Meta({ item, ctx }: { item: Item; ctx: CardContext }) {
   const overdue = bucket === 'overdue' && item.status !== 'done';
   return (
     <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-subtle mt-1">
-      {item.due !== null && item.status !== 'none' && (
+      {item.due !== null && item.status !== 'none' && (reschedule ? (
+        <DueChip item={item} />
+      ) : (
         <span class={`inline-flex items-center gap-1 ${overdue ? 'text-danger font-medium' : bucket === 'today' ? 'text-accent font-medium' : ''}`}>
           <CalendarDays size={12} />
           {formatDue(item.due, item.dueHasTime)}
           {item.recurrence && <Repeat size={11} />}
         </span>
-      )}
+      ))}
       {item.priority > 0 && item.status !== 'none' && (
         <span class={`inline-flex items-center ${PRIORITY_CLASS[item.priority]}`} title={`Priority ${item.priority}`}>
           <Flag size={12} />
@@ -198,7 +293,7 @@ export function ItemRow({ item, ctx }: { item: Item; ctx: CardContext }) {
           <Flags item={item} />
         </div>
         {snippet && <p class="text-[0.8125rem] text-muted line-clamp-1 mt-0.5">{snippet}</p>}
-        <Meta item={item} ctx={ctx} />
+        <Meta item={item} ctx={ctx} reschedule />
       </div>
     </div>
   );

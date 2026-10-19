@@ -187,6 +187,7 @@ function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item
   // Notes and links aren't tasks, so the due dropdown leaves them alone too.
   const tasks = items.filter((i) => i.status !== 'none');
   async function setDue(preset: DuePreset) {
+    if (!(preset in PRESET_LABELS)) return;
     const before = await rescheduleMany(items, preset);
     toast(`Due set to ${PRESET_LABELS[preset].toLowerCase()} for ${before.length} task${before.length === 1 ? '' : 's'}`, {
       action: { label: 'Undo', run: () => void restoreSchedules(before) },

@@ -19,13 +19,13 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Spaces for each subject, with an emoji, color and order; Unsorted holds anything not in a space yet.
 - Tags, pins, favorites, archive, and a 30-day trash with undo and a one-tap Restore all. A tag can be renamed, merged into another or removed everywhere from its page.
 - Space tiles on Home show how many tasks are left, and how many are overdue.
-- List and grid layouts, type filters, sorting, and bulk actions (move, tag, finish, archive, delete).
+- List and grid layouts, type filters, sorting, and bulk actions (move, tag, set a due day, finish, archive, delete), each undoable.
 - Drag items onto a space in the sidebar to move them.
 - Light, dark or system theme in four soft palettes: Lavender, Sage, Sky and Rose. All four pass WCAG AA contrast. Text size (Compact, Normal or Large), a reduce-motion option, a 24-hour clock and a Monday (or Sunday) start for the calendar sit beside them.
 
 **Tasks**
-- Any item can be a task, with status, due date and time, priority, checklist and repeats (daily, weekly, monthly, every N). Today, Tomorrow and Next week buttons set the due day in one tap, and pasting a list into the checklist adds one step per line.
-- List grouped by Overdue, Today, Tomorrow, Next 7 days and Later; a Kanban board with drag and drop; a month calendar where tasks can be dragged to another day. Overdue tasks move to today in one step, and finished ones can all be archived at once.
+- Any item can be a task, with status, due date and time, priority, checklist and repeats (daily, weekly, monthly, every N). Today, Tomorrow and Next week buttons set the due day in one tap, the due chip on any card has a little menu to move it to today, tomorrow or next week, and pasting a list into the checklist adds one step per line.
+- List grouped by Overdue, Today, Tomorrow, Next 7 days and Later; a Kanban board with drag and drop and a one-tap Add in each column; a month calendar where tasks can be dragged to another day. Overdue tasks move to today in one step, and finished ones can all be archived at once.
 - Reminders as notifications while Cove is open, snoozable for 10 minutes from the in-app alert, and `.ics` export so the phone's own calendar can alert even when it isn't.
 - The installed app's icon shows how many tasks are due today.
 - A focus timer (15, 25 or 50 minutes) on any task that logs your focused time, with breaks. Stopping early still logs the minutes done, and the screen stays awake while a session runs so the timer is visible on a phone.
@@ -34,7 +34,7 @@ Everything is stored in the browser on your own device. Nothing leaves it unless
 - Offline full-text search over titles, notes, links, previews, tags, file names and the text inside attached PDFs, with prefix matching and typo tolerance.
 - Search filters that work alone or with words: `is:task`, `is:open`, `is:done`, `is:overdue`, `is:today`, `is:high`, `is:pinned`, `is:fav`, `is:private`, `is:archived`, `is:repeating`, `type:link|note|file` and `tag:name`.
 - Smart views: Due today, Upcoming, This week, Pinned, High priority, No tags and Recently edited.
-- A command palette (`Ctrl/⌘ + K`) and keyboard shortcuts (`N` new, `/` search, `G` then `H/U/T/N/D/C/W/P/A/F/S` to jump, `?` for the list). Recent searches are remembered on the device so a phone doesn't retype them.
+- A command palette (`Ctrl/⌘ + K`) whose commands match fuzzily (type `gt` for Go to Tasks) and can start any focus length, and keyboard shortcuts (`N` new, `/` search, `G` then `H/U/T/N/D/C/W/P/A/F/S` to jump, `?` for the list). Recent searches are remembered on the device so a phone doesn't retype them.
 
 **AI helpers (optional)**
 - Summarize an item, suggest tags, pull tasks and deadlines out of an announcement, or make an interactive practice quiz. See [AI safety](#ai-safety).

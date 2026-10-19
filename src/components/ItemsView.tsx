@@ -1,12 +1,13 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
-import { Archive, CheckCheck, Folder, Hash, LayoutGrid, List, SquareMousePointer, Trash, X } from 'lucide-preact';
+import { Archive, CalendarDays, CheckCheck, Folder, Hash, LayoutGrid, List, SquareMousePointer, Trash, X } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { usePref } from '../lib/prefs';
 import { SORT_LABELS, sortItems, type SortMode } from '../lib/queries';
 import { useCardContext } from '../lib/useCardContext';
-import { archiveWithUndo, setDone, trashWithUndo } from '../lib/actions';
+import { archiveWithUndo, rescheduleMany, restoreSchedules, setDone, trashWithUndo } from '../lib/actions';
+import { PRESET_LABELS, type DuePreset } from '../lib/reschedule';
 import { addTag as addTagTo, normalizeTag, TRASH_DAYS, updateItems } from '../lib/repo';
 import { toast } from '../lib/toast';
 import { confirmAction } from '../lib/confirm';
@@ -183,6 +184,14 @@ function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item
     toast(`Tagged ${ids.length} with #${tag}`);
     onDone();
   }
+  // Notes and links aren't tasks, so the due dropdown leaves them alone too.
+  const tasks = items.filter((i) => i.status !== 'none');
+  async function setDue(preset: DuePreset) {
+    const before = await rescheduleMany(items, preset);
+    toast(`Due set to ${PRESET_LABELS[preset].toLowerCase()} for ${before.length} task${before.length === 1 ? '' : 's'}`, {
+      action: { label: 'Undo', run: () => void restoreSchedules(before) },
+    });
+  }
   // Notes and links aren't tasks, so Done leaves them alone rather than turning them into finished tasks.
   const openTasks = items.filter((i) => i.status === 'todo' || i.status === 'doing');
   async function markDone() {
@@ -207,6 +216,16 @@ function BulkBar({ items, all, onDone, onSelectAll }: { items: Item[]; all: Item
             <option value="">No space (Unsorted)</option>
             {spaces.map((s) => (
               <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>
+            ))}
+          </select>
+        </label>
+        <label class={`btn btn-ghost relative ${tasks.length ? '' : 'opacity-50 pointer-events-none'}`} title={tasks.length ? 'Set the due day' : 'No tasks selected'}>
+          <CalendarDays size={16} />
+          <span class="hidden sm:inline">Due</span>
+          <select class="absolute inset-0 opacity-0" aria-label="Set the due day" value="" disabled={!tasks.length} onChange={(e) => void setDue(e.currentTarget.value as DuePreset)}>
+            <option value="" disabled>Set due…</option>
+            {(Object.keys(PRESET_LABELS) as DuePreset[]).map((p) => (
+              <option key={p} value={p}>{PRESET_LABELS[p]}</option>
             ))}
           </select>
         </label>

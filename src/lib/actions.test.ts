@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { addItem } from './repo';
-import { duplicateItem, nextOccurrence, rescheduleToToday, restoreSchedules, setDone } from './actions';
+import { duplicateItem, nextOccurrence, rescheduleMany, rescheduleToToday, restoreSchedules, setDone } from './actions';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -112,6 +112,30 @@ describe('rescheduleToToday', () => {
     expect((await db.items.get(morning.id))?.due).toBe(at(2026, 9, 24, 8));
     await restoreSchedules(before);
     expect((await db.items.get(morning.id))?.due).toBe(at(2026, 9, 21, 8));
+  });
+});
+
+describe('rescheduleMany', () => {
+  const now = new Date(2026, 8, 23, 10);
+
+  it('sets the day for a whole selection, keeping times and reminder gaps, and undoes', async () => {
+    const dated = await addItem({ status: 'todo', due: at(2026, 9, 20) });
+    const evening = await addItem({ status: 'todo', due: at(2026, 9, 21, 17), dueHasTime: true, remindAt: at(2026, 9, 21, 16) });
+    const note = await addItem({ title: 'just a note' });
+    const before = await rescheduleMany([dated, evening, note], 'tomorrow', now);
+    expect((await db.items.get(dated.id))?.due).toBe(at(2026, 9, 24));
+    expect(await db.items.get(evening.id)).toMatchObject({ due: at(2026, 9, 24, 17), remindAt: at(2026, 9, 24, 16) });
+    expect((await db.items.get(note.id))?.due).toBeNull();
+    expect(before).toHaveLength(2);
+    await restoreSchedules(before);
+    expect((await db.items.get(dated.id))?.due).toBe(at(2026, 9, 20));
+    expect(await db.items.get(evening.id)).toMatchObject({ due: at(2026, 9, 21, 17), remindAt: at(2026, 9, 21, 16) });
+  });
+
+  it('drops a reminder the new day has already passed', async () => {
+    const task = await addItem({ status: 'todo', due: at(2026, 9, 21), remindAt: at(2026, 9, 21, 9) });
+    await rescheduleMany([task], 'today', now);
+    expect(await db.items.get(task.id)).toMatchObject({ due: at(2026, 9, 23), remindAt: null });
   });
 });
 

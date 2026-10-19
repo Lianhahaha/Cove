@@ -6,6 +6,7 @@ import type { Parsed } from './parse';
 import { autoTagsFor } from './autotag';
 import { moveReminder } from './reminders';
 import { toTimeInput } from './dates';
+import { presetDue, type DuePreset } from './reschedule';
 import { signal } from '@preact/signals';
 
 /** Mirrors the "Tag links by site" setting. */
@@ -136,6 +137,27 @@ export async function rescheduleToToday(items: Item[], now = new Date()): Promis
     const remindAt = moveReminder(item.remindAt, item, { due: due.getTime(), dueHasTime: item.dueHasTime });
     // A reminder that would now be earlier today has missed its moment; kept, it would fire at once.
     await updateItem(item.id, { due: due.getTime(), remindAt: remindAt !== null && remindAt <= now.getTime() ? null : remindAt });
+  }
+  return before;
+}
+
+/**
+ * Sets the due day of a whole selection from the bulk bar, keeping each timed
+ * task's time of day. Items without a task status are left alone, and a
+ * reminder the new day has already passed is dropped rather than fired at
+ * once. Returns the old schedules so the move can be undone.
+ */
+export async function rescheduleMany(items: Item[], preset: DuePreset, now = new Date()): Promise<Schedule[]> {
+  const before: Schedule[] = [];
+  for (const item of items) {
+    if (item.status === 'none') continue;
+    const old = item.due !== null ? new Date(item.due) : null;
+    const time = item.dueHasTime && old ? { hours: old.getHours(), minutes: old.getMinutes() } : null;
+    const due = presetDue(preset, time, now);
+    before.push({ id: item.id, due: item.due, remindAt: item.remindAt });
+    const remindAt = moveReminder(item.remindAt, item, { due, dueHasTime: item.dueHasTime });
+    // A reminder the new day has passed has missed its moment; kept, it would fire at once.
+    await updateItem(item.id, { due, remindAt: remindAt !== null && remindAt <= now.getTime() ? null : remindAt });
   }
   return before;
 }

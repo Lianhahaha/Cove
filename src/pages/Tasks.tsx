@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
-import { Archive, CalendarClock, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, SquareCheck } from 'lucide-preact';
+import { Archive, CalendarClock, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Columns3, List, Plus, SquareCheck } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { minute } from '../lib/clock';
@@ -111,7 +111,7 @@ export function Tasks() {
         ) : view === 'list' ? (
           <TaskList tasks={filtered} ctx={ctx} showDone={showDone} />
         ) : view === 'board' ? (
-          <Board tasks={filtered} ctx={ctx} />
+          <Board tasks={filtered} ctx={ctx} spaceId={spaceFilter !== 'all' && spaceFilter !== 'inbox' ? spaceFilter : null} />
         ) : (
           <Calendar tasks={filtered} ctx={ctx} />
         )}
@@ -200,7 +200,7 @@ const COLUMNS: { status: Exclude<TaskStatus, 'none'>; label: string }[] = [
   { status: 'done', label: 'Done' },
 ];
 
-function Board({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
+function Board({ tasks, ctx, spaceId }: { tasks: Item[]; ctx: CardContext; spaceId: string | null }) {
   const [over, setOver] = useState<string | null>(null);
   const columns = useMemo(
     () =>
@@ -269,8 +269,36 @@ function Board({ tasks, ctx }: { tasks: Item[]; ctx: CardContext }) {
               </div>
             ))}
           </div>
+          {c.status !== 'done' && <BoardAdd status={c.status} spaceId={spaceId} label={c.label} />}
         </section>
       ))}
+    </div>
+  );
+}
+
+/** A one-line way to add a task straight into a column, parsing like any quick add. */
+function BoardAdd({ status, spaceId, label }: { status: Exclude<TaskStatus, 'none'>; spaceId: string | null; label: string }) {
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <button class="mt-1 w-full flex items-center gap-1.5 px-2 py-2 rounded-lg text-sm text-subtle hover:bg-surface3" onClick={() => setOpen(true)}>
+        <Plus size={15} /> Add
+      </button>
+    );
+  }
+  return (
+    // Escape closes it; the textarea keeps its own keys.
+    <div
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.stopPropagation();
+        setOpen(false);
+      }}
+    >
+      <QuickAdd autoFocus extra={{ status }} defaultSpaceId={spaceId} placeholder={`Add to ${label.toLowerCase()}…`} />
+      <button class="mt-1 w-full text-left px-2 py-1 text-xs text-subtle hover:text-text" onClick={() => setOpen(false)}>
+        Close
+      </button>
     </div>
   );
 }

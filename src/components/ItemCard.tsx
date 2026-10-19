@@ -132,7 +132,9 @@ function DueChip({ item }: { item: Item }) {
     const time = item.dueHasTime ? { hours: old.getHours(), minutes: old.getMinutes() } : null;
     const due = presetDue(preset, time);
     const previous = before();
-    await updateItem(item.id, { due, remindAt: moveReminder(item.remindAt, item, { due, dueHasTime: item.dueHasTime }) });
+    const remindAt = moveReminder(item.remindAt, item, { due, dueHasTime: item.dueHasTime });
+    // A reminder the new day has passed has missed its moment; kept, it would fire at once.
+    await updateItem(item.id, { due, remindAt: remindAt !== null && remindAt <= Date.now() ? null : remindAt });
     toast(`Moved to ${PRESET_LABELS[preset].toLowerCase()}`, { action: { label: 'Undo', run: undoTo(previous) } });
   }
   async function clear() {

@@ -4,7 +4,7 @@ import { toDateInput } from './dates';
 import type { Item, Space } from './types';
 
 export type AiTask = 'summarize' | 'tags' | 'extract_tasks' | 'quiz';
-
+//aight
 export type AiResult =
   | { task: 'summarize'; summary: string; keyPoints: string[] }
   | { task: 'tags'; tags: string[] }

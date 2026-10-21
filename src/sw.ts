@@ -13,7 +13,7 @@ declare global {
 }
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
-
+//aight
 // The app shell: HTML, JS, CSS and icons, versioned by the build.
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();

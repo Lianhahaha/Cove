@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { finishedPerDay, streak } from './stats';
+import { finishedPerDay, focusPerDay, streak } from './stats';
 import { newItem } from './repo';
 
 const now = new Date(2026, 8, 26, 15, 0);
@@ -24,5 +24,21 @@ describe('finishedPerDay', () => {
     expect(series[13].count).toBe(2);
     expect(series[0].count).toBe(1);
     expect(series.reduce((n, d) => n + d.count, 0)).toBe(3);
+  });
+});
+
+describe('focusPerDay', () => {
+  it('aggregates focus minutes per local day', () => {
+    const today = new Date(2026, 8, 26, 12, 0).getTime();
+    const yesterday = new Date(2026, 8, 25, 14, 0).getTime();
+    const sessions = [
+      { itemId: null, minutes: 25, at: today },
+      { itemId: null, minutes: 15, at: today },
+      { itemId: null, minutes: 50, at: yesterday },
+    ];
+    const series = focusPerDay(sessions, 14, now);
+    expect(series).toHaveLength(14);
+    expect(series[13].minutes).toBe(40);
+    expect(series[12].minutes).toBe(50);
   });
 });

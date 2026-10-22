@@ -33,3 +33,17 @@ export function sinceDays(items: Item[], field: 'createdAt' | 'completedAt', day
   const from = now - days * 86_400_000;
   return items.filter((i) => (i[field] ?? 0) >= from).length;
 }
+
+/** Focus minutes logged on each of the last `days` days, oldest first. */
+export function focusPerDay(sessions: { minutes: number; at: number }[], days = 14, now = new Date()): { date: Date; minutes: number }[] {
+  const totals = new Map<string, number>();
+  for (const s of sessions) {
+    const k = dayKey(s.at);
+    totals.set(k, (totals.get(k) ?? 0) + s.minutes);
+  }
+  return Array.from({ length: days }, (_, k) => {
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1 - k));
+    return { date, minutes: totals.get(dayKey(date.getTime())) ?? 0 };
+  });
+}
+

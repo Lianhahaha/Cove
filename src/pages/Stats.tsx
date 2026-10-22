@@ -4,7 +4,7 @@ import { db } from '../lib/db';
 import { useLive } from '../lib/live';
 import { dueBucket } from '../lib/dates';
 import { isOpenTask } from '../lib/queries';
-import { finishedPerDay, sinceDays, streak } from '../lib/stats';
+import { finishedPerDay, focusPerDay, sinceDays, streak } from '../lib/stats';
 import { focusLog } from '../lib/focus';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyState } from '../components/EmptyState';
@@ -107,6 +107,96 @@ function FinishedChart({ series }: { series: { date: Date; count: number }[] }) 
   );
 }
 
+function FocusChart({ series }: { series: { date: Date; minutes: number }[] }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const [asTable, setAsTable] = useState(false);
+  const max = Math.max(1, ...series.map((d) => d.minutes));
+  const total = series.reduce((n, d) => n + d.minutes, 0);
+  const H = 140;
+
+  return (
+    <section class="card p-4 sm:p-5">
+      <div class="flex items-baseline justify-between gap-2 mb-4">
+        <div>
+          <h2 class="font-display font-medium">Focus time</h2>
+          <p class="text-xs text-subtle">
+            Last 14 days · {total >= 60 ? `${Math.floor(total / 60)}h ${total % 60}m` : `${total} mins`} in total
+          </p>
+        </div>
+        <button class="text-xs text-subtle underline" onClick={() => setAsTable(!asTable)}>
+          {asTable ? 'Show chart' : 'Show as table'}
+        </button>
+      </div>
+
+      {asTable ? (
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-subtle text-xs">
+              <th class="font-medium py-1">Day</th>
+              <th class="font-medium py-1 text-right">Minutes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {series.map((d) => (
+              <tr key={d.date.getTime()} class="border-t border-border">
+                <td class="py-1">{dayFmt.format(d.date)}</td>
+                <td class="py-1 text-right tabular-nums">{d.minutes} min</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div class="relative">
+          <div
+            class="flex items-end gap-[2px] border-b border-border2"
+            style={{ height: H }}
+            role="img"
+            aria-label={`Focus minutes per day for the last 14 days, ${total} minutes in total`}
+          >
+            {series.map((d, i) => {
+              const h = d.minutes ? Math.max(6, (d.minutes / max) * (H - 24)) : 0;
+              return (
+                <div
+                  key={d.date.getTime()}
+                  class="flex-1 h-full flex flex-col justify-end items-center cursor-default outline-none"
+                  tabIndex={0}
+                  onMouseEnter={() => setHover(i)}
+                  onMouseLeave={() => setHover(null)}
+                  onFocus={() => setHover(i)}
+                  onBlur={() => setHover(null)}
+                  aria-label={`${dayFmt.format(d.date)}: ${d.minutes} min`}
+                >
+                  <div
+                    class={`w-full max-w-7 rounded-t-[4px] ${hover === i ? 'opacity-100' : hover === null ? 'opacity-100' : 'opacity-60'}`}
+                    style={{ height: h, background: 'var(--c-accent)' }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div class="flex gap-[2px] mt-1.5">
+            {series.map((d, i) => (
+              <span key={d.date.getTime()} class="flex-1 text-center text-[10px] text-subtle tabular-nums">
+                {i % 2 === 1 || i === series.length - 1 ? shortDay.format(d.date) : ''}
+              </span>
+            ))}
+          </div>
+          {hover !== null && (
+            <div
+              class="absolute -top-2 -translate-x-1/2 -translate-y-full card shadow-lg px-2.5 py-1.5 text-xs pointer-events-none whitespace-nowrap"
+              style={{ left: `${((hover + 0.5) / series.length) * 100}%` }}
+              role="tooltip"
+            >
+              <span class="text-subtle">{dayFmt.format(series[hover].date)}</span>
+              <span class="font-semibold tabular-nums ml-2">{series[hover].minutes} min</span>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function Stats() {
   const items = useLive(() => db.items.filter((i) => !i.deletedAt).toArray(), []);
   const spaces = useLive(() => db.spaces.orderBy('order').filter((s) => !s.deletedAt).toArray(), []) ?? [];
@@ -132,10 +222,11 @@ export function Stats() {
       open: open.length,
       overdue: open.filter((i) => dueBucket(i.due, i.dueHasTime) === 'overdue').length,
       series: finishedPerDay(all),
+      focusSeries: focusPerDay(log),
       kinds: { link: all.filter((i) => i.kind === 'link').length, note: all.filter((i) => i.kind === 'note').length, file: all.filter((i) => i.kind === 'file').length },
       bySpace,
     };
-  }, [items]);
+  }, [items, log]);
 
   const rows = [
     { id: null as string | null, name: 'Unsorted', emoji: '🗂️' },
@@ -164,6 +255,7 @@ export function Stats() {
             )}
 
             <FinishedChart series={data.series} />
+            {data.focusSeries.some((f) => f.minutes > 0) && <FocusChart series={data.focusSeries} />}
 
             <section class="card p-4 sm:p-5">
               <h2 class="font-display font-medium mb-3">By space</h2>

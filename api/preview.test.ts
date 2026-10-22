@@ -30,5 +30,5 @@ describe('GET /api/preview', () => {
     const res = await GET(new Request(`https://cove.test/api/preview?url=${encodeURIComponent('http://localtest.me/')}`));
     // localtest.me resolves to 127.0.0.1; without network the lookup fails instead. Either way nothing is fetched.
     expect([400, 502]).toContain(res.status);
-  });
+  }, 15000);
 });

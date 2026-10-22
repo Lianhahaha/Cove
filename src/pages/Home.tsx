@@ -13,6 +13,7 @@ import { QuickAdd } from '../components/QuickAdd';
 import { EmptyState } from '../components/EmptyState';
 import { QuickLinks } from '../components/QuickLinks';
 import { InfoTip } from '../components/InfoTip';
+import { openScratchpad, scratchpadText } from '../lib/scratchpad';
 
 function greeting(d = new Date()) {
   const h = d.getHours();
@@ -78,6 +79,27 @@ export function Home() {
         <QuickAdd />
 
         <QuickLinks />
+
+        {scratchpadText.value.trim().length > 0 && (
+          <div class="card p-3.5 flex items-center justify-between gap-3 bg-surface2/60 border-accent/30 hover:border-accent/60 transition-colors">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="w-2.5 h-2.5 rounded-full bg-accent shrink-0 animate-pulse" />
+              <div class="min-w-0">
+                <span class="text-xs font-semibold text-accent block">Scratchpad active</span>
+                <p class="text-xs text-muted truncate max-w-sm sm:max-w-md">
+                  {scratchpadText.value.trim().replace(/\n/g, ' ')}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary text-xs h-7 px-2.5 shrink-0"
+              onClick={() => openScratchpad()}
+            >
+              Open notepad
+            </button>
+          </div>
+        )}
 
         {items !== undefined && items.length === 0 && (
           <EmptyState icon={<Sparkles size={22} />} title="Welcome to Cove">

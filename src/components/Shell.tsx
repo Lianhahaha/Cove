@@ -11,6 +11,7 @@ import { FocusPill } from './FocusTimer';
 import { useItemNav } from '../lib/nav';
 import { ShortcutsHelp, useShortcuts } from './Shortcuts';
 import { capture, menuOpen, openCapture, paletteOpen } from '../state';
+import { scratchpadOpen } from '../lib/scratchpad';
 import { filesFromClipboard } from '../lib/files';
 import { online } from '../lib/pwa';
 import { useNavCounts } from '../lib/useCounts';
@@ -125,6 +126,7 @@ export function Shell({ children }: { children: ComponentChildren }) {
   const { openId } = useItemNav();
   const ItemDetail = useLazyComponent(!!openId, () => import('./ItemDetail').then((m) => m.ItemDetail));
   const Palette = useLazyComponent(paletteOpen.value, () => import('./Palette').then((m) => m.Palette));
+  const Scratchpad = useLazyComponent(scratchpadOpen.value, () => import('./ScratchpadModal').then((m) => m.ScratchpadModal));
   return (
     <div class="min-h-dvh flex">
       <aside class="hidden md:block w-64 shrink-0 sticky top-0 h-dvh border-r border-border bg-surface">
@@ -143,6 +145,7 @@ export function Shell({ children }: { children: ComponentChildren }) {
       {ItemDetail && <ItemDetail />}
       <CaptureSheet />
       {Palette && <Palette />}
+      {Scratchpad && <Scratchpad />}
       <ShortcutsHelp />
       <FocusPill />
       <ConfirmHost />

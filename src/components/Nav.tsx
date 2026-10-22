@@ -23,6 +23,7 @@ import {
   Settings,
   SquareCheck,
   Star,
+  StickyNote,
   Sun,
   Tags as TagsIcon,
   Trash,
@@ -34,6 +35,7 @@ import { toast } from '../lib/toast';
 import { ITEM_MIME, SPACE_MIME } from '../lib/dnd';
 import { themePref, type ThemePref } from '../lib/theme';
 import { menuOpen } from '../state';
+import { openScratchpad, scratchpadText } from '../lib/scratchpad';
 import { installPrompt, promptInstall } from '../lib/pwa';
 import { useNavCounts } from '../lib/useCounts';
 import { InfoTip } from './InfoTip';
@@ -140,6 +142,22 @@ export function Nav() {
         <NavLink href="/unsorted" icon={<FolderInput size={18} />} label="Unsorted" count={counts?.inbox} />
         <NavLink href="/tasks" icon={<SquareCheck size={18} />} label="Tasks" count={counts?.due} />
         <NavLink href="/notes" icon={<NotebookPen size={18} />} label="Notes" />
+        <button
+          type="button"
+          onClick={() => {
+            menuOpen.value = false;
+            openScratchpad();
+          }}
+          class="w-full flex items-center gap-2.5 px-2.5 h-9 rounded-lg text-sm text-muted hover:bg-surface3 hover:text-text transition-colors text-left"
+        >
+          <span class="shrink-0 w-5 grid place-items-center">
+            <StickyNote size={18} />
+          </span>
+          <span class="flex-1 truncate">Scratchpad</span>
+          {scratchpadText.value.trim().length > 0 && (
+            <span class="w-2 h-2 rounded-full bg-accent animate-pulse" title="Has scratchpad notes" />
+          )}
+        </button>
         <NavLink href="/all" icon={<Layers size={18} />} label="All items" />
         <NavLink href="/favorites" icon={<Star size={18} />} label="Favorites" />
         <NavLink href="/tags" icon={<Hash size={18} />} label="Tags" />

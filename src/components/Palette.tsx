@@ -53,6 +53,15 @@ function PaletteBody() {
         // Inside a space, the note lands in that space.
         run: () => void createNote(path.startsWith('/s/') ? path.slice(3) : null).then((n) => route(itemUrl(path, pageQuery, n.id))),
       },
+      {
+        id: 'scratchpad',
+        label: 'Quick scratchpad',
+        icon: <NotebookPen size={16} />,
+        run: () => {
+          close();
+          import('../lib/scratchpad').then((m) => m.openScratchpad());
+        },
+      },
       { id: 'notes', label: 'Go to Notes', icon: <NotebookPen size={16} />, run: go('/notes') },
       { id: 'home', label: 'Go to Home', icon: <House size={16} />, run: go('/') },
       { id: 'unsorted', label: 'Go to Unsorted', icon: <FolderInput size={16} />, run: go('/unsorted') },

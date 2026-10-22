@@ -9,6 +9,7 @@ const GO: Record<string, string> = { h: '/', u: '/unsorted', i: '/unsorted', t: 
 const SHORTCUTS: [string, string][] = [
   ['Ctrl / ⌘ + K', 'Command palette'],
   ['N', 'New item'],
+  ['J', 'Quick scratchpad'],
   ['/', 'Search'],
   ['G then H', 'Home'],
   ['G then U', 'Unsorted'],
@@ -57,6 +58,9 @@ export function useShortcuts() {
       else if (key === 'n' || key === 'c') {
         e.preventDefault();
         openCapture();
+      } else if (key === 'j') {
+        e.preventDefault();
+        import('../lib/scratchpad').then((m) => m.openScratchpad());
       } else if (key === '/') {
         e.preventDefault();
         // Already searching: keep the query and jump back into the box.

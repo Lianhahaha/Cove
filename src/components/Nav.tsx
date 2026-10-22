@@ -27,6 +27,7 @@ import {
   Sun,
   Tags as TagsIcon,
   Trash,
+  X,
 } from 'lucide-preact';
 import { db } from '../lib/db';
 import { useLive } from '../lib/live';
@@ -132,8 +133,16 @@ export function Nav() {
 
   return (
     <nav class="flex flex-col h-full" aria-label="Main">
-      <div class="flex items-center gap-2 px-2.5 h-12 md:h-14 shrink-0">
+      <div class="flex items-center justify-between px-2.5 h-12 md:h-14 shrink-0 border-b border-border/40 md:border-b-0">
         <span class="font-brand italic text-[1.75rem] leading-none tracking-[-0.01em] pl-0.5">Cove</span>
+        <button
+          type="button"
+          class="md:hidden icon-btn w-8 h-8 -mr-1"
+          aria-label="Close menu"
+          onClick={() => (menuOpen.value = false)}
+        >
+          <X size={18} />
+        </button>
       </div>
 
       <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5">

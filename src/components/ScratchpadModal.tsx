@@ -81,15 +81,15 @@ function ScratchpadBody() {
           onInput={(e) => setScratchpadText(e.currentTarget.value)}
         />
 
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/60 text-xs">
-          <div class="text-subtle font-mono">
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-border/60 text-xs">
+          <div class="text-subtle font-mono text-center sm:text-left">
             {wordCount} {wordCount === 1 ? 'word' : 'words'} · {charCount} chars
           </div>
 
-          <div class="flex items-center gap-1.5">
+          <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5">
             <button
               type="button"
-              class="btn btn-ghost text-xs h-8 px-2.5"
+              class="btn btn-ghost text-xs h-9 sm:h-8 px-2.5 justify-center"
               onClick={handleCopy}
               disabled={!text.trim()}
               title="Copy to clipboard"
@@ -98,7 +98,7 @@ function ScratchpadBody() {
             </button>
             <button
               type="button"
-              class="btn btn-ghost text-xs h-8 px-2.5 text-danger"
+              class="btn btn-ghost text-xs h-9 sm:h-8 px-2.5 text-danger justify-center"
               onClick={handleClear}
               disabled={!text.trim()}
               title="Clear scratchpad"
@@ -107,21 +107,21 @@ function ScratchpadBody() {
             </button>
             <button
               type="button"
-              class="btn btn-secondary text-xs h-8 px-2.5"
+              class="btn btn-secondary text-xs h-9 sm:h-8 px-2.5 justify-center"
               onClick={handleConvertToItem}
               disabled={!text.trim()}
               title="Send to Quick Capture"
             >
-              <Plus size={14} /> Capture as task
+              <Plus size={14} /> Task
             </button>
             <button
               type="button"
-              class="btn btn-primary text-xs h-8 px-2.5"
+              class="btn btn-primary text-xs h-9 sm:h-8 px-2.5 justify-center"
               onClick={handleConvertToNote}
               disabled={!text.trim()}
               title="Save as permanent Markdown note"
             >
-              <ArrowUpRight size={14} /> Save as note
+              <ArrowUpRight size={14} /> Save note
             </button>
           </div>
         </div>

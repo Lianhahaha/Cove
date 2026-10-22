@@ -97,6 +97,7 @@ export function QuickAdd({ defaultSpaceId = null, initialText = '', autoFocus, e
         created.push(await createFromParsed(withDefaults(p), { ...extra, ...fileKind }));
       }
       await beforeDone?.(created);
+      navigator.vibrate?.(12);
       setText('');
       onTextChange?.('');
       setIgnore(new Set());

@@ -195,6 +195,16 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
         {iconAction(item.pinned ? 'Unpin' : 'Pin', item.pinned ? <PinOff size={18} /> : <Pin size={18} />, () => patch({ pinned: !item.pinned }), item.pinned)}
         {iconAction(item.favorite ? 'Remove from favorites' : 'Add to favorites', <Star size={18} class={item.favorite ? 'fill-current' : ''} />, () => patch({ favorite: !item.favorite }), item.favorite)}
         {iconAction(item.private ? 'Make not private' : 'Make private (never sent to AI)', item.private ? <Lock size={18} /> : <LockOpen size={18} />, () => patch({ private: !item.private }), item.private)}
+        {iconAction('Copy text', <Copy size={18} />, () => {
+          const parts = [item.title || displayTitle(item)];
+          if (item.url) parts.push(item.url);
+          if (item.body) parts.push(item.body);
+          if (item.checklist?.length) {
+            parts.push(item.checklist.map((c) => `- [${c.done ? 'x' : ' '}] ${c.text}`).join('\n'));
+          }
+          navigator.clipboard.writeText(parts.join('\n\n'));
+          toast('Copied to clipboard');
+        })}
         {iconAction('Duplicate', <CopyPlus size={18} />, async () => {
           await duplicateItem(item);
           toast('Duplicated');

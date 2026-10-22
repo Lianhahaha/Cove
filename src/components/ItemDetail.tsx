@@ -187,9 +187,9 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
         }
       }}
     >
-      <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-1 px-2 h-12 md:h-14 border-b border-border">
-        <button class="icon-btn" aria-label="Back" title="Back" onClick={onClose}><ArrowLeft size={20} /></button>
-        <div class="flex-1" />
+      <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur flex items-center gap-0.5 sm:gap-1 px-2 h-12 md:h-14 border-b border-border overflow-x-auto no-scrollbar">
+        <button class="icon-btn shrink-0" aria-label="Back" title="Back" onClick={onClose}><ArrowLeft size={20} /></button>
+        <div class="flex-1 min-w-2" />
         <AiMenu item={item} onAppendBody={(md) => setBody((b) => appendMarkdown(b, md))} />
         <FocusStarter itemId={item.id} />
         {iconAction(item.pinned ? 'Unpin' : 'Pin', item.pinned ? <PinOff size={18} /> : <Pin size={18} />, () => patch({ pinned: !item.pinned }), item.pinned)}

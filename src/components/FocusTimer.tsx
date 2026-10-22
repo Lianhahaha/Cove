@@ -12,25 +12,25 @@ export function FocusPill() {
   const pct = 100 - (left / (s.minutes * 60_000)) * 100;
   return (
     <div
-      class="fixed z-30 right-3 md:right-6 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-6 card shadow-xl flex items-center gap-1 pl-3 pr-1 py-1 overflow-hidden"
+      class="fixed z-30 right-3 md:right-6 bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-6 card shadow-xl flex items-center gap-1 pl-3 pr-1 py-1.5 overflow-hidden bg-surface/95 backdrop-blur-md border-border/80"
       role="timer"
       aria-label={`${s.mode === 'focus' ? 'Focus' : 'Break'}: ${formatClock(left)} left`}
     >
       <div class="absolute left-0 bottom-0 h-0.5" style={{ width: `${pct}%`, background: 'var(--c-chart)' }} />
       <button
-        class="flex items-center gap-2 min-w-0 text-left"
+        class="flex items-center gap-2 min-w-0 text-left py-1"
         title={s.itemId ? 'Open the task' : undefined}
         onClick={() => s.itemId && navigate(itemUrl(location.pathname, Object.fromEntries(new URLSearchParams(location.search)), s.itemId))}
       >
         <Timer size={16} class={s.mode === 'focus' ? 'text-accent' : 'text-subtle'} />
         <span class="font-mono font-medium tabular-nums">{formatClock(left)}</span>
-        <span class="text-xs text-subtle truncate max-w-32 hidden xs:inline">{s.mode === 'focus' ? s.title : 'Break'}</span>
+        <span class="text-xs text-subtle truncate max-w-28 xs:max-w-36 hidden xs:inline">{s.mode === 'focus' ? s.title : 'Break'}</span>
       </button>
-      <button class="icon-btn w-8 h-8" aria-label={paused ? 'Resume' : 'Pause'} onClick={() => (paused ? resumeFocus() : pauseFocus())}>
-        {paused ? <Play size={15} /> : <Pause size={15} />}
+      <button class="icon-btn w-9 h-9" aria-label={paused ? 'Resume' : 'Pause'} onClick={() => (paused ? resumeFocus() : pauseFocus())}>
+        {paused ? <Play size={16} /> : <Pause size={16} />}
       </button>
-      <button class="icon-btn w-8 h-8" aria-label="Stop timer" onClick={stopFocus}>
-        <Square size={14} />
+      <button class="icon-btn w-9 h-9" aria-label="Stop timer" onClick={stopFocus}>
+        <Square size={15} />
       </button>
     </div>
   );

@@ -20,7 +20,7 @@ import '@fontsource-variable/jetbrains-mono/wght.css';
 // The Cove wordmark only: one Latin italic file.
 import '@fontsource/instrument-serif/latin-400-italic.css';
 import './styles.css';
-
+//yoyoyo
 // Before the router's first history entry, so every entry is numbered.
 trackHistory();
 render(<App />, document.getElementById('app')!);

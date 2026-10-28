@@ -544,3 +544,17 @@
 @keyframes header-edge {
   to { border-bottom-color: var(--c-border); }
 }
+
+/* Polish: smoother interactions */
+@layer utilities {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .safe-pb {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+  .safe-pt {
+    padding-top: calc(1rem + env(safe-area-inset-top));
+  }
+}

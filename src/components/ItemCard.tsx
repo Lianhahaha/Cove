@@ -59,7 +59,7 @@ export function TaskCheck({ item, size = 20 }: { item: Item; size?: number }) {
       role="checkbox"
       aria-checked={done}
       aria-label={done ? 'Mark as not done' : 'Mark as done'}
-      class={`relative shrink-0 grid place-items-center rounded-full border-2 transition-colors after:absolute after:-inset-2.5 after:content-[''] ${
+      class={`relative shrink-0 grid place-items-center rounded-full border-2 transition-colors after:absolute after:-inset-2.5 after:content-[''] touch-target ${
         done ? 'bg-accent border-accent text-on-accent' : item.priority === 3 ? 'border-danger' : 'border-border2 hover:border-accent'
       }`}
       style={{ width: size, height: size }}
